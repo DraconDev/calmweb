@@ -22,7 +22,6 @@ const globals = {
   "InvalidMatchPattern": true,
   "MatchPattern": true,
   "MigrationError": true,
-  "STORAGE_KEYS": true,
   "ScriptPublicPath": true,
   "ShadowRootContentScriptUi": true,
   "ShadowRootContentScriptUiOptions": true,

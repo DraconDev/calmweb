@@ -5,7 +5,6 @@ declare global {
   const ContentScriptContext: typeof import('wxt/utils/content-script-context').ContentScriptContext
   const InvalidMatchPattern: typeof import('wxt/utils/match-patterns').InvalidMatchPattern
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
-  const STORAGE_KEYS: typeof import('/home/dracon/Dev/extensions/calmweb/apps/extension/utils/storage').STORAGE_KEYS
   const applyLocalRules: typeof import('/home/dracon/Dev/extensions/calmweb/apps/extension/utils/classifier').applyLocalRules
   const browser: typeof import('wxt/browser').browser
   const byokKeysStore: typeof import('/home/dracon/Dev/extensions/calmweb/apps/extension/utils/storage').byokKeysStore
