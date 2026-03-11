@@ -20,7 +20,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,css}\""
   },
   "dependencies": {
-    "@calmweb/shared": "workspace:*",
+    "@calmweb/shared": "file:../../packages/shared",
     "@dracon/wxt-shared": "file:../../wxt-shared",
     "@radix-ui/themes": "^3.1.6",
     "@types/webextension-polyfill": "^0.12.4",
