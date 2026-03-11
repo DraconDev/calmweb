@@ -166,6 +166,6 @@ export const MessageSchema = z.discriminatedUnion('type', [
  * Validate a message payload against the schema.
  * Throws if invalid.
  */
-export function validateMessage(message: unknown): ClassmWebMessage {
+export function validateMessage(message: unknown): CalmWebMessage {
   return MessageSchema.parse(message);
 }

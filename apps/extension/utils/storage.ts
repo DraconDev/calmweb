@@ -4,26 +4,13 @@
  * Provides typed wrappers around WXT storage for settings, cache, BYOK keys, and stats.
  */
 
-import { storage } from 'wxt/utils/storage';
-import { createSettingsStore, createStore } from '@dracon/wxt-shared/storage';
+import { createStore } from '@dracon/wxt-shared/storage';
 import type { UserSettings, ClassificationResult } from '@calmweb/shared';
-
-// ============================================================================
-// Storage Keys
-// ============================================================================
-
-export const STORAGE_KEYS = {
-  SETTINGS: 'local:settings' as const,
-  DECISION_CACHE: 'local:decisionCache' as const,
-  BYOK_KEYS: 'local:byokKeys' as const,
-  STATS: 'local:stats' as const,
-} as const;
+import { STORAGE_KEYS, defaultUserSettings } from '@calmweb/shared';
 
 // ============================================================================
 // Default Values
 // ============================================================================
-
-import { defaultUserSettings } from '@calmweb/shared';
 
 const defaultDecisionCache: Record<string, ClassificationResult> = {};
 const defaultBYOKKeys: { openai?: string; anthropic?: string } = {};
@@ -40,7 +27,7 @@ const defaultStats: { totalFiltered: number; lastReset: number } = {
  * User settings store
  * Contains: enabled, processingMode, strictness, rules, byokKey
  */
-export const settingsStore = createSettingsStore<UserSettings>(STORAGE_KEYS.SETTINGS, defaultUserSettings);
+export const settingsStore = createStore<UserSettings>(STORAGE_KEYS.SETTINGS, defaultUserSettings);
 
 /**
  * Decision cache store: fingerprint -> classification result
@@ -68,24 +55,24 @@ export const statsStore = createStore<{ totalFiltered: number; lastReset: number
 );
 
 // ============================================================================
-// Helper Functions
+// Helper Functions (async)
 // ============================================================================
 
 /**
  * Get a cached classification result by fingerprint
  */
-export function getCachedResult(fingerprint: string): ClassificationResult | undefined {
-  const cache = decisionCache.getValue();
+export async function getCachedResult(fingerprint: string): Promise<ClassificationResult | undefined> {
+  const cache = await decisionCache.getValue();
   return cache[fingerprint];
 }
 
 /**
  * Set a cached classification result
  */
-export function setCachedResult(fingerprint: string, result: ClassificationResult): void {
-  const cache = decisionCache.getValue();
+export async function setCachedResult(fingerprint: string, result: ClassificationResult): Promise<void> {
+  const cache = await decisionCache.getValue();
   cache[fingerprint] = result;
-  decisionCache.setValue(cache);
+  await decisionCache.setValue(cache);
 }
 
 /**
@@ -99,7 +86,7 @@ export async function clearDecisionCache(): Promise<void> {
  * Increment the total filtered count
  */
 export async function incrementFilteredCount(amount: number = 1): Promise<void> {
-  const stats = statsStore.getValue();
+  const stats = await statsStore.getValue();
   stats.totalFiltered += amount;
   stats.lastReset = Date.now();
   await statsStore.setValue(stats);
@@ -113,30 +100,19 @@ export async function resetStats(): Promise<void> {
 }
 
 // ============================================================================
-// Initialization
+// Initialization (optional)
 // ============================================================================
 
 /**
- * Ensure all stores have default values on first run
+ * Ensure all stores have default values on first run.
+ * Not strictly necessary as getValue() returns fallback, but can be used
+ * to explicitly set defaults in storage.
  */
 export async function initializeStores(): Promise<void> {
-  const settings = await settingsStore.getValue();
-  if (!settings) {
-    await settingsStore.setValue(defaultUserSettings);
-  }
-
-  const cache = await decisionCache.getValue();
-  if (!cache) {
-    await decisionCache.setValue({ ...defaultDecisionCache });
-  }
-
-  const keys = await byokKeysStore.getValue();
-  if (!keys) {
-    await byokKeysStore.setValue({ ...defaultBYOKKeys });
-  }
-
-  const stats = await statsStore.getValue();
-  if (!stats) {
-    await statsStore.setValue({ ...defaultStats });
-  }
+  // These are optional; the stores already have fallback values.
+  // You could explicitly set defaults if desired.
+  await settingsStore.getValue();
+  await decisionCache.getValue();
+  await byokKeysStore.getValue();
+  await statsStore.getValue();
 }
