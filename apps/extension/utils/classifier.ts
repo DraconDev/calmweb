@@ -53,52 +53,47 @@ function matchesPresetKeywords(title: string, preset: keyof PresetSelection): bo
 export function applyLocalRules(unit: ContentUnit, rules: UserRules): ClassificationResult | null {
   const titleLower = unit.title.toLowerCase();
 
-  // Check blocklist channels (sourceName match)
+  // 1. Check active presets (politics, ragebait, spoilers, clickbait)
+  const presets = rules.presets;
+  if (presets.politics && matchesPresetKeywords(unit.title, 'politics')) {
+    return { decision: 'hide', confidence: 0.9, reason: 'preset_politics' };
+  }
+  if (presets.ragebait && matchesPresetKeywords(unit.title, 'ragebait')) {
+    return { decision: 'hide', confidence: 0.9, reason: 'preset_ragebait' };
+  }
+  if (presets.spoilers && matchesPresetKeywords(unit.title, 'spoilers')) {
+    return { decision: 'hide', confidence: 0.9, reason: 'preset_spoilers' };
+  }
+  if (presets.clickbait && matchesPresetKeywords(unit.title, 'clickbait')) {
+    return { decision: 'hide', confidence: 0.9, reason: 'preset_clickbait' };
+  }
+
+  // 2. Check user-defined blocklist channels
   if (unit.sourceName && rules.blocklistChannels.length > 0) {
     const sourceLower = unit.sourceName.toLowerCase();
     if (rules.blocklistChannels.some(chan => sourceLower.includes(chan.toLowerCase()))) {
-      return {
-        decision: 'hide',
-        confidence: 1.0,
-        reason: 'blocklist_channel',
-      };
+      return { decision: 'hide', confidence: 1.0, reason: 'blocklist_channel' };
     }
   }
 
-  // Check blocklist keywords (title match)
+  // 3. Check user-defined blocklist keywords
   if (rules.blocklistKeywords.length > 0) {
-    if (rules.blocklistKeywords.some(keyword => 
-      titleLower.includes(keyword.toLowerCase())
-    )) {
-      return {
-        decision: 'hide',
-        confidence: 0.9,
-        reason: 'blocklist_keyword',
-      };
+    if (rules.blocklistKeywords.some(keyword => titleLower.includes(keyword.toLowerCase()))) {
+      return { decision: 'hide', confidence: 0.9, reason: 'blocklist_keyword' };
     }
   }
 
-  // Allowlist overrides (show even if blocklist matched)
+  // 4. Allowlist overrides (show even if other rules would hide)
   if (unit.sourceName && rules.allowlistChannels.length > 0) {
     const sourceLower = unit.sourceName.toLowerCase();
     if (rules.allowlistChannels.some(chan => sourceLower.includes(chan.toLowerCase()))) {
-      return {
-        decision: 'show',
-        confidence: 1.0,
-        reason: 'allowlist_channel',
-      };
+      return { decision: 'show', confidence: 1.0, reason: 'allowlist_channel' };
     }
   }
 
   if (rules.allowlistKeywords.length > 0) {
-    if (rules.allowlistKeywords.some(keyword => 
-      titleLower.includes(keyword.toLowerCase())
-    )) {
-      return {
-        decision: 'show',
-        confidence: 1.0,
-        reason: 'allowlist_keyword',
-      };
+    if (rules.allowlistKeywords.some(keyword => titleLower.includes(keyword.toLowerCase()))) {
+      return { decision: 'show', confidence: 1.0, reason: 'allowlist_keyword' };
     }
   }
 
