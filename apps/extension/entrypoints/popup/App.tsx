@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { sendToBackground, getActiveTab } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import { youtubeAdapter, redditAdapter, xAdapter } from '@/src/adapters';
