@@ -4,7 +4,7 @@
  * Observes tweets, classifies them, and applies decisions.
  */
 
-import { defineContentScript } from 'wxt';
+import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { xAdapter } from '@/src/adapters/x';
 import { MESSAGE_TYPES } from '@/src/messaging';
