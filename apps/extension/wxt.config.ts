@@ -1,11 +1,22 @@
 import { defineConfig } from 'wxt';
 import { createOptimizedConfig } from '@dracon/wxt-shared/config';
+import { resolve } from 'path';
 
 // See https://wxt.dev/api/config.html
 export default createOptimizedConfig({
   appName: 'CalmWeb',
   appId: 'calmweb',
   modules: ['@wxt-dev/module-react'],
+  viteConfig: {
+    resolve: {
+      alias: {
+        '@calmweb/shared': resolve(__dirname, '../../packages/shared/src'),
+      },
+    },
+    optimizeDeps: {
+      include: ['@calmweb/shared', '@dracon/wxt-shared'],
+    },
+  },
   manifest: {
     name: process.env.NODE_ENV === "development" 
       ? "__MSG_extNameDev__" 

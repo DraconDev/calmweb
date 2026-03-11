@@ -1,0 +1,12 @@
+{
+  "name": "calmweb",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "wxt": "^0.20.13"
+  }
+}
