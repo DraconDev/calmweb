@@ -42,21 +42,29 @@ export default defineConfig({
       service_worker: "background.ts",
       type: "module",
     },
-    web_accessible_resources: [
-      {
-        resources: ["styles.css", "assets/*"],
-        matches: ["<all_urls>"],
-      },
-    ],
-  },
-  vite: (env) => ({
-    resolve: {
-      alias: {
-        '@calmweb/shared': resolve(__dirname, '../../packages/shared/src'),
-      },
-    },
-    optimizeDeps: {
-      include: ['@calmweb/shared', '@dracon/wxt-shared'],
-    },
-  }),
+     web_accessible_resources: [
+       {
+         resources: ["styles.css", "assets/*"],
+         matches: ["<all_urls>"],
+       },
+     ],
+     // Content scripts for supported sites
+     content_scripts: [
+       {
+         matches: ["*://*.youtube.com/*"],
+         js: ["youtube.js"],
+         runAt: "document_idle",
+       },
+       {
+         matches: ["*://*.reddit.com/*"],
+         js: ["reddit.js"],
+         runAt: "document_idle",
+       },
+       {
+         matches: ["*://*.x.com/*", "*://*.twitter.com/*"],
+         js: ["x.js"],
+         runAt: "document_idle",
+       },
+     ],
+   },
 });
