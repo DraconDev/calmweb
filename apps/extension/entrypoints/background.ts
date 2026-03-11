@@ -8,7 +8,7 @@
  * - Statistics tracking
  */
 
-import { defineBackground } from 'wxt';
+import { defineBackground } from 'wxt/utils/define-background';
 import { createMessageRouter, setupLifecycle, isBackgroundMessage } from '@dracon/wxt-shared/background';
 import { createExtension } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
