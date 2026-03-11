@@ -1,4 +1,3 @@
-import { defineConfig } from 'wxt';
 import { createOptimizedConfig } from '@dracon/wxt-shared/config';
 import { resolve } from 'path';
 
