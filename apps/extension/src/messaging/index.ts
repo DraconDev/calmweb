@@ -43,7 +43,7 @@ export interface GetSettingsMessage {
 
 export interface UpdateSettingsMessage {
   type: typeof MESSAGE_TYPES.UPDATE_SETTINGS;
-  settings: UserSettings;
+  settings: Partial<UserSettings>;
 }
 
 export interface UpdateSettingsResponse {
