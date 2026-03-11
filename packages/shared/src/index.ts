@@ -202,5 +202,12 @@ export function validateUserSettings(settings: unknown): UserSettings {
 // ============================================================================
 
 export type {
-  SiteAdapter
+  ProcessingMode,
+  ActionDecision,
+  ContentUnit,
+  ClassificationResult,
+  UserSettings,
+  UserRules,
+  PresetSelection,
+  SiteAdapter,
 };
