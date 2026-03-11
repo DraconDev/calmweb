@@ -27,7 +27,7 @@ const OLD_REDDIT = {
  * Check if we're on new Reddit
  */
 function isNewReddit(): boolean {
-  return window.location.hostname === 'www.reddit.com' || 
+  return window.location.hostname === 'www.reddit.com' ||
          window.location.hostname === 'reddit.com';
 }
 
@@ -35,38 +35,41 @@ function isNewReddit(): boolean {
  * Discover all post card elements within a root
  */
 export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
-  const selectors = isNewReddit() 
-    ? NEW_REDDIT.postCard 
+  const selectors = isNewReddit()
+    ? NEW_REDDIT.postCard
     : `${NEW_REDDIT.postCard}, ${OLD_REDDIT.postCard}`;
-  
-  const cards = root.querySelectorAll(selectors);
-  return Array.from(cards);
+
+  const nodes = root.querySelectorAll(selectors);
+  return Array.from(nodes) as HTMLElement[];
 }
 
 /**
  * Extract data from a Reddit post card
  */
 export function extractData(element: HTMLElement): ContentUnit {
-  const isNew = isNewReddit();
-  const titleEl = element.querySelector(isNew ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
+  const newReddit = isNewReddit();
+  const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
   const title = titleEl?.innerText?.trim() || 'Untitled';
 
-  const subredditEl = element.querySelector(isNew ? NEW_REDDIT.subreddit : OLD_REDDIT.subreddit) as HTMLElement | null;
-  // Extract subreddit name from URL or text: "r/technology" -> "technology"
+  const subredditEl = element.querySelector(newReddit ? NEW_REDDIT.subreddit : OLD_REDDIT.subreddit) as HTMLElement | null;
   let sourceName = subredditEl?.innerText?.trim();
-  if (!sourceName && subredditEl?.href) {
-    const match = subredditEl.href.match(/\/r\/([^\/]+)/);
-    if (match) {
-      sourceName = match[1];
+  if (!sourceName && subredditEl) {
+    // Try to extract from href if it's an anchor
+    const anchor = subredditEl as HTMLAnchorElement;
+    if (anchor.href) {
+      const match = anchor.href.match(/\/r\/([^\/]+)/);
+      if (match) {
+        sourceName = match[1];
+      }
     }
   }
 
-  const metadataEls = element.querySelectorAll(isNew ? NEW_REDDIT.metadata : OLD_REDDIT.metadata);
+  const metadataEls = element.querySelectorAll(newReddit ? NEW_REDDIT.metadata : OLD_REDDIT.metadata);
   const metadata = Array.from(metadataEls)
-    .map(el => el.innerText.trim())
+    .map(el => (el as HTMLElement).innerText.trim())
     .filter(Boolean);
 
-  const fingerprint = generateFingerprint({ title, sourceName, site: 'reddit' });
+  const fingerprint = generateFingerprint({ title, sourceName, site: 'reddit', metadata });
   const id = element.id || `reddit-${fingerprint}`;
 
   return {
@@ -102,10 +105,10 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   }
 
   if (result.decision === 'neutralize' && result.neutralizedTitle) {
-    const titleEl = element.querySelector(isNewReddit() ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
+    const newReddit = isNewReddit();
+    const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
     if (titleEl) {
       titleEl.innerText = result.neutralizedTitle;
-      titleEl.setAttribute('title', result.neutralizedTitle);
     }
     element.classList.add('calmweb-neutralized');
     element.setAttribute('data-calmweb-processed', 'neutralized');

@@ -22,7 +22,7 @@ const SELECTORS = {
  */
 export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
   const tweets = root.querySelectorAll(SELECTORS.tweet);
-  return Array.from(tweets);
+  return Array.from(tweets) as HTMLElement[];
 }
 
 /**
@@ -40,10 +40,10 @@ export function extractData(element: HTMLElement): ContentUnit {
   // Metadata could include user handle, timestamp, retweets, likes, etc.
   const metaEls = element.querySelectorAll('[data-testid*="engagement"] span, [data-testid="timestamp"]');
   const metadata = Array.from(metaEls)
-    .map(el => el.innerText.trim())
+    .map(el => (el as HTMLElement).innerText.trim())
     .filter(Boolean);
 
-  const fingerprint = generateFingerprint({ title, sourceName, site: 'x' });
+  const fingerprint = generateFingerprint({ title, sourceName, site: 'x', metadata });
   const id = element.id || `x-${fingerprint}`;
 
   return {

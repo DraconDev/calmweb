@@ -34,8 +34,8 @@ function isVideoCard(element: HTMLElement): boolean {
  * Discover all video card elements within a root
  */
 export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
-  const cards = root.querySelectorAll(SELECTORS.videoCard);
-  return Array.from(cards).filter(isVideoCard);
+  const nodes = root.querySelectorAll(SELECTORS.videoCard);
+  return Array.from(nodes) as HTMLElement[];
 }
 
 /**
@@ -53,11 +53,11 @@ export function extractData(element: HTMLElement): ContentUnit {
   // Extract metadata strings
   const metadataEls = element.querySelectorAll(SELECTORS.metadata);
   const metadata = Array.from(metadataEls)
-    .map(el => el.innerText.trim())
+    .map(el => (el as HTMLElement).innerText.trim())
     .filter(Boolean);
 
   // Generate fingerprint (title + source)
-  const fingerprint = generateFingerprint({ title, sourceName, site: 'youtube' });
+  const fingerprint = generateFingerprint({ title, sourceName, site: 'youtube', metadata });
 
   // Use element.id or generate a unique ID
   const id = element.id || `yt-${fingerprint}`;
@@ -70,7 +70,6 @@ export function extractData(element: HTMLElement): ContentUnit {
     title,
     metadata,
     isNew: false,
-    // We'll attach element later for applyDecision, not part of serialized form
   };
 }
 
@@ -86,9 +85,6 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   element.style.transition = '';
   element.classList.remove('calmweb-blurred', 'calmweb-hidden', 'calmweb-neutralized');
 
-  // Remove existing hover listeners would require storing references, but we'll
-  // rely on CSS class-based approach instead for simplicity
-
   if (result.decision === 'hide') {
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'hidden');
@@ -98,7 +94,6 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'blur') {
     element.classList.add('calmweb-blurred');
     element.setAttribute('data-calmweb-processed', 'blur');
-    // CSS will handle the blur and hover-to-reveal via class
     return;
   }
 
@@ -114,7 +109,6 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   }
 
   if (result.decision === 'rebuild') {
-    // For now, hide (could be replaced with a rebuilt simplified card)
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'rebuild');
     return;
