@@ -1,5 +1,5 @@
 /* Popup global styles */
-@import "../../../wxt-shared/styles/globals.css";
+@import "@dracon/wxt-shared/styles/globals.css";
 
 body {
   width: 320px;
