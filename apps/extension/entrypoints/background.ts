@@ -162,8 +162,7 @@ export default defineBackground(() => {
     onInstall: async () => {
       console.log('[Background] CalmWeb installed');
       // Initialize stores with defaults
-      await settingsStore.setValue(ext.apiClient); // No, that's wrong
-      await settingsStore.setValue(await settingsStore.getValue() || null); // Actually initialize
+      await initializeStores();
     },
     onUpdate: () => {
       console.log('[Background] CalmWeb updated');
