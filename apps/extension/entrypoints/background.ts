@@ -170,7 +170,7 @@ export default defineBackground(() => {
   });
 
   // Message listener
-  browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener(((message, sender, sendResponse) => {
     if (!isBackgroundMessage(message)) {
       return;
     }
@@ -187,5 +187,5 @@ export default defineBackground(() => {
       });
 
     return true; // Async response
-  });
+  }) as any);
 });
