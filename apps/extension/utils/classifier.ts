@@ -7,7 +7,8 @@
  * - Hosted platform API (Dracon backend)
  */
 
-import type { ContentUnit, ClassificationResult, UserRules, PresetSelection, ApiClient } from '@calmweb/shared';
+import type { ContentUnit, ClassificationResult, UserRules, PresetSelection } from '@calmweb/shared';
+import type { ApiClient } from '@dracon/wxt-shared/api';
 
 // ============================================================================
 // Preset Keyword Definitions
