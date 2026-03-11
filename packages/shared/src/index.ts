@@ -209,5 +209,4 @@ export type {
   UserSettings,
   UserRules,
   PresetSelection,
-  SiteAdapter,
 };
