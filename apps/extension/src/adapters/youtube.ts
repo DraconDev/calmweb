@@ -20,17 +20,6 @@ const SELECTORS = {
 } as const;
 
 /**
- * Check if an element is a YouTube video card
- */
-function isVideoCard(element: HTMLElement): boolean {
-  return element.tagName === 'YT-RICH-ITEM-RENDERER' ||
-         element.tagName === 'YT-VIDEO-RENDERER' ||
-         element.tagName === 'YT-GRID-VIDEO-RENDERER' ||
-         element.tagName === 'YTD-REEL-VIDEO-RENDERER' ||
-         element.closest(SELECTORS.videoCard) !== null;
-}
-
-/**
  * Discover all video card elements within a root
  */
 export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
