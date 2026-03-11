@@ -1,0 +1,9 @@
+/* Popup global styles */
+@import "../../../wxt-shared/styles/globals.css";
+
+body {
+  width: 320px;
+  min-height: 400px;
+  margin: 0;
+  padding: 0;
+}
