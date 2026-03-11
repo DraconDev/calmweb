@@ -170,7 +170,7 @@ export default defineBackground(() => {
   });
 
   // Message listener
-  browser.runtime.onMessage.addListener(((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener(((message: any, sender: any, sendResponse: (response: any) => void) => {
     if (!isBackgroundMessage(message)) {
       return;
     }
