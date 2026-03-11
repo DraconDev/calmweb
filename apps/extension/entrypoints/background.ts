@@ -91,12 +91,14 @@ const handlers: Record<string, MessageHandler> = {
 
   // Get current user settings
   [MESSAGE_TYPES.GET_SETTINGS]: async (message: any, sender: any) => {
-    // no need to use message/sender
+    // Unused params
+    message; sender;
     return await settingsStore.getValue();
   },
 
   // Update user settings (partial update)
   [MESSAGE_TYPES.UPDATE_SETTINGS]: async (message: any, sender: any) => {
+    sender; // unused
     const updates = message.settings as Partial<UserSettings>;
     const current = await settingsStore.getValue();
     if (current) {
@@ -118,17 +120,20 @@ const handlers: Record<string, MessageHandler> = {
 
   // Clear decision cache
   [MESSAGE_TYPES.CLEAR_CACHE]: async (message: any, sender: any) => {
+    message; sender;
     await clearDecisionCache();
     return { success: true };
   },
 
   // Get statistics
   [MESSAGE_TYPES.GET_STATS]: async (message: any, sender: any) => {
+    message; sender;
     return await statsStore.getValue();
   },
 
   // Increment a stat (e.g., totalFiltered)
   [MESSAGE_TYPES.INCREMENT_STAT]: async (message: any, sender: any) => {
+    sender; // unused
     if (message.key === 'totalFiltered') {
       await incrementFilteredCount(message.amount);
     }
