@@ -13,6 +13,9 @@ declare module "wxt/browser" {
     | "/icon/96.png"
     | "/options.html"
     | "/popup.html"
+    | "/reddit.js"
+    | "/x.js"
+    | "/youtube.js"
   type HtmlPublicPath = Extract<PublicPath, `${string}.html`>
   export interface WxtRuntime {
     getURL(path: PublicPath): string;
