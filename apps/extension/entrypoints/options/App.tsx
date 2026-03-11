@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import type { UserSettings, PresetSelection } from '@calmweb/shared';
+import type { UserSettings, PresetSelection, UserRules } from '@calmweb/shared';
 import { defaultUserSettings } from '@calmweb/shared';
 
 type TabId = 'presets' | 'advanced' | 'rules';
