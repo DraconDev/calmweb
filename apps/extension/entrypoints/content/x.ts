@@ -27,7 +27,7 @@ export default defineContentScript({
       [data-calmweb-processed="blur"]:hover {
         filter: none !important;
       }
-      [data-calmweb-processed="hidden"], 
+      [data-calmweb-processed="hidden"],
       [data-calmweb-processed="rebuild"] {
         display: none !important;
       }
@@ -75,11 +75,14 @@ export default defineContentScript({
       const newTweets: HTMLElement[] = [];
 
       for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
+        const added = mutation.addedNodes;
+        for (let i = 0; i < added.length; i++) {
+          const node = added[i];
           if (node instanceof HTMLElement) {
-            if (xAdapter.discoverUnits(node).length > 0) {
-              newTweets.push(...xAdapter.discoverUnits(node));
-            } else if (node.querySelectorAll) {
+            // Check if node itself is a tweet
+            if (node.matches && node.matches('[data-testid="tweet"], [data-testid="cellInnerDiv"]')) {
+              newTweets.push(node);
+            } else {
               const descendants = xAdapter.discoverUnits(node);
               const unprocessed = descendants.filter(el => !el.getAttribute('data-calmweb-processing'));
               newTweets.push(...unprocessed);
