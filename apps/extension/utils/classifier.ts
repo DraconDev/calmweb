@@ -7,8 +7,40 @@
  * - Hosted platform API (Dracon backend)
  */
 
-import type { ContentUnit, ClassificationResult, UserRules } from '@calmweb/shared';
+import type { ContentUnit, ClassificationResult, UserRules, PresetSelection } from '@calmweb/shared';
 import { apiClient, type ApiClient } from '@dracon/wxt-shared/api';
+
+// ============================================================================
+// Preset Keyword Definitions
+// ============================================================================
+
+const PRESET_KEYWORDS: Record<keyof PresetSelection, string[]> = {
+  politics: [
+    'election', 'vote', 'democrat', 'republican', 'biden', 'trump', 'congress', 'senate',
+    'political', 'president', 'white house', 'parliament', 'prime minister', 'candidate',
+    'campaign', 'ballot', 'poll', 'liberal', 'conservative', 'socialist', 'marxist',
+  ],
+  ragebait: [
+    'outrage', 'shocking', 'disgusting', 'makes you mad', 'angry', 'furious', 'fume',
+    'cannot believe', 'you won\'t believe', 'unbelievable', 'horrific', 'terrible',
+    'enraging', 'rant', 'hate', 'despicable', 'disgraceful',
+  ],
+  spoilers: [
+    'spoiler', 'ending explained', 'twist', 'dies', 'death', 'killed', 'murder',
+    'plot leak', 'revealed', 'conclusion', 'finale', 'who did it', 'secret ending',
+  ],
+  clickbait: [
+    'you need to see', 'mind blowing', 'will shock you', 'secret', 'they don\'t want you to know',
+    'doctors hate him', 'one weird trick', 'this Simple', 'miracle', 'amazing', 'incredible',
+    'you\'ll never guess', 'guess what', 'jaw-dropping', 'life changing', 'hack', 'cheat',
+  ],
+};
+
+function matchesPresetKeywords(title: string, preset: keyof PresetSelection): boolean {
+  const keywords = PRESET_KEYWORDS[preset];
+  const titleLower = title.toLowerCase();
+  return keywords.some(kw => titleLower.includes(kw.toLowerCase()));
+}
 
 // ============================================================================
 // Rules Engine
