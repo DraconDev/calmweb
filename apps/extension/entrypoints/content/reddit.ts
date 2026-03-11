@@ -27,7 +27,7 @@ export default defineContentScript({
       [data-calmweb-processed="blur"]:hover {
         filter: none !important;
       }
-      [data-calmweb-processed="hidden"], 
+      [data-calmweb-processed="hidden"],
       [data-calmweb-processed="rebuild"] {
         display: none !important;
       }
@@ -75,11 +75,14 @@ export default defineContentScript({
       const newPosts: HTMLElement[] = [];
 
       for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
+        const added = mutation.addedNodes;
+        for (let i = 0; i < added.length; i++) {
+          const node = added[i];
           if (node instanceof HTMLElement) {
-            if (redditAdapter.discoverUnits(node).length > 0) {
-              newPosts.push(...redditAdapter.discoverUnits(node));
-            } else if (node.querySelectorAll) {
+            // Reddit post card selectors: check if node itself is a post card
+            if (node.matches && node.matches('[data-testid="post-container"], div[data-click-id="body"], .thing.thing-type-self, .thing.thing-type-link')) {
+              newPosts.push(node);
+            } else {
               const descendants = redditAdapter.discoverUnits(node);
               const unprocessed = descendants.filter(el => !el.getAttribute('data-calmweb-processing'));
               newPosts.push(...unprocessed);
@@ -99,7 +102,6 @@ export default defineContentScript({
       subtree: true,
     });
 
-    // Periodic re-scan
     setInterval(() => {
       const allPosts = redditAdapter.discoverUnits(document);
       const unprocessed = allPosts.filter(el => !el.getAttribute('data-calmweb-processing'));

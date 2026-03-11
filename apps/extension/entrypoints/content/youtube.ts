@@ -28,7 +28,7 @@ export default defineContentScript({
       [data-calmweb-processed="blur"]:hover {
         filter: none !important;
       }
-      [data-calmweb-processed="hidden"], 
+      [data-calmweb-processed="hidden"],
       [data-calmweb-processed="rebuild"] {
         display: none !important;
       }
@@ -80,15 +80,16 @@ export default defineContentScript({
       const newCards: HTMLElement[] = [];
 
       for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
+        const added = mutation.addedNodes;
+        for (let i = 0; i < added.length; i++) {
+          const node = added[i];
           if (node instanceof HTMLElement) {
-            // Check if the added node itself is a video card
-            if (youtubeAdapter.discoverUnits(node).length > 0) {
-              newCards.push(...youtubeAdapter.discoverUnits(node));
-            } else if (node.querySelectorAll) {
-              // Or contains video cards as descendants
+            // If the node itself is a video card
+            if (node.matches && node.matches('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer')) {
+              newCards.push(node);
+            } else {
+              // Look for any video card descendants that haven't been processed
               const descendants = youtubeAdapter.discoverUnits(node);
-              // Filter out ones already processed
               const unprocessed = descendants.filter(el => !el.getAttribute('data-calmweb-processing'));
               newCards.push(...unprocessed);
             }
@@ -110,7 +111,7 @@ export default defineContentScript({
     // Optional: Re-scan periodically in case YouTube does major DOM changes
     setInterval(() => {
       const allCards = youtubeAdapter.discoverUnits(document);
-      const unprocessed = allCards.filter(el => !el.getAttribute('data-calmweb-processed'));
+      const unprocessed = allCards.filter(el => !el.getAttribute('data-calmweb-processing'));
       if (unprocessed.length > 0) {
         unprocessed.forEach(el => el.setAttribute('data-calmweb-processing', ''));
         processUnits(unprocessed, true);
