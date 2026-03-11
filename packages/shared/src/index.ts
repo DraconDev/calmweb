@@ -196,17 +196,3 @@ export function validateUserSettings(settings: unknown): UserSettings {
   return UserSettingsSchema.parse(settings);
 }
 
-// ============================================================================
-// Type exports for consumers (re-export from above)
-// ============================================================================
-
-export type {
-  ProcessingMode,
-  ActionDecision,
-  ContentUnit,
-  ClassificationResult,
-  UserSettings,
-  UserRules,
-  PresetSelection,
-  SiteAdapter,
-};
