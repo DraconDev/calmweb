@@ -16,13 +16,14 @@ import { MESSAGE_TYPES } from '@/src/messaging';
 import { classifyContent } from '@/utils/classifier';
 import {
   settingsStore,
+  statsStore,
   getCachedResult,
   setCachedResult,
   incrementFilteredCount,
   clearDecisionCache,
   initializeStores,
 } from '@/utils/storage';
-import type { ContentUnit, ClassificationResult, UserSettings } from '@calmweb/shared';
+import type { ContentUnit, UserSettings } from '@calmweb/shared';
 import browser from 'webextension-polyfill';
 
 // Initialize extension (provides apiClient, config, auth)
@@ -39,6 +40,7 @@ const ext = createExtension({
 const handlers: Record<string, MessageHandler> = {
   // Classify a single content unit
   [MESSAGE_TYPES.CLASSIFY_UNIT]: async (message: any, sender: any) => {
+    sender; // silence unused warning
     const unit: ContentUnit = message.unit;
 
     try {
@@ -89,6 +91,7 @@ const handlers: Record<string, MessageHandler> = {
 
   // Get current user settings
   [MESSAGE_TYPES.GET_SETTINGS]: async (message: any, sender: any) => {
+    // no need to use message/sender
     return await settingsStore.getValue();
   },
 
@@ -164,7 +167,7 @@ export default defineBackground(() => {
   // Message listener
   browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!isBackgroundMessage(message)) {
-      return false;
+      return;
     }
 
     router(message, sender)
