@@ -4,7 +4,7 @@
  * A fallback adapter that handles generic web content on any site.
  */
 
-import type { SiteAdapter, ContentUnit, ClassificationResult } from '@calmweb/shared';
+import type { SiteAdapter } from '@calmweb/shared';
 import { generateFingerprint } from '@calmweb/shared';
 
 // Generic selectors for common web content

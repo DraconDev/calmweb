@@ -1,33 +1,45 @@
 import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import type { UserSettings, PresetSelection, UserRules, Stats } from '@calmweb/shared';
+import type { UserSettings, UserRules, Stats } from '@calmweb/shared';
 import { defaultUserSettings } from '@calmweb/shared';
 import {
   Container,
   Card,
-  Header,
-  Footer,
-  PageLayout,
   Switch,
   Spinner,
   FormField,
-  FormRow,
 } from '@components';
 import { 
   LayoutDashboard, 
-  Settings as SettingsIcon, 
   ShieldAlert, 
   ShieldCheck, 
   Zap, 
   Database,
-  BarChart3,
   RefreshCw,
-  Info
+  Info,
+  Activity
 } from 'lucide-react';
 import clsx from 'clsx';
 
 type TabId = 'overview' | 'presets' | 'rules' | 'advanced';
+
+interface PresetsTabProps {
+  presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean };
+  onChange: (presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean }) => void;
+}
+
+interface AdvancedTabProps {
+  processingMode: 'local_rules' | 'byok_llm' | 'hosted_llm';
+  strictness: number;
+  byokKey: string;
+  onChange: (updates: Partial<UserSettings>) => void;
+}
+
+interface CustomRulesTabProps {
+  rules: UserRules;
+  onChange: (rules: UserRules) => void;
+}
 
 export default function OptionsApp() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
