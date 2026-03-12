@@ -5,7 +5,7 @@
  * content scripts, background worker, popup, and options page.
  */
 
-import type { ContentUnit, ClassificationResult, UserSettings } from '@calmweb/shared';
+import type { ContentUnit, ClassificationResult, UserSettings, Stats } from '@calmweb/shared';
 
 // ============================================================================
 // Message Type Constants
