@@ -8,3 +8,4 @@ export { Tabs, TabList, TabTrigger, TabContent } from './layout/Tabs';
 // UI components
 export { Switch } from './ui/Switch';
 export { Spinner } from './ui/Spinner';
+export { Skeleton } from './ui/Skeleton';
