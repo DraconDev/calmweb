@@ -3,11 +3,23 @@ import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import type { UserSettings, PresetSelection, UserRules } from '@calmweb/shared';
 import { defaultUserSettings } from '@calmweb/shared';
-
-type TabId = 'presets' | 'advanced' | 'rules';
+import {
+  Container,
+  Card,
+  Header,
+  Footer,
+  PageLayout,
+  Tabs,
+  TabList,
+  TabTrigger,
+  TabContent,
+  Switch,
+  Spinner,
+  FormField,
+  FormRow,
+} from '@components';
 
 export default function OptionsApp() {
-  const [activeTab, setActiveTab] = useState<TabId>('presets');
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,98 +46,90 @@ export default function OptionsApp() {
   const saveSettings = useCallback(async (updates: Partial<UserSettings>) => {
     setSaving(true);
     try {
+      // Merge updates for local state
+      let nextSettings = { ...settings, ...updates };
+      if (updates.rules) {
+        nextSettings.rules = { ...settings.rules, ...updates.rules };
+      }
+      
+      setSettings(nextSettings);
+      
       await sendToBackground({
         type: MESSAGE_TYPES.UPDATE_SETTINGS,
         settings: updates,
       });
-      // Update local state optimistically
-      setSettings(prev => ({ ...prev, ...updates }));
     } catch (error) {
       console.error('[Options] Failed to save settings:', error);
     } finally {
-      setSaving(false);
+      setTimeout(() => setSaving(false), 500); // Small delay for visual feedback
     }
-  }, []);
+  }, [settings]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-      </div>
+      <Container className="flex items-center justify-center min-h-screen">
+        <Spinner size="lg" />
+      </Container>
     );
   }
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'presets':
-        return (
-          <PresetsTab 
-            presets={settings.rules.presets} 
-            onChange={(presets) => saveSettings({ rules: { ...settings.rules, presets } })}
-          />
-        );
-      case 'advanced':
-        return (
-          <AdvancedTab
-            processingMode={settings.processingMode}
-            strictness={settings.strictness}
-            byokKey={settings.byokKey || ''}
-            onChange={(updates) => saveSettings(updates)}
-          />
-        );
-      case 'rules':
-        return (
-          <CustomRulesTab
-            rules={settings.rules}
-            onChange={(rules) => saveSettings({ rules })}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">CalmWeb Options</h1>
-          <p className="text-sm text-muted-foreground">Customize your content filtering</p>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Tabs */}
-        <div className="flex border-b mb-6">
-          {(['presets', 'advanced', 'rules'] as TabId[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === tab
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab === 'presets' ? 'Presets' : tab === 'advanced' ? 'Advanced' : 'Custom Rules'}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div className="space-y-6">
-          {renderContent()}
-        </div>
-      </div>
-
-      {/* Footer status */}
-      <footer className="border-t mt-8">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between text-sm text-muted-foreground">
+    <PageLayout
+      header={
+        <Header
+          title="CalmWeb Options"
+          subtitle="Customize your content filtering and AI processing"
+          sticky
+        />
+      }
+      footer={
+        <Footer className="flex items-center justify-between text-muted-foreground">
           <span>CalmWeb v1.0.0</span>
-          {saving && <span className="text-primary">Saving...</span>}
-        </div>
-      </footer>
-    </div>
+          <div className="flex items-center gap-2">
+            {saving && (
+              <>
+                <Spinner size="sm" />
+                <span className="text-primary font-medium">Saving changes...</span>
+              </>
+            )}
+            {!saving && <span className="text-green-500 font-medium">All changes saved</span>}
+          </div>
+        </Footer>
+      }
+    >
+      <Container size="lg" className="py-8">
+        <Tabs defaultValue="presets">
+          <TabList className="mb-8">
+            <TabTrigger value="presets">Presets</TabTrigger>
+            <TabTrigger value="rules">Custom Rules</TabTrigger>
+            <TabTrigger value="advanced">Advanced</TabTrigger>
+          </TabList>
+
+          <TabContent value="presets">
+            <PresetsTab
+              presets={settings.rules.presets}
+              onChange={(presets) => saveSettings({ rules: { ...settings.rules, presets } })}
+            />
+          </TabContent>
+
+          <TabContent value="rules">
+            <CustomRulesTab
+              rules={settings.rules}
+              onChange={(rules) => saveSettings({ rules })}
+            />
+          </TabContent>
+
+          <TabContent value="advanced">
+            <AdvancedTab
+              processingMode={settings.processingMode}
+              strictness={settings.strictness}
+              byokKey={settings.byokKey || ''}
+              onChange={(updates) => saveSettings(updates)}
+            />
+          </TabContent>
+        </Tabs>
+      </Container>
+    </PageLayout>
   );
 }
 
@@ -140,20 +144,19 @@ interface PresetsTabProps {
 
 function PresetsTab({ presets, onChange }: PresetsTabProps) {
   const toggle = (key: keyof PresetSelection) => {
-    const newPresets = { ...presets, [key]: !presets[key] };
-    onChange(newPresets);
+    onChange({ ...presets, [key]: !presets[key] });
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <h2 className="font-semibold mb-2">Quick Filter Presets</h2>
+    <div className="space-y-6">
+      <Card variant="muted" padding="md" className="mb-6">
+        <h2 className="font-semibold mb-1">Quick Filter Presets</h2>
         <p className="text-sm text-muted-foreground">
           Enable these presets to automatically block common content types using curated keyword lists.
         </p>
-      </div>
+      </Card>
 
-      <div className="space-y-3">
+      <div className="grid gap-4">
         <PresetToggle
           label="Block Politics"
           description="Filter election, party, and political figure discussions"
@@ -190,26 +193,13 @@ function PresetToggle({ label, description, checked, onChange }: {
   onChange: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg">
-      <div>
+    <Card variant="default" padding="md" className="flex items-center justify-between">
+      <div className="space-y-0.5">
         <div className="font-medium">{label}</div>
-        <div className="text-xs text-muted-foreground">{description}</div>
+        <div className="text-sm text-muted-foreground">{description}</div>
       </div>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={onChange}
-        className={`w-11 h-6 rounded-full transition-colors ${
-          checked ? 'bg-primary' : 'bg-muted'
-        }`}
-      >
-        <div
-          className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
-            checked ? 'translate-x-5' : 'translate-x-0.5'
-          }`}
-        />
-      </button>
-    </div>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </Card>
   );
 }
 
@@ -226,78 +216,78 @@ interface AdvancedTabProps {
 
 function AdvancedTab({ processingMode, strictness, byokKey, onChange }: AdvancedTabProps) {
   return (
-    <div className="space-y-6">
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <h2 className="font-semibold mb-2">Advanced Settings</h2>
+    <div className="space-y-8">
+      <Card variant="muted" padding="md">
+        <h2 className="font-semibold mb-1">Processing & AI</h2>
         <p className="text-sm text-muted-foreground">
-          Control how content is classified and use your own AI API key.
+          Control how content is classified and configure your AI provider.
         </p>
-      </div>
+      </Card>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">Processing Mode</label>
-        <select
-          value={processingMode}
-          onChange={(e) => onChange({ processingMode: e.target.value as UserSettings['processingMode'] })}
-          className="w-full p-2 border rounded-md bg-background"
+      <div className="space-y-6 max-w-2xl">
+        <FormField
+          label="Processing Mode"
+          description="Choose between local rule-based filtering or advanced AI classification."
         >
-          <option value="local_rules">Local Rules Only (fast)</option>
-          <option value="byok_llm">BYOK LLM (Bring Your Own Key)</option>
-          <option value="hosted_llm">Hosted AI (requires subscription)</option>
-        </select>
-        <p className="text-xs text-muted-foreground mt-1">
-          {processingMode === 'local_rules' && 'Only use keyword/channel rules. Fastest, no AI.'}
-          {processingMode === 'byok_llm' && 'Use OpenAI-compatible API key for AI moderation.'}
-          {processingMode === 'hosted_llm' && 'Use Dracon platform AI (requires active subscription).'}
-        </p>
-      </div>
+          <select
+            value={processingMode}
+            onChange={(e) => onChange({ processingMode: e.target.value as UserSettings['processingMode'] })}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <option value="local_rules">Local Rules Only (Fastest, no AI)</option>
+            <option value="byok_llm">BYOK LLM (Bring Your Own Key)</option>
+            <option value="hosted_llm">Hosted AI (Managed platform API)</option>
+          </select>
+        </FormField>
 
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Strictness: {strictness}%
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={strictness}
-          onChange={(e) => onChange({ strictness: parseInt(e.target.value) })}
-          className="w-full"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Permissive (more shown)</span>
-          <span>Strict (more filtered)</span>
-        </div>
-      </div>
-
-      {processingMode === 'byok_llm' && (
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            OpenAI API Key (BYOK)
-          </label>
-          <input
-            type="password"
-            value={byokKey}
-            onChange={(e) => onChange({ byokKey: e.target.value })}
-            placeholder="sk-..."
-            className="w-full p-2 border rounded-md bg-background"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Your key is stored locally and used to call OpenAI-compatible APIs.
-          </p>
-        </div>
-      )}
-
-      <div className="border-t pt-4">
-        <button
-          onClick={async () => {
-            await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE });
-            alert('Decision cache cleared.');
-          }}
-          className="px-4 py-2 text-sm border rounded-md hover:bg-muted transition-colors"
+        <FormField
+          label={`Classification Strictness: ${strictness}%`}
+          description="Higher strictness will filter more content but may have more false positives."
         >
-          Clear Decision Cache
-        </button>
+          <div className="pt-2">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={strictness}
+              onChange={(e) => onChange({ strictness: parseInt(e.target.value) })}
+              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-2 font-medium">
+              <span>Permissive</span>
+              <span>Balanced</span>
+              <span>Strict</span>
+            </div>
+          </div>
+        </FormField>
+
+        {processingMode === 'byok_llm' && (
+          <FormField
+            label="OpenAI API Key (BYOK)"
+            description="Your key is stored locally and used only for classification requests."
+          >
+            <input
+              type="password"
+              value={byokKey}
+              onChange={(e) => onChange({ byokKey: e.target.value })}
+              placeholder="sk-..."
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+          </FormField>
+        )
+        }
+
+        <div className="pt-4 border-t">
+          <button
+            onClick={async () => {
+              await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE });
+              alert('Classification cache cleared successfully.');
+            }}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+          >
+            Clear Decision Cache
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -322,81 +312,72 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-muted/50 p-4 rounded-lg">
-        <h2 className="font-semibold mb-2">Custom Rules</h2>
+    <div className="space-y-8">
+      <Card variant="muted" padding="md">
+        <h2 className="font-semibold mb-1">Custom Rules</h2>
         <p className="text-sm text-muted-foreground">
-          Define your own channel names and keywords to block or allow. One per line.
+          Define specific channel names or keywords to block or allow. Enter one item per line.
         </p>
-      </div>
+      </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Blocklist */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Blocklist Channels
-            </label>
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Blocklist</h3>
+          
+          <FormField
+            label="Blocked Channels"
+            description="Exact names or parts of channel names to hide."
+          >
             <textarea
               value={rules.blocklistChannels.join('\n')}
               onChange={(e) => updateList('blocklistChannels', e.target.value)}
-              placeholder="Channel names to hide (e.g., CNN, Fox News)"
-              className="w-full h-32 p-2 border rounded-md bg-background text-sm"
+              placeholder="e.g.\nCNN\nFox News\nDramaChannel"
+              className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Content from these channel names will be hidden.
-            </p>
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Blocklist Keywords
-            </label>
+          <FormField
+            label="Blocked Keywords"
+            description="Titles containing these words will be hidden."
+          >
             <textarea
               value={rules.blocklistKeywords.join('\n')}
               onChange={(e) => updateList('blocklistKeywords', e.target.value)}
-              placeholder="Keywords in title to hide (e.g., spoiler, leaked)"
-              className="w-full h-32 p-2 border rounded-md bg-background text-sm"
+              placeholder="e.g.\nleaked\nending explained\nrumor"
+              className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Titles containing these words will be hidden.
-            </p>
-          </div>
+          </FormField>
         </div>
 
-        {/* Allowlist */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Allowlist Channels
-            </label>
+        <div className="space-y-6">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Allowlist</h3>
+          
+          <FormField
+            label="Allowed Channels"
+            description="These channels will always be shown (overrides blocklist)."
+          >
             <textarea
               value={rules.allowlistChannels.join('\n')}
               onChange={(e) => updateList('allowlistChannels', e.target.value)}
-              placeholder="Channels to always show (overrides blocklists)"
-              className="w-full h-32 p-2 border rounded-md bg-background text-sm"
+              placeholder="e.g.\nVeritasium\nKurzgesagt"
+              className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              These channels will always be shown even if other rules match.
-            </p>
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Allowlist Keywords
-            </label>
+          <FormField
+            label="Allowed Keywords"
+            description="Titles with these words will always be shown."
+          >
             <textarea
               value={rules.allowlistKeywords.join('\n')}
               onChange={(e) => updateList('allowlistKeywords', e.target.value)}
-              placeholder="Keywords to always show"
-              className="w-full h-32 p-2 border rounded-md bg-background text-sm"
+              placeholder="e.g.\nDocumentary\nTutorial"
+              className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Titles containing these words will always be shown.
-            </p>
-          </div>
+          </FormField>
         </div>
       </div>
     </div>
   );
 }
+
