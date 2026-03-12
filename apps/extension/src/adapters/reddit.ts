@@ -130,9 +130,7 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
 export const redditAdapter: SiteAdapter = {
   siteId: 'reddit',
   matches: [
-    /^https?:\/\/(www\.)?reddit\.com\/r\/.*/,
-    /^https?:\/\/(www\.)?reddit\.com\/comments\/.*/,
-    /^https?:\/\/(www\.)?reddit\.com\/$/,
+    /^https?:\/\/(www\.)?reddit\.com\/.*/,
     /^https?:\/\/old\.reddit\.com\/.*/,
   ],
   discoverUnits,
