@@ -49,24 +49,25 @@ export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
 export function extractData(element: HTMLElement): ContentUnit {
   const newReddit = isNewReddit();
   const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
-  const title = titleEl?.innerText?.trim() || 'Untitled';
+  const title = (titleEl?.innerText || titleEl?.textContent || '').trim() || 'Untitled';
 
   const subredditEl = element.querySelector(newReddit ? NEW_REDDIT.subreddit : OLD_REDDIT.subreddit) as HTMLElement | null;
-  let sourceName = subredditEl?.innerText?.trim();
+  let sourceName = (subredditEl?.innerText || subredditEl?.textContent || '').trim() || undefined;
   if (!sourceName && subredditEl) {
     // Try to extract from href if it's an anchor
     const anchor = subredditEl as HTMLAnchorElement;
-    if (anchor.href) {
-      const match = anchor.href.match(/\/r\/([^\/]+)/);
+    if (anchor.getAttribute?.('href')) {
+      const href = anchor.getAttribute('href') || '';
+      const match = href.match(/\/r\/([^\/]+)/);
       if (match) {
-        sourceName = match[1];
+        sourceName = `r/${match[1]}`;
       }
     }
   }
 
   const metadataEls = element.querySelectorAll(newReddit ? NEW_REDDIT.metadata : OLD_REDDIT.metadata);
   const metadata = Array.from(metadataEls)
-    .map(el => (el as HTMLElement).innerText.trim())
+    .map(el => ((el as HTMLElement).innerText || el.textContent || '').trim())
     .filter(Boolean);
 
   const fingerprint = generateFingerprint({ title, sourceName, site: 'reddit', metadata });

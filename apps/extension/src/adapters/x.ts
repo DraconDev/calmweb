@@ -31,16 +31,16 @@ export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
 export function extractData(element: HTMLElement): ContentUnit {
   // Get tweet text
   const textEl = element.querySelector(SELECTORS.text) as HTMLElement | null;
-  const title = textEl?.innerText?.trim() || 'No text';
+  const title = (textEl?.innerText || textEl?.textContent || '').trim() || 'No text';
 
   // Get user display name as sourceName
   const displayNameEl = element.querySelector(SELECTORS.displayName) as HTMLElement | null;
-  const sourceName = displayNameEl?.innerText?.trim();
+  const sourceName = (displayNameEl?.innerText || displayNameEl?.textContent || '').trim() || undefined;
 
   // Metadata could include user handle, timestamp, retweets, likes, etc.
   const metaEls = element.querySelectorAll('[data-testid*="engagement"] span, [data-testid="timestamp"]');
   const metadata = Array.from(metaEls)
-    .map(el => (el as HTMLElement).innerText.trim())
+    .map(el => ((el as HTMLElement).innerText || el.textContent || '').trim())
     .filter(Boolean);
 
   const fingerprint = generateFingerprint({ title, sourceName, site: 'x', metadata });
