@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title?: string;
   subtitle?: string;
   sticky?: boolean;
@@ -40,7 +40,7 @@ export function Header({
 }
 
 interface FooterProps extends React.HTMLAttributes<HTMLElement> {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
