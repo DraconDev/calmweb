@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { sendToBackground, getActiveTab } from '@dracon/wxt-shared/extension';
+import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import { youtubeAdapter, redditAdapter, xAdapter } from '@/src/adapters';
 import { Container, Card, Header, Footer, Switch, Spinner } from '@components';
+import { Settings, Shield, Activity, BarChart3, ExternalLink } from 'lucide-react';
 import type { Stats } from '@calmweb/shared';
 
 export default function Popup() {
   const [enabled, setEnabled] = useState(true);
   const [stats, setStats] = useState<Stats>({ totalFiltered: 0, lastReset: 0 });
   const [loading, setLoading] = useState(true);
-  const [siteSupported, setSiteSupported] = useState(false);
   const [currentSite, setCurrentSite] = useState<string>('');
 
   useEffect(() => {
@@ -18,16 +17,10 @@ export default function Popup() {
 
   const loadData = async () => {
     try {
-      const tab = await getActiveTab();
-      const url = tab?.url || '';
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      const url = tabs[0]?.url || '';
       const hostname = new URL(url).hostname;
       setCurrentSite(hostname);
-
-      const adapters = [youtubeAdapter, redditAdapter, xAdapter];
-      const supported = adapters.some(adapter =>
-        adapter.matches.some(regex => regex.test(url))
-      );
-      setSiteSupported(supported);
 
       const settings = await sendToBackground<{ enabled: boolean }>({
         type: MESSAGE_TYPES.GET_SETTINGS,
@@ -53,89 +46,94 @@ export default function Popup() {
     });
   };
 
-  const resetStats = async () => {
-    await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE });
-    await sendToBackground({ type: MESSAGE_TYPES.UPDATE_SETTINGS, settings: {} }); // trigger stats reset via background
-    setStats({ totalFiltered: 0, lastReset: Date.now() });
-  };
-
   const openOptions = () => {
     chrome.runtime.openOptionsPage();
   };
 
   if (loading) {
     return (
-      <Container className="min-h-[400px] flex items-center justify-center">
+      <Container className="w-[360px] h-[450px] flex items-center justify-center">
         <Spinner size="lg" />
       </Container>
     );
   }
 
   return (
-    <Container className="min-h-[400px] space-y-4 py-4">
-      <Header
-        title="CalmWeb"
-        subtitle={siteSupported ? `Active on ${currentSite}` : 'Site not supported'}
-      />
-
-      {!siteSupported ? (
-        <Card variant="muted" padding="md">
-          <p className="text-sm text-yellow-600 dark:text-yellow-400">
-            This site is not supported yet.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Supported: YouTube, Reddit, X
-          </p>
-        </Card>
-      ) : (
-        <Card variant="default" padding="md">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Enabled</span>
-            <Switch
-              checked={enabled}
-              onCheckedChange={toggleEnabled}
-              id="enable-switch"
-            />
-          </div>
-
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Status</span>
-              <span className={`font-medium ${enabled ? 'text-green-500' : 'text-gray-500'}`}>
-                {enabled ? 'Active' : 'Paused'}
-              </span>
+    <Container className="w-[360px] min-h-[480px] p-0 flex flex-col bg-background">
+      <Header className="bg-primary/5 border-b-primary/10 py-6">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary rounded-xl text-primary-foreground shadow-lg shadow-primary/20">
+              <Shield size={24} />
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Items filtered</span>
-              <span className="font-mono font-medium">{stats.totalFiltered.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Site</span>
-              <span className="font-mono text-xs max-w-[120px] truncate" title={currentSite}>
-                {currentSite}
-              </span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">CalmWeb</h1>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                <Activity size={12} className="text-green-500 animate-pulse" />
+                Protection Active
+              </div>
             </div>
           </div>
+          <Switch
+            checked={enabled}
+            onCheckedChange={toggleEnabled}
+            className="scale-110"
+          />
+        </div>
+      </Header>
 
-          <div className="mt-4 pt-3 border-t">
-            <button
-              onClick={resetStats}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Reset statistics
-            </button>
+      <main className="flex-1 p-4 space-y-4">
+        <Card variant="default" padding="lg" className="border-primary/10 shadow-sm overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
+            <BarChart3 size={80} />
+          </div>
+          
+          <div className="space-y-1">
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total Filtered</span>
+            <div className="text-4xl font-black text-primary tabular-nums">
+              {stats.totalFiltered.toLocaleString()}
+            </div>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-primary/5 pt-4">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">Current Site</span>
+              <div className="text-sm font-semibold truncate" title={currentSite}>{currentSite}</div>
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">Session Status</span>
+              <div className="text-sm font-semibold text-green-500">Monitoring</div>
+            </div>
           </div>
         </Card>
-      )}
 
-      <Footer>
-        <button
-          onClick={openOptions}
-          className="text-sm text-primary hover:underline"
-        >
-          Open Options
-        </button>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={openOptions}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-all group"
+          >
+            <Settings size={20} className="text-primary group-hover:rotate-45 transition-transform" />
+            <span className="text-xs font-bold">Settings</span>
+          </button>
+          
+          <button
+            onClick={openOptions}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-primary/10 bg-card hover:bg-muted transition-all group"
+          >
+            <ExternalLink size={20} className="text-muted-foreground group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+            <span className="text-xs font-bold">Dashboard</span>
+          </button>
+        </div>
+      </main>
+
+      <Footer className="py-4 bg-muted/30 border-t-primary/5">
+        <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          <span>v1.0.0</span>
+          <span>•</span>
+          <span>Open Source Filtering</span>
+        </div>
       </Footer>
     </Container>
   );
 }
+
