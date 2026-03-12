@@ -49,8 +49,8 @@ describe('Site Adapters', () => {
           <div id="video-title">Amazing Science Experiment</div>
           <div id="text" class="ytd-channel-name">Science Channel</div>
           <div id="metadata-line">
-            <span class="yt-formatted-string">1M views</span>
-            <span class="yt-formatted-string">2 days ago</span>
+            <yt-formatted-string>1M views</yt-formatted-string>
+            <yt-formatted-string>2 days ago</yt-formatted-string>
           </div>
         </div>
       `;
