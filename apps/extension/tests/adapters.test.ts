@@ -117,9 +117,15 @@ describe('Site Adapters', () => {
   describe('Reddit Adapter DOM', () => {
     it('should extract data from a mock reddit post', () => {
       document.body.innerHTML = `
-        <div id="post-1" class="Post">
-          <div slot="title">Outrageous Political Take</div>
-          <a href="/r/politics">r/politics</a>
+        <div id="post-1" class="thing">
+          <div class="title">
+            <a href="/r/politics/comments/123">Outrageous Political Take</a>
+          </div>
+          <p class="tagline">
+            <span class="subreddit">
+              <a href="/r/politics">r/politics</a>
+            </span>
+          </p>
         </div>
       `;
 
@@ -137,7 +143,9 @@ describe('Site Adapters', () => {
       document.body.innerHTML = `
         <article id="tweet-1">
           <div data-testid="tweetText">This is a very angry tweet about nothing.</div>
-          <div data-testid="User-Name"><span>Elon Musk</span></div>
+          <div data-testid="User-Name">
+            <span>Elon Musk</span>
+          </div>
         </article>
       `;
 
