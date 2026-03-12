@@ -9,7 +9,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@calmweb/shared': resolve(__dirname, '../packages/shared/src'),
+      '@': resolve(__dirname),
+      '@calmweb/shared': resolve(__dirname, '../../packages/shared/src'),
     },
   },
 });
