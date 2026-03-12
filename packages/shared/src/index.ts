@@ -196,3 +196,16 @@ export function validateUserSettings(settings: unknown): UserSettings {
   return UserSettingsSchema.parse(settings);
 }
 
+// ============================================================================
+// Statistics
+// ============================================================================
+
+/**
+ * Statistics about content filtering activity.
+ */
+export interface Stats {
+  totalFiltered: number;
+  lastReset: number;
+}
+
+
