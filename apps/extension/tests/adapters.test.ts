@@ -113,4 +113,40 @@ describe('Site Adapters', () => {
       expect(element.classList.contains('calmweb-neutralized')).toBe(true);
     });
   });
+
+  describe('Reddit Adapter DOM', () => {
+    it('should extract data from a mock reddit post', () => {
+      document.body.innerHTML = `
+        <div id="post-1" class="Post">
+          <div slot="title">Outrageous Political Take</div>
+          <a href="/r/politics">r/politics</a>
+        </div>
+      `;
+
+      const element = document.getElementById('post-1')!;
+      const data = redditAdapter.extractData(element);
+
+      expect(data.title).toBe('Outrageous Political Take');
+      expect(data.sourceName).toBe('r/politics');
+      expect(data.site).toBe('reddit');
+    });
+  });
+
+  describe('X Adapter DOM', () => {
+    it('should extract data from a mock tweet', () => {
+      document.body.innerHTML = `
+        <article id="tweet-1">
+          <div data-testid="tweetText">This is a very angry tweet about nothing.</div>
+          <div data-testid="User-Name"><span>Elon Musk</span></div>
+        </article>
+      `;
+
+      const element = document.getElementById('tweet-1')!;
+      const data = xAdapter.extractData(element);
+
+      expect(data.title).toBe('This is a very angry tweet about nothing.');
+      expect(data.sourceName).toBe('Elon Musk');
+      expect(data.site).toBe('x');
+    });
+  });
 });
