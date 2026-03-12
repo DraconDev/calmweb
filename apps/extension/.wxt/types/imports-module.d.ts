@@ -19,5 +19,5 @@ declare module '#imports' {
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
   export { applyLocalRules, classifyWithBYOK, classifyWithHosted, classifyContent, ClassifierOptions } from '../utils/classifier';
-  export { settingsStore, decisionCache, ClassificationResult, byokKeysStore, statsStore, getCachedResult, setCachedResult, clearDecisionCache, incrementFilteredCount, resetStats, initializeStores } from '../utils/storage';
+  export { STORAGE_KEYS, settingsStore, decisionCache, ClassificationResult, byokKeysStore, statsStore, getCachedResult, setCachedResult, clearDecisionCache, incrementFilteredCount, resetStats, initializeStores } from '../utils/storage';
 }
