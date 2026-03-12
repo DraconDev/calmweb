@@ -33,16 +33,16 @@ export function discoverUnits(root: Document | HTMLElement): HTMLElement[] {
 export function extractData(element: HTMLElement): ContentUnit {
   // Find title within the card
   const titleEl = element.querySelector(SELECTORS.title) as HTMLElement | null;
-  const title = titleEl?.innerText?.trim() || 'Untitled';
+  const title = (titleEl?.innerText || titleEl?.textContent || '').trim() || 'Untitled';
 
   // Find channel/source name
   const channelEl = element.querySelector(SELECTORS.channel) as HTMLElement | null;
-  const sourceName = channelEl?.innerText?.trim();
+  const sourceName = (channelEl?.innerText || channelEl?.textContent || '').trim() || undefined;
 
   // Extract metadata strings
   const metadataEls = element.querySelectorAll(SELECTORS.metadata);
   const metadata = Array.from(metadataEls)
-    .map(el => (el as HTMLElement).innerText.trim())
+    .map(el => ((el as HTMLElement).innerText || el.textContent || '').trim())
     .filter(Boolean);
 
   // Generate fingerprint (title + source)
