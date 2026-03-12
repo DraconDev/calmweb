@@ -32,6 +32,7 @@ describe('generateFingerprint', () => {
       title: 'Test Title',
       sourceName: 'Test Channel',
       site: 'youtube',
+      metadata: [],
     };
     const fp1 = generateFingerprint(unit);
     const fp2 = generateFingerprint(unit);
@@ -39,20 +40,20 @@ describe('generateFingerprint', () => {
   });
 
   it('should differentiate by title', () => {
-    const unit1 = { title: 'Title A', sourceName: 'Channel', site: 'youtube' };
-    const unit2 = { title: 'Title B', sourceName: 'Channel', site: 'youtube' };
+    const unit1 = { title: 'Title A', sourceName: 'Channel', site: 'youtube', metadata: [] };
+    const unit2 = { title: 'Title B', sourceName: 'Channel', site: 'youtube', metadata: [] };
     expect(generateFingerprint(unit1)).not.toBe(generateFingerprint(unit2));
   });
 
   it('should differentiate by sourceName', () => {
-    const unit1 = { title: 'Title', sourceName: 'Channel A', site: 'youtube' };
-    const unit2 = { title: 'Title', sourceName: 'Channel B', site: 'youtube' };
+    const unit1 = { title: 'Title', sourceName: 'Channel A', site: 'youtube', metadata: [] };
+    const unit2 = { title: 'Title', sourceName: 'Channel B', site: 'youtube', metadata: [] };
     expect(generateFingerprint(unit1)).not.toBe(generateFingerprint(unit2));
   });
 
   it('should handle missing sourceName', () => {
-    const unit1 = { title: 'Title', sourceName: undefined, site: 'youtube' };
-    const unit2 = { title: 'Title', sourceName: undefined, site: 'youtube' };
+    const unit1 = { title: 'Title', sourceName: undefined, site: 'youtube', metadata: [] };
+    const unit2 = { title: 'Title', sourceName: undefined, site: 'youtube', metadata: [] };
     expect(generateFingerprint(unit1)).toBe(generateFingerprint(unit2));
   });
 });
