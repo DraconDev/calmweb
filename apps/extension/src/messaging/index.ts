@@ -62,11 +62,6 @@ export interface GetStatsMessage {
   type: typeof MESSAGE_TYPES.GET_STATS;
 }
 
-export interface Stats {
-  totalFiltered: number;
-  lastReset: number;
-}
-
 export interface IncrementStatMessage {
   type: typeof MESSAGE_TYPES.INCREMENT_STAT;
   key: 'totalFiltered';
