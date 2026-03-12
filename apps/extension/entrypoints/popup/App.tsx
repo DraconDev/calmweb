@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { sendToBackground, getActiveTab } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import { youtubeAdapter, redditAdapter, xAdapter } from '@/src/adapters';
-import { Container, Card, Header, Footer, Switch, Spinner } from '@/components';
+import { Container, Card, Header, Footer, Switch, Spinner } from '@/src/components';
 import type { Stats } from '@calmweb/shared';
 
 export default function Popup() {
