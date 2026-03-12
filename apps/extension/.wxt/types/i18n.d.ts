@@ -72,8 +72,38 @@ declare module "wxt/browser" {
       substitutions?: string | string[],
       options?: GetMessageOptions,
     ): string;
+    /**
+     * Extension name
+     *
+     * "CalmWeb"
+     */
     getMessage(
-      messageName: "@@extension_id" | "@@ui_locale" | "@@bidi_dir" | "@@bidi_reversed_dir" | "@@bidi_start_edge" | "@@bidi_end_edge",
+      messageName: "extName",
+      substitutions?: string | string[],
+      options?: GetMessageOptions,
+    ): string;
+    /**
+     * Extension name in development mode
+     *
+     * "CalmWeb (Dev)"
+     */
+    getMessage(
+      messageName: "extNameDev",
+      substitutions?: string | string[],
+      options?: GetMessageOptions,
+    ): string;
+    /**
+     * Extension description
+     *
+     * "Content firewall that hides distracting or unwanted content on YouTube, Reddit, and X."
+     */
+    getMessage(
+      messageName: "extDescription",
+      substitutions?: string | string[],
+      options?: GetMessageOptions,
+    ): string;
+    getMessage(
+      messageName: "@@extension_id" | "@@ui_locale" | "@@bidi_dir" | "@@bidi_reversed_dir" | "@@bidi_start_edge" | "@@bidi_end_edge" | "extName" | "extNameDev" | "extDescription",
       substitutions?: string | string[],
       options?: GetMessageOptions,
     ): string;
