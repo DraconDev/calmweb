@@ -38,6 +38,9 @@
     },
     "default_title": "CalmWeb"
   },
+  "options_ui": {
+    "page": "options.html"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -98,9 +101,6 @@
         "default": "Alt+R"
       }
     }
-  },
-  "options_ui": {
-    "page": "options.html"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval' http://localhost:3003; object-src 'self';",
