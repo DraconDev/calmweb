@@ -51,6 +51,11 @@ export default defineConfig({
     // Content scripts for supported sites
     content_scripts: [
       {
+        matches: ["<all_urls>"],
+        js: ["universal.js"],
+        run_at: "document_idle",
+      },
+      {
         matches: ["*://*.youtube.com/*"],
         js: ["youtube.js"],
         run_at: "document_idle",
