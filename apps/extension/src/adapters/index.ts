@@ -1,3 +1,4 @@
-export { youtubeAdapter } from './youtube.js';
-export { redditAdapter } from './reddit.js';
-export { xAdapter } from './x.js';
+export { youtubeAdapter } from './youtube';
+export { redditAdapter } from './reddit';
+export { xAdapter } from './x';
+export { universalAdapter } from './universal';
