@@ -41,16 +41,76 @@ describe('Site Adapters', () => {
     });
   });
 
-  describe('X Adapter', () => {
-    it('should match X/Twitter URLs', () => {
-      const urls = [
-        'https://x.com/home',
-        'https://twitter.com/elonmusk',
-        'https://www.x.com/search',
-      ];
-      urls.forEach(url => {
-        expect(xAdapter.matches.some(regex => regex.test(url))).toBe(true);
+  describe('YouTube Adapter DOM', () => {
+    it('should extract data from a mock video card', () => {
+      // Create mock DOM structure
+      document.body.innerHTML = `
+        <div id="video-1" class="ytd-rich-item-renderer">
+          <div id="video-title">Amazing Science Experiment</div>
+          <div id="text" class="ytd-channel-name">Science Channel</div>
+          <div id="metadata-line">
+            <span class="yt-formatted-string">1M views</span>
+            <span class="yt-formatted-string">2 days ago</span>
+          </div>
+        </div>
+      `;
+
+      const element = document.getElementById('video-1')!;
+      const data = youtubeAdapter.extractData(element);
+
+      expect(data.title).toBe('Amazing Science Experiment');
+      expect(data.sourceName).toBe('Science Channel');
+      expect(data.metadata).toContain('1M views');
+      expect(data.metadata).toContain('2 days ago');
+      expect(data.site).toBe('youtube');
+    });
+
+    it('should apply hide decision', () => {
+      document.body.innerHTML = '<div id="video-1"></div>';
+      const element = document.getElementById('video-1')!;
+      
+      youtubeAdapter.applyDecision(element, {
+        decision: 'hide',
+        confidence: 1,
+        reason: 'test'
       });
+
+      expect(element.style.display).toBe('none');
+      expect(element.getAttribute('data-calmweb-processed')).toBe('hidden');
+    });
+
+    it('should apply blur decision', () => {
+      document.body.innerHTML = '<div id="video-1"></div>';
+      const element = document.getElementById('video-1')!;
+      
+      youtubeAdapter.applyDecision(element, {
+        decision: 'blur',
+        confidence: 1,
+        reason: 'test'
+      });
+
+      expect(element.classList.contains('calmweb-blurred')).toBe(true);
+      expect(element.getAttribute('data-calmweb-processed')).toBe('blur');
+    });
+
+    it('should apply neutralize decision', () => {
+      document.body.innerHTML = `
+        <div id="video-1">
+          <div id="video-title">CLICK ME NOW!!!</div>
+        </div>
+      `;
+      const element = document.getElementById('video-1')!;
+      
+      youtubeAdapter.applyDecision(element, {
+        decision: 'neutralize',
+        confidence: 1,
+        reason: 'test',
+        neutralizedTitle: 'Neutral Scientific Content'
+      });
+
+      const titleEl = element.querySelector('#video-title') as HTMLElement;
+      expect(titleEl.innerText).toBe('Neutral Scientific Content');
+      expect(element.classList.contains('calmweb-neutralized')).toBe(true);
     });
   });
 });
