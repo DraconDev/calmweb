@@ -1,5 +1,4 @@
 import { defineConfig } from 'wxt';
-import { resolve } from 'path';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -42,29 +41,29 @@ export default defineConfig({
       service_worker: "background.ts",
       type: "module",
     },
-     web_accessible_resources: [
-       {
-         resources: ["styles.css", "assets/*"],
-         matches: ["<all_urls>"],
-       },
-     ],
-     // Content scripts for supported sites
-     content_scripts: [
-       {
-         matches: ["*://*.youtube.com/*"],
-         js: ["youtube.js"],
-         runAt: "document_idle",
-       },
-       {
-         matches: ["*://*.reddit.com/*"],
-         js: ["reddit.js"],
-         runAt: "document_idle",
-       },
-       {
-         matches: ["*://*.x.com/*", "*://*.twitter.com/*"],
-         js: ["x.js"],
-         runAt: "document_idle",
-       },
-     ],
-   },
+    web_accessible_resources: [
+      {
+        resources: ["styles.css", "assets/*"],
+        matches: ["<all_urls>"],
+      },
+    ],
+    // Content scripts for supported sites
+    content_scripts: [
+      {
+        matches: ["*://*.youtube.com/*"],
+        js: ["youtube.js"],
+        run_at: "document_idle",
+      },
+      {
+        matches: ["*://*.reddit.com/*"],
+        js: ["reddit.js"],
+        run_at: "document_idle",
+      },
+      {
+        matches: ["*://*.x.com/*", "*://*.twitter.com/*"],
+        js: ["x.js"],
+        run_at: "document_idle",
+      },
+    ],
+  },
 });
