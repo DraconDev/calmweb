@@ -6,6 +6,7 @@
     "apps/*"
   ],
   "devDependencies": {
+    "jsdom": "^28.1.0",
     "typescript": "^5.6.3",
     "wxt": "^0.20.18"
   },
