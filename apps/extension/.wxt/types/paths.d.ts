@@ -15,6 +15,7 @@ declare module "wxt/browser" {
     | "/options.html"
     | "/popup.html"
     | "/reddit.js"
+    | "/universal.js"
     | "/x.js"
     | "/youtube.js"
   type HtmlPublicPath = Extract<PublicPath, `${string}.html`>
