@@ -67,4 +67,12 @@ export default defineConfig({
       },
     ],
   },
+  vite: () => ({
+    resolve: {
+      alias: {
+        '@': resolve(__dirname),
+        '@components': resolve(__dirname, 'src/components'),
+      },
+    },
+  }),
 });
