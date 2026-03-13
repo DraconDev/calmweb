@@ -6,6 +6,7 @@
  * - Content classification (rules + LLM)
  * - Settings and cache management
  * - Statistics tracking
+ * - Context menu integration
  */
 
 import { defineBackground } from 'wxt/utils/define-background';
@@ -32,6 +33,93 @@ const ext = createExtension({
   appId: 'calmweb',
   debug: true,
 });
+
+// ============================================================================
+// Context Menu Setup
+// ============================================================================
+
+async function setupContextMenu(): Promise<void> {
+  try {
+    await browser.contextMenus.removeAll();
+  } catch {
+    // Ignore if no menus exist
+  }
+
+  browser.contextMenus.create({
+    id: 'calmweb-toggle-extension',
+    title: 'Toggle CalmWeb',
+    contexts: ['action'],
+  });
+
+  browser.contextMenus.create({
+    id: 'calmweb-open-reader',
+    title: 'Open in Super Reader',
+    contexts: ['page'],
+  });
+
+  browser.contextMenus.create({
+    id: 'calmweb-neutralize-selection',
+    title: 'Neutralize Selected Text',
+    contexts: ['selection'],
+  });
+
+  browser.contextMenus.create({
+    id: 'separator-1',
+    type: 'separator',
+    contexts: ['page', 'selection'],
+  });
+
+  browser.contextMenus.create({
+    id: 'calmweb-open-settings',
+    title: 'Open Settings',
+    contexts: ['action'],
+  });
+
+  browser.contextMenus.create({
+    id: 'calmweb-view-stats',
+    title: 'View Statistics',
+    contexts: ['action'],
+  });
+
+  browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    const menuItemId = info.menuItemId as string;
+
+    switch (menuItemId) {
+      case 'calmweb-toggle-extension': {
+        const settings = await settingsStore.getValue();
+        await settingsStore.setValue({ ...settings, enabled: !settings.enabled });
+        break;
+      }
+
+      case 'calmweb-open-reader': {
+        if (tab?.id) {
+          browser.tabs.sendMessage(tab.id, { type: 'TOGGLE_READER' });
+        }
+        break;
+      }
+
+      case 'calmweb-neutralize-selection': {
+        if (tab?.id && info.selectionText) {
+          browser.tabs.sendMessage(tab.id, {
+            type: 'NEUTRALIZE_SELECTION',
+            text: info.selectionText,
+          });
+        }
+        break;
+      }
+
+      case 'calmweb-open-settings': {
+        browser.runtime.openOptionsPage();
+        break;
+      }
+
+      case 'calmweb-view-stats': {
+        browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
+        break;
+      }
+    }
+  });
+}
 
 // ============================================================================
 // Message Handlers
@@ -163,6 +251,8 @@ export default defineBackground(() => {
       console.log('[Background] CalmWeb installed');
       // Initialize stores with defaults
       await initializeStores();
+      // Setup context menus
+      await setupContextMenu();
     },
     onUpdate: () => {
       console.log('[Background] CalmWeb updated');
