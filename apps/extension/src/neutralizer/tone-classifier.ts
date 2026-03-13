@@ -79,13 +79,11 @@ const TONE_PATTERNS: Record<ToneType, RegExp[]> = {
 
 function scoreTone(text: string, patterns: RegExp[]): number {
   let score = 0;
-  const matchedIndicators: string[] = [];
 
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
       score += 0.25;
-      matchedIndicators.push(match[0]);
     }
   }
 

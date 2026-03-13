@@ -37,7 +37,7 @@ export async function rewriteText(
   options: RewriteOptions,
   settings: UserSettings
 ): Promise<RewriteResult> {
-  const local = rewriteWithLocalRules(original, options);
+  const local = rewriteWithLocalRules(original, { mode: options.mode });
   
   if (local.confidence > 0.8 && local.changes.length > 0) {
     return local;
@@ -45,7 +45,7 @@ export async function rewriteText(
 
   if (settings.processingMode !== 'local_rules') {
     try {
-      const llm = await rewriteWithLLM(original, options, settings);
+      const llm = await rewriteWithLLM(original, { mode: options.mode }, settings);
       if (llm.confidence > local.confidence) {
         return llm;
       }
@@ -58,6 +58,6 @@ export async function rewriteText(
 }
 
 export function shouldNeutralize(text: string, options: RewriteOptions): boolean {
-  const local = rewriteWithLocalRules(text, options);
+  const local = rewriteWithLocalRules(text, { mode: options.mode });
   return local.changes.length > 0;
 }

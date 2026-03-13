@@ -154,23 +154,22 @@ export function rewriteWithLocalRules(
   for (const rule of NEUTRALIZATION_RULES) {
     if (!allowedStrengths.includes(rule.strength)) continue;
 
-    let match: RegExpExecArray | null;
-    const globalPattern = new RegExp(rule.pattern.source, rule.pattern.flags);
-    
-    while ((match = globalPattern.exec(text)) !== null) {
-      const originalMatch = match[0];
-      const replacement = rule.preserveCapitalization !== false
-        ? preserveCase(originalMatch, rule.replacement)
-        : rule.replacement;
+    const matches = text.match(rule.pattern);
+    if (matches) {
+      for (const originalMatch of matches) {
+        const replacement = rule.preserveCapitalization !== false
+          ? preserveCase(originalMatch, rule.replacement)
+          : rule.replacement;
 
-      rewritten = rewritten.replace(originalMatch, replacement);
-      
-      if (originalMatch !== replacement) {
-        changes.push({
-          original: originalMatch,
-          replacement: replacement,
-          reason: `neutralization_rule:${rule.strength}`,
-        });
+        rewritten = rewritten.replace(originalMatch, replacement);
+        
+        if (originalMatch !== replacement) {
+          changes.push({
+            original: originalMatch,
+            replacement: replacement,
+            reason: `neutralization_rule:${rule.strength}`,
+          });
+        }
       }
     }
   }

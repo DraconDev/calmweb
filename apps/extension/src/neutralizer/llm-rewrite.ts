@@ -1,5 +1,5 @@
 import type { UserSettings } from '@calmweb/shared';
-import type { RewriteMode, RewriteResult, TextChange } from './rewriter';
+import type { RewriteMode, RewriteResult } from './rewriter';
 
 interface LLMRewriteResponse {
   rewritten: string;
@@ -47,16 +47,28 @@ function buildUserPrompt(text: string): string {
 Return JSON with the rewritten text and list of changes made.`;
 }
 
-async function callBYOKLLM(
+interface LLMConfig {
+  endpoint: string;
+  apiKey: string;
+  model: string;
+}
+
+function getLLMConfig(settings: UserSettings): LLMConfig | null {
+  if (settings.processingMode === 'byok_llm' && settings.byokKey) {
+    return {
+      endpoint: 'https://api.openai.com/v1/chat/completions',
+      apiKey: settings.byokKey,
+      model: 'gpt-3.5-turbo',
+    };
+  }
+  return null;
+}
+
+async function callLLM(
   text: string,
   mode: RewriteMode,
-  settings: UserSettings
+  config: LLMConfig
 ): Promise<LLMRewriteResponse> {
-  if (!settings.llmEndpoint || !settings.llmApiKey) {
-    throw new Error('BYOK LLM not configured');
-  }
-
-  const response = await fetch(settings.llmEndpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
