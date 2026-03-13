@@ -3,167 +3,203 @@
 ## Vision
 A browser extension that transforms your web experience in three ways:
 1. **Filter** - Remove what you don't want to see
-2. **Neutralize** - Transform text to be calm and neutral  
+2. **Neutralize** - Transform text to be calm and neutral
 3. **Super Reader** - Consume any site's content in your preferred layout
 
 ---
 
-## Phase 1: Core Filtering Engine
+## Current Sprint (Week 1-2)
 
-### Content Detection
-- [ ] **Universal Adapter**: Robust DOM extraction for any website
-- [ ] **Site-specific Adapters**: Optimize for top 20 sites (YouTube, Reddit, X, news sites)
-- [ ] **Dynamic Selectors**: Auto-detect content containers when static selectors fail
-- [ ] **Video/Embed Detection**: Filter embedded videos, tweets, iframes
+### 🎯 Primary Goals
+- [ ] Implement **Collapse** action (placeholder + expand)
+- [ ] Enhance **Universal Adapter** for reliable extraction
+- [ ] Add **Preset Libraries** with curated filter lists
 
-### Classification System
-- [x] Local rules engine (keywords, channels, presets)
-- [ ] **Preset Libraries**: Curated filter lists (politics, ragebait, spoilers, ads, trackers)
-- [ ] **Smart Presets**: "No negativity today", "Focus mode", "Entertainment only"
-- [ ] **Regex Support**: Advanced pattern matching for custom rules
-- [ ] **Whitelist Intelligence**: Auto-whitelist trusted sources
+### Tasks
 
-### Decision Actions
-- [x] Hide - Remove completely
-- [x] Blur - Obscure with hover-to-reveal
-- [x] Neutralize - Replace inflammatory text
-- [ ] **Collapse** - Show minimal placeholder with "Show anyway" button
-- [ ] **Summarize** - AI-generated neutral summary inline
-- [ ] **Redirect** - Link to neutral source on same topic
+#### Collapse Action
+- [ ] Add `collapse` to `ActionDecisionSchema` in shared types
+- [ ] Create `src/renderer/collapse.ts` with placeholder logic
+- [ ] Update all adapters with `collapse` case in `applyDecision()`
+- [ ] Add CSS styles for collapse placeholder
+- [ ] Update classifier to return `collapse` decision
+- [ ] Write tests for collapse renderer
 
----
+#### Universal Adapter v2
+- [ ] Implement priority-based selector discovery
+- [ ] Add content validation (min text, title presence, visibility)
+- [ ] Create fallback dynamic selector discovery
+- [ ] Add iframe/embed detection for embedded content
+- [ ] Write comprehensive adapter tests
 
-## Phase 2: Text Neutralization Engine
-
-### Core Neutralizer
-- [ ] **Sentiment Analysis**: Detect inflammatory/emotional language
-- [ ] **Tone Classifier**: Identify ragebait, clickbait, manipulation tactics
-- [ ] **Rewrite Engine**: Transform text to neutral tone
-  - [ ] Local fallback (rule-based)
-  - [ ] LLM-powered (BYOK or hosted)
-- [ ] **Confidence Scoring**: Show how much was changed
-
-### UI Integration
-- [ ] **Inline Markers**: Visual indicator when text is neutralized
-- [ ] **Diff View**: Toggle between original/neutralized
-- [ ] **Undo Per-item**: Restore original text on demand
-- [ ] **Learning Mode**: User corrections improve future neutralization
-
-### Neutralization Modes
-- [ ] **Light**: Only extreme content
-- [ ] **Medium**: Remove emotional language
-- [ ] **Strict**: Clinical, fact-only text
-- [ ] **Custom**: User-defined tone preferences
+#### Preset Libraries
+- [ ] Create `src/presets/` directory structure
+- [ ] Implement `FilterPreset` interface
+- [ ] Write `politics.ts` preset with expanded keywords
+- [ ] Write `ragebait.ts` preset
+- [ ] Write `spoilers.ts` preset  
+- [ ] Write `clickbait.ts` preset
+- [ ] Create smart presets (no-negativity, focus-mode, entertainment-only)
+- [ ] Integrate preset loader with classifier
 
 ---
 
-## Phase 3: Super Reader Mode
+## Next Sprint (Week 3-4): Neutralization Engine
 
-### Layout Engine
-- [ ] **Unified Article View**: Any article → clean, consistent layout
-- [ ] **Reader Presets**: 
-  - [ ] Newspaper (multi-column, serif)
-  - [ ] Terminal (monospace, dark)
-  - [ ] Card (Pinterest-style grid)
-  - [ ] Feed (Twitter-like stream)
-  - [ ] Magazine (image-rich, large type)
-- [ ] **Custom Themes**: User-defined fonts, colors, spacing
-- [ ] **Responsive**: Adapts to window size
+### 🎯 Goals
+- [ ] Core neutralizer (sentiment, tone classification, rewriting)
+- [ ] Neutralization UI (inline markers, diff view, undo)
+- [ ] Neutralization settings in options page
 
-### Content Extraction
-- [ ] **Article Parser**: Extract title, author, date, body, images
-- [ ] **Video Transcript**: Pull transcripts from YouTube
-- [ ] **Thread Unroller**: Combine Twitter/Reddit threads into single article
-- [ ] **Comment Aggregator**: Pull top comments as annotations
-- [ ] **Related Content**: Find similar articles from allowlisted sources
-
-### Super Reader Features
-- [ ] **Progress Tracking**: Remember reading position
-- [ ] **Speed Reading**: Highlighting, pacing
-- [ ] **TTS Integration**: Read aloud with neutralized text
-- [ ] **Annotations**: Highlight, annotate, export
-- [ ] **Collections**: Save articles to themed folders
-- [ ] **Offline Mode**: Cache content for offline reading
+### Key Files to Create
+```
+src/neutralizer/
+├── index.ts
+├── sentiment.ts
+├── tone-classifier.ts
+├── rewriter.ts
+├── local-rules.ts
+└── llm-rewrite.ts
+```
 
 ---
 
-## Phase 4: Infrastructure & Polish
+## Sprint 3 (Week 5-7): Super Reader Mode
 
-### AI Integration
-- [x] BYOK (Bring Your Own Key) - OpenAI
-- [ ] **Multi-provider**: Anthropic, Google, local models
-- [ ] **Hosted Tier**: Dracon platform integration
-- [ ] **Cost Estimation**: Show API usage/costs
-- [ ] **Fallback Chain**: Local → BYOK → Hosted
+### 🎯 Goals
+- [ ] Article extraction engine
+- [ ] 5 layout templates (Newspaper, Terminal, Card, Feed, Magazine)
+- [ ] Reader overlay UI with toolbar
+- [ ] Reader settings and keyboard shortcuts
 
-### Storage & Sync
-- [ ] **Cloud Sync**: Settings/rules sync across devices
-- [ ] **Import/Export**: JSON backup of all settings
-- [ ] **Community Lists**: Subscribe to shared filter lists
-- [ ] **Rule Versioning**: Undo/redo settings changes
-
-### Performance
-- [ ] **Lazy Classification**: Only process visible content
-- [ ] **Cache Persistence**: Survive browser restart
-- [ ] **Background Pre-processing**: Classify on scroll anticipation
-- [ ] **Benchmark Suite**: Performance regression tests
-
-### UX Polish
-- [ ] **Onboarding Tour**: Guide new users
-- [ ] **Keyboard Shortcuts**: Power user controls
-- [ ] **Context Menu**: Right-click to filter/neutralize
-- [ ] **Stats Dashboard**: What was filtered, how much time saved
-- [ ] **Impact Report**: Weekly summary of filtering activity
+### Key Files to Create
+```
+src/renderer/
+├── layouts/
+│   ├── newspaper.ts
+│   ├── terminal.ts
+│   ├── card.ts
+│   ├── feed.ts
+│   └── magazine.ts
+├── extractor/
+│   ├── article.ts
+│   ├── transcript.ts
+│   └── thread.ts
+entrypoints/
+└── reader.ts
+```
 
 ---
 
-## Quick Wins (Do First)
+## Sprint 4 (Week 8-9): Polish & Infrastructure
 
-1. [ ] Fix structural issues (`src/renderer/`, `src/utils/` empty dirs)
-2. [ ] Verify universal adapter works on random sites
-3. [ ] Add "Collapse" action (placeholder + show button)
-4. [ ] Create first Reader layout (clean article view)
-5. [ ] Add neutralization indicator UI
+### 🎯 Goals
+- [ ] Performance optimizations (lazy classification, pre-processing)
+- [ ] Keyboard shortcuts
+- [ ] Context menu integration
+- [ ] Enhanced stats and weekly reports
 
 ---
 
-## Architecture Notes
+## Completed ✅
+
+- [x] Core extension architecture
+- [x] YouTube, Reddit, X/Twitter adapters
+- [x] Universal adapter (basic)
+- [x] Local rules classifier
+- [x] BYOK LLM integration
+- [x] Hosted LLM framework
+- [x] Popup UI (Quick View)
+- [x] Options page (Dashboard with sidebar)
+- [x] Icon assets (shield logo)
+- [x] Hide/Blur/Neutralize actions
+- [x] Decision caching
+- [x] TypeScript compilation clean
+- [x] All 26 tests passing
+
+---
+
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    CALMWEB ARCHITECTURE                  │
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
-│   ┌──────────┐    ┌──────────┐    ┌──────────────────┐  │
-│   │  CONTENT │───►│ CLASSIFY │───►│     DECIDE       │  │
-│   │  SCRIPTS │    │  ENGINE  │    │  (hide/blur/     │  │
-│   │          │    │          │    │   neutralize/    │  │
-│   │  Site    │    │  Rules   │    │   collapse/      │  │
-│   │  Adapters│    │  Cache   │    │   reader)        │  │
-│   └──────────┘    │  LLM     │    └──────────────────┘  │
-│                    └──────────┘             │           │
-│                                             ▼           │
-│   ┌──────────────────────────────────────────────────┐  │
-│   │                   RENDERER                       │  │
-│   │  ┌─────────┐ ┌─────────┐ ┌──────────────────┐   │  │
-│   │  │Original │ │Blurred  │ │ Neutralized Text │   │  │
-│   │  │DOM      │ │Overlay  │ │ (AI rewrite)     │   │  │
-│   │  └─────────┘ └─────────┘ └──────────────────┘   │  │
-│   │  ┌─────────────────────────────────────────┐    │  │
-│   │  │           SUPER READER LAYOUT            │    │  │
-│   │  │  Unified view for any content source     │    │  │
-│   │  └─────────────────────────────────────────┘    │  │
-│   └──────────────────────────────────────────────────┘  │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+│   ┌──────────┐    ┌──────────┐    ┌──────────────────┐   │
+│   │  CONTENT │───►│ CLASSIFY │───►│     DECIDE       │   │
+│   │  SCRIPTS │    │  ENGINE  │    │  (hide/blur/     │   │
+│   │          │    │          │    │   neutralize/    │   │
+│   │  Site    │    │  Rules   │    │   collapse/      │   │
+│   │  Adapters│    │  Cache   │    │   reader)        │   │
+│   └──────────┘    │  LLM     │    └──────────────────┘   │
+│                    └──────────┘             │            │
+│                                             ▼            │
+│   ┌──────────────────────────────────────────────────┐   │
+│   │                   RENDERER                       │   │
+│   │  ┌─────────┐ ┌─────────┐ ┌──────────────────┐   │   │
+│   │  │Original │ │Blurred  │ │ Neutralized Text │   │   │
+│   │  │DOM      │ │Overlay  │ │ (AI rewrite)     │   │   │
+│   │  └─────────┘ └─────────┘ └──────────────────┘   │   │
+│   │  ┌─────────────────────────────────────────┐    │   │
+│   │  │           SUPER READER LAYOUT            │    │   │
+│   │  │  Unified view for any content source     │    │   │
+│   │  └─────────────────────────────────────────┘    │   │
+│   └──────────────────────────────────────────────────┘   │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Success Metrics
+## Quick Reference
 
-- **Filter Accuracy**: >95% of unwanted content removed
-- **False Positive Rate**: <2% of wanted content filtered
-- **Neutralization Quality**: User rating >4/5
-- **Reader Adoption**: Users spend >50% reading time in Super Reader
-- **Performance**: <50ms per content unit classification
+### Key Directories
+```
+apps/extension/
+├── entrypoints/          # WXT entry points
+│   ├── background.ts     # Service worker
+│   ├── popup/            # Popup UI
+│   ├── options/          # Options page
+│   ├── youtube.ts        # YouTube content script
+│   ├── reddit.ts         # Reddit content script
+│   ├── x.ts              # X/Twitter content script
+│   └── universal.ts      # Universal content script
+├── src/
+│   ├── adapters/         # Site-specific adapters
+│   ├── components/       # React components
+│   ├── renderer/         # (NEW) Render actions
+│   ├── neutralizer/      # (NEW) Text neutralization
+│   ├── presets/          # (NEW) Filter presets
+│   └── messaging/        # Message types
+├── utils/
+│   ├── classifier.ts     # Classification logic
+│   └── storage.ts        # Storage utilities
+└── tests/                # Test files
+
+packages/shared/
+└── src/
+    └── index.ts          # Shared types and schemas
+```
+
+### Message Types
+- `CLASSIFY_UNIT` - Classify a content unit
+- `GET_SETTINGS` - Get user settings
+- `UPDATE_SETTINGS` - Update settings
+- `CLEAR_CACHE` - Clear decision cache
+- `GET_STATS` - Get statistics
+- `INCREMENT_STAT` - Increment a stat
+
+### Action Decisions
+- `show` - No modification
+- `blur` - CSS blur with hover reveal
+- `hide` - Remove from DOM
+- `neutralize` - Replace title with neutral version
+- `collapse` - (NEW) Show placeholder with expand option
+- `rebuild` - (Future) Restructure content card
+
+---
+
+## See Also
+- [PLAN.md](./PLAN.md) - Detailed implementation plan
+- [BLUEPRINT.md](./BLUEPRINT.md) - Original system design
