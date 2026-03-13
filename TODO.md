@@ -8,59 +8,46 @@ A browser extension that transforms your web experience in three ways:
 
 ---
 
-## Current Sprint (Week 1-2)
-
-### 🎯 Primary Goals
-- [ ] Implement **Collapse** action (placeholder + expand)
-- [ ] Enhance **Universal Adapter** for reliable extraction
-- [ ] Add **Preset Libraries** with curated filter lists
-
-### Tasks
-
-#### Collapse Action
-- [ ] Add `collapse` to `ActionDecisionSchema` in shared types
-- [ ] Create `src/renderer/collapse.ts` with placeholder logic
-- [ ] Update all adapters with `collapse` case in `applyDecision()`
-- [ ] Add CSS styles for collapse placeholder
-- [ ] Update classifier to return `collapse` decision
-- [ ] Write tests for collapse renderer
-
-#### Universal Adapter v2
-- [ ] Implement priority-based selector discovery
-- [ ] Add content validation (min text, title presence, visibility)
-- [ ] Create fallback dynamic selector discovery
-- [ ] Add iframe/embed detection for embedded content
-- [ ] Write comprehensive adapter tests
-
-#### Preset Libraries
-- [ ] Create `src/presets/` directory structure
-- [ ] Implement `FilterPreset` interface
-- [ ] Write `politics.ts` preset with expanded keywords
-- [ ] Write `ragebait.ts` preset
-- [ ] Write `spoilers.ts` preset  
-- [ ] Write `clickbait.ts` preset
-- [ ] Create smart presets (no-negativity, focus-mode, entertainment-only)
-- [ ] Integrate preset loader with classifier
-
----
-
-## Next Sprint (Week 3-4): Neutralization Engine
+## Current Sprint (Week 3-4): Neutralization Engine
 
 ### 🎯 Goals
-- [ ] Core neutralizer (sentiment, tone classification, rewriting)
+- [x] Core neutralizer (sentiment, tone classification, rewriting)
 - [ ] Neutralization UI (inline markers, diff view, undo)
 - [ ] Neutralization settings in options page
 
-### Key Files to Create
-```
-src/neutralizer/
-├── index.ts
-├── sentiment.ts
-├── tone-classifier.ts
-├── rewriter.ts
-├── local-rules.ts
-└── llm-rewrite.ts
-```
+### Tasks
+
+#### Core Neutralizer ✅
+- [x] Create `src/neutralizer/` directory
+- [x] `sentiment.ts` - Sentiment analysis with emotion detection
+- [x] `tone-classifier.ts` - Detect ragebait, clickbait, fear-mongering tones
+- [x] `rewriter.ts` - Main text rewriting engine
+- [x] `local-rules.ts` - Rule-based neutralization (30+ patterns)
+- [x] `llm-rewrite.ts` - LLM-powered rewriting
+- [x] `index.ts` - Export `analyzeForNeutralization()`, `neutralizeText()`
+- [x] Write comprehensive tests (27 tests for neutralizer)
+
+#### Neutralization UI (Next)
+- [ ] Create `src/renderer/neutralize.ts` with indicator
+- [ ] Add diff view component for showing original vs rewritten
+- [ ] Add per-item undo functionality
+- [ ] Add neutralization styles to CSS
+
+#### Neutralization Settings
+- [ ] Add NeutralizationSettings to shared types
+- [ ] Add Neutralize tab to options page
+- [ ] Add mode selector (light/medium/strict)
+- [ ] Add domain exclusion list
+
+---
+
+## Sprint 1 (Week 1-2): Enhanced Filtering ✅
+
+### Completed
+- [x] Implement **Collapse** action (placeholder + expand)
+- [x] Enhance **Universal Adapter** for reliable extraction
+- [x] Add **Preset Libraries** with curated filter lists
+- [x] All 45 tests passing
 
 ---
 
@@ -112,10 +99,16 @@ entrypoints/
 - [x] Popup UI (Quick View)
 - [x] Options page (Dashboard with sidebar)
 - [x] Icon assets (shield logo)
-- [x] Hide/Blur/Neutralize actions
+- [x] Hide/Blur/Neutralize/Collapse actions
 - [x] Decision caching
 - [x] TypeScript compilation clean
-- [x] All 26 tests passing
+- [x] All 45 tests passing
+- [x] **Neutralizer Core** (Sprint 2)
+  - Sentiment analysis with emotion detection
+  - Tone classification (ragebait, clickbait, fear-mongering, etc.)
+  - Local rules rewriter (30+ neutralization patterns)
+  - LLM-powered rewriting for complex cases
+  - Mode support (light/medium/strict)
 
 ---
 
@@ -168,9 +161,9 @@ apps/extension/
 ├── src/
 │   ├── adapters/         # Site-specific adapters
 │   ├── components/       # React components
-│   ├── renderer/         # (NEW) Render actions
-│   ├── neutralizer/      # (NEW) Text neutralization
-│   ├── presets/          # (NEW) Filter presets
+│   ├── renderer/         # Render actions (collapse, neutralize)
+│   ├── neutralizer/      # Text neutralization engine
+│   ├── presets/          # Filter presets
 │   └── messaging/        # Message types
 ├── utils/
 │   ├── classifier.ts     # Classification logic
@@ -195,7 +188,7 @@ packages/shared/
 - `blur` - CSS blur with hover reveal
 - `hide` - Remove from DOM
 - `neutralize` - Replace title with neutral version
-- `collapse` - (NEW) Show placeholder with expand option
+- `collapse` - Show placeholder with expand option
 - `rebuild` - (Future) Restructure content card
 
 ---
