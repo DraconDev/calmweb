@@ -211,8 +211,8 @@ export default function Popup() {
       {/* Quick Toggles */}
       <div className="px-4 mt-3 flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <EyeOff size={14} className="text-muted-foreground" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Filters</span>
+          <EyeOff size={14} className="text-purple-400/60" />
+          <span className="text-xs font-semibold text-purple-400/60 uppercase tracking-wider">Quick Filters</span>
         </div>
         
         <div className="grid grid-cols-2 gap-2">
@@ -252,19 +252,19 @@ export default function Popup() {
           className={clsx(
             "w-full mt-3 p-3 rounded-xl border-2 transition-all flex items-center gap-3",
             settings?.neutralization?.enabled
-              ? "border-green-500/30 bg-green-500/5"
-              : "border-border bg-card hover:bg-muted/50"
+              ? "border-purple-500/30 bg-purple-500/10"
+              : "border-purple-500/10 bg-[#1a1a2e] hover:bg-purple-500/5"
           )}
         >
           <div className={clsx(
             "p-2 rounded-lg",
-            settings?.neutralization?.enabled ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"
+            settings?.neutralization?.enabled ? "bg-gradient-to-br from-purple-500 to-violet-500 text-white" : "bg-purple-500/10 text-purple-400"
           )}>
             <Wand2 size={16} />
           </div>
           <div className="flex-1 text-left">
-            <div className="text-sm font-semibold">Text Neutralization</div>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="text-sm font-semibold text-white">Text Neutralization</div>
+            <div className="text-[11px] text-purple-400/70">
               {settings?.neutralization?.enabled ? 'Active - Rewriting inflammatory text' : 'Inactive'}
             </div>
           </div>
@@ -276,30 +276,30 @@ export default function Popup() {
       </div>
 
       {/* Action Buttons */}
-      <div className="px-4 py-3 border-t border-border/50 bg-muted/20">
+      <div className="px-4 py-3 border-t border-purple-500/10 bg-[#0d0d15]">
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => openOptions('presets')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-muted transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
           >
-            <Shield size={18} className="text-primary" />
-            <span className="text-[11px] font-semibold">Presets</span>
+            <Shield size={18} className="text-purple-400" />
+            <span className="text-[11px] font-semibold text-purple-300">Presets</span>
           </button>
 
           <button
             onClick={() => openOptions('rules')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-muted transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
           >
-            <Settings size={18} className="text-muted-foreground" />
-            <span className="text-[11px] font-semibold">Rules</span>
+            <Settings size={18} className="text-purple-400/70" />
+            <span className="text-[11px] font-semibold text-purple-300">Rules</span>
           </button>
 
           <button
             onClick={() => openOptions()}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-muted transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
           >
-            <ExternalLink size={18} className="text-muted-foreground" />
-            <span className="text-[11px] font-semibold">Dashboard</span>
+            <ExternalLink size={18} className="text-purple-400/70" />
+            <span className="text-[11px] font-semibold text-purple-300">Dashboard</span>
           </button>
         </div>
       </div>
@@ -317,17 +317,17 @@ interface PresetToggleProps {
 
 function PresetToggle({ icon: Icon, label, enabled, onClick, color }: PresetToggleProps) {
   const colorClasses = {
-    blue: enabled ? 'bg-blue-500/10 border-blue-500/30' : 'bg-card border-border hover:bg-muted/50',
-    red: enabled ? 'bg-red-500/10 border-red-500/30' : 'bg-card border-border hover:bg-muted/50',
-    purple: enabled ? 'bg-purple-500/10 border-purple-500/30' : 'bg-card border-border hover:bg-muted/50',
-    orange: enabled ? 'bg-orange-500/10 border-orange-500/30' : 'bg-card border-border hover:bg-muted/50',
+    blue: enabled ? 'bg-blue-500/20 border-blue-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
+    red: enabled ? 'bg-red-500/20 border-red-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
+    purple: enabled ? 'bg-purple-500/20 border-purple-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
+    orange: enabled ? 'bg-orange-500/20 border-orange-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
   };
 
   const iconColorClasses = {
-    blue: enabled ? 'bg-blue-500 text-white' : 'bg-muted text-muted-foreground',
-    red: enabled ? 'bg-red-500 text-white' : 'bg-muted text-muted-foreground',
-    purple: enabled ? 'bg-purple-500 text-white' : 'bg-muted text-muted-foreground',
-    orange: enabled ? 'bg-orange-500 text-white' : 'bg-muted text-muted-foreground',
+    blue: enabled ? 'bg-blue-500 text-white' : 'bg-purple-500/10 text-purple-400',
+    red: enabled ? 'bg-red-500 text-white' : 'bg-purple-500/10 text-purple-400',
+    purple: enabled ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-white' : 'bg-purple-500/10 text-purple-400',
+    orange: enabled ? 'bg-orange-500 text-white' : 'bg-purple-500/10 text-purple-400',
   };
 
   return (
@@ -341,9 +341,9 @@ function PresetToggle({ icon: Icon, label, enabled, onClick, color }: PresetTogg
       <div className={clsx("p-1.5 rounded-lg", iconColorClasses[color])}>
         <Icon size={14} />
       </div>
-      <span className="text-[11px] font-semibold">{label}</span>
+      <span className="text-[11px] font-semibold text-purple-200">{label}</span>
       {enabled && (
-        <span className="text-[9px] font-bold uppercase text-green-600">On</span>
+        <span className="text-[9px] font-bold uppercase text-emerald-400">On</span>
       )}
     </button>
   );
