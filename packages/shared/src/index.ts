@@ -72,6 +72,31 @@ export const UserRulesSchema = z.object({
 export type UserRules = z.infer<typeof UserRulesSchema>;
 
 // ============================================================================
+// Neutralization Settings
+// ============================================================================
+
+export const NeutralizationModeSchema = z.enum(['light', 'medium', 'strict']);
+export type NeutralizationMode = z.infer<typeof NeutralizationModeSchema>;
+
+export const NeutralizationSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  mode: NeutralizationModeSchema.default('medium'),
+  showIndicator: z.boolean().default(true),
+  showDiffOnHover: z.boolean().default(true),
+  excludeDomains: z.array(z.string()).default([]),
+});
+export type NeutralizationSettings = z.infer<typeof NeutralizationSettingsSchema>;
+
+// Default neutralization settings
+export const defaultNeutralizationSettings: NeutralizationSettings = {
+  enabled: true,
+  mode: 'medium',
+  showIndicator: true,
+  showDiffOnHover: true,
+  excludeDomains: [],
+};
+
+// ============================================================================
 // User Settings
 // ============================================================================
 
@@ -87,6 +112,7 @@ export const UserSettingsSchema = z.object({
     presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
   }),
   byokKey: z.string().optional(),
+  neutralization: NeutralizationSettingsSchema.default(defaultNeutralizationSettings),
 });
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
