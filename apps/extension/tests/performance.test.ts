@@ -11,9 +11,6 @@ describe('Performance - LazyClassifier', () => {
 
   it('should track pending elements', () => {
     const classifier = new LazyClassifier();
-    const el1 = document.createElement('div');
-    const el2 = document.createElement('div');
-    
     // Just test that disconnect works without error
     classifier.disconnect();
     expect(classifier.getPendingCount()).toBe(0);
