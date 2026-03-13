@@ -4,9 +4,9 @@
 
 import type { EnhancedStats, ActionDecision } from '@calmweb/shared';
 import { defaultEnhancedStats } from '@calmweb/shared';
-import { storage } from 'wxt/storage';
+import { storage } from 'wxt/utils/storage';
 
-const STATS_KEY = 'local:enhancedStats';
+const STATS_KEY = 'local:calmweb-enhanced-stats';
 
 export async function getEnhancedStats(): Promise<EnhancedStats> {
   try {
@@ -90,12 +90,6 @@ export async function generateWeeklyReport(stats: EnhancedStats): Promise<string
   const minutesSaved = Math.round(stats.timeSaved / 60);
   const hoursSaved = (minutesSaved / 60).toFixed(1);
 
-  const topPreset = Object.entries(stats.byPreset)
-    .sort((a, b) => b[1] - a[1])[0];
-
-  const topAction = Object.entries(stats.byAction)
-    .sort((a, b) => b[1] - a[1])[0];
-
   return `📊 CalmWeb Weekly Report
 
 This week, CalmWeb filtered ${weeklyCounts} items for you.
@@ -138,17 +132,19 @@ export async function getStatsSummary(): Promise<{
     .filter(h => h.date >= weekStart)
     .reduce((sum, h) => sum + h.count, 0);
 
-  const topPreset = Object.entries(stats.byPreset)
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const presetEntries = Object.entries(stats.byPreset)
+    .sort((a, b) => b[1] - a[1]);
+  const topPresetResult = presetEntries[0]?.[0] || 'none';
 
-  const topAction = Object.entries(stats.byAction)
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const actionEntries = Object.entries(stats.byAction)
+    .sort((a, b) => b[1] - a[1]);
+  const topActionResult = actionEntries[0]?.[0] || 'none';
 
   return {
     total: stats.totalFiltered,
     today: todayCount,
     thisWeek: weekCount,
-    topPreset,
-    topAction,
+    topPreset: topPresetResult,
+    topAction: topActionResult,
   };
 }
