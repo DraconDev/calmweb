@@ -129,6 +129,7 @@ export const defaultUserSettings: UserSettings = {
     presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
   },
   byokKey: undefined,
+  neutralization: defaultNeutralizationSettings,
 };
 
 // ============================================================================
