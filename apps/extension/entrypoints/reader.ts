@@ -20,11 +20,5 @@ export default defineContentScript({
         toggleReader();
       }
     });
-
-    browser.runtime.onMessage.addListener((message: { type: string }) => {
-      if (message.type === 'TOGGLE_READER') {
-        toggleReader();
-      }
-    });
   },
 });
