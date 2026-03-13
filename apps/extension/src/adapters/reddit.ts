@@ -6,6 +6,7 @@
 
 import type { SiteAdapter, ContentUnit, ClassificationResult } from '@calmweb/shared';
 import { generateFingerprint } from '@calmweb/shared';
+import { createCollapsePlaceholder } from '@/src/renderer/collapse';
 
 // New Reddit selectors
 const NEW_REDDIT = {

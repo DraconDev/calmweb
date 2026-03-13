@@ -7,6 +7,7 @@
 
 import type { SiteAdapter, ContentUnit, ClassificationResult } from '@calmweb/shared';
 import { generateFingerprint } from '@calmweb/shared';
+import { createCollapsePlaceholder } from '@/src/renderer/collapse';
 
 // Selectors (YouTube uses Polymer/Shadow DOM sometimes, but these work on light DOM)
 const SELECTORS = {
@@ -66,7 +67,6 @@ export function extractData(element: HTMLElement): ContentUnit {
  * Apply a classification decision to a video card element
  */
 export function applyDecision(element: HTMLElement, result: ClassificationResult): void {
-  // Remove any previous CalmWeb modifications
   element.removeAttribute('data-calmweb-processed');
   element.style.display = '';
   element.style.filter = '';
@@ -77,6 +77,19 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'hide') {
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'hidden');
+    return;
+  }
+
+  if (result.decision === 'collapse') {
+    const placeholder = createCollapsePlaceholder({
+      reason: result.reason,
+      originalElement: element,
+      result,
+      siteId: 'youtube',
+    });
+    element.style.display = 'none';
+    element.insertAdjacentElement('afterend', placeholder);
+    element.setAttribute('data-calmweb-processed', 'collapsed');
     return;
   }
 
@@ -103,7 +116,6 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
     return;
   }
 
-  // Default: show (no modification)
   element.setAttribute('data-calmweb-processed', 'show');
 }
 
