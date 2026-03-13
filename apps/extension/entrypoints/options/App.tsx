@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import type { UserSettings, UserRules, Stats } from '@calmweb/shared';
-import { defaultUserSettings } from '@calmweb/shared';
+import type { UserSettings, UserRules, Stats, NeutralizationSettings } from '@calmweb/shared';
+import { defaultUserSettings, defaultNeutralizationSettings } from '@calmweb/shared';
 import {
   Container,
   Card,
@@ -10,19 +10,20 @@ import {
   Spinner,
   FormField,
 } from '@components';
-import { 
-  LayoutDashboard, 
-  ShieldAlert, 
-  ShieldCheck, 
-  Zap, 
+import {
+  LayoutDashboard,
+  ShieldAlert,
+  ShieldCheck,
+  Zap,
   Database,
   RefreshCw,
   Info,
-  Activity
+  Activity,
+  Wand2
 } from 'lucide-react';
 import clsx from 'clsx';
 
-type TabId = 'overview' | 'presets' | 'rules' | 'advanced';
+type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'advanced';
 
 interface PresetsTabProps {
   presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean };
@@ -39,6 +40,11 @@ interface AdvancedTabProps {
 interface CustomRulesTabProps {
   rules: UserRules;
   onChange: (rules: UserRules) => void;
+}
+
+interface NeutralizeTabProps {
+  settings: NeutralizationSettings;
+  onChange: (settings: NeutralizationSettings) => void;
 }
 
 export default function OptionsApp() {
@@ -58,7 +64,7 @@ export default function OptionsApp() {
         sendToBackground<UserSettings>({ type: MESSAGE_TYPES.GET_SETTINGS }),
         sendToBackground<Stats>({ type: MESSAGE_TYPES.GET_STATS })
       ]);
-      
+
       if (settingsData) setSettings(settingsData);
       if (statsData) setStats(statsData);
     } catch (error) {
@@ -74,6 +80,9 @@ export default function OptionsApp() {
       let nextSettings = { ...settings, ...updates };
       if (updates.rules) {
         nextSettings.rules = { ...settings.rules, ...updates.rules };
+      }
+      if (updates.neutralization) {
+        nextSettings.neutralization = { ...settings.neutralization, ...updates.neutralization };
       }
       setSettings(nextSettings);
       await sendToBackground({
@@ -91,6 +100,7 @@ export default function OptionsApp() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'presets', label: 'Presets', icon: ShieldCheck },
     { id: 'rules', label: 'Custom Rules', icon: Database },
+    { id: 'neutralize', label: 'Neutralize', icon: Wand2 },
     { id: 'advanced', label: 'AI & Advanced', icon: Zap },
   ] as const;
 
@@ -113,7 +123,7 @@ export default function OptionsApp() {
             </div>
             <span className="text-xl font-bold tracking-tight">CalmWeb</span>
           </div>
-          
+
           <nav className="space-y-1">
             {navItems.map((item) => (
               <button
@@ -121,8 +131,8 @@ export default function OptionsApp() {
                 onClick={() => setActiveTab(item.id)}
                 className={clsx(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  activeTab === item.id 
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/10" 
+                  activeTab === item.id
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/10"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -132,7 +142,7 @@ export default function OptionsApp() {
             ))}
           </nav>
         </div>
-        
+
         <div className="mt-auto p-6 border-t bg-muted/10">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest">
             <span className="relative flex h-2 w-2">
@@ -148,7 +158,7 @@ export default function OptionsApp() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 border-b flex items-center justify-between px-8 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
           <h2 className="text-lg font-bold capitalize">{activeTab}</h2>
-          
+
           <div className="flex items-center gap-4">
             {saving ? (
               <div className="flex items-center gap-2 text-xs font-medium text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
@@ -168,20 +178,20 @@ export default function OptionsApp() {
             {activeTab === 'overview' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <StatCard 
-                    label="Items Neutered" 
-                    value={stats.totalFiltered.toLocaleString()} 
+                  <StatCard
+                    label="Items Filtered"
+                    value={stats.totalFiltered.toLocaleString()}
                     icon={ShieldAlert}
                     trend="+12% today"
                   />
-                  <StatCard 
-                    label="Active Rules" 
-                    value={(settings.rules.blocklistChannels.length + settings.rules.blocklistKeywords.length).toString()} 
+                  <StatCard
+                    label="Active Rules"
+                    value={(settings.rules.blocklistChannels.length + settings.rules.blocklistKeywords.length).toString()}
                     icon={Database}
                   />
-                  <StatCard 
-                    label="Protection Level" 
-                    value={settings.processingMode === 'local_rules' ? "Basic" : "Neural"} 
+                  <StatCard
+                    label="Protection Level"
+                    value={settings.processingMode === 'local_rules' ? "Basic" : "Neural"}
                     icon={Zap}
                     highlight
                   />
@@ -200,9 +210,9 @@ export default function OptionsApp() {
                       </div>
                       <div className="flex items-center justify-between py-2 border-b">
                         <span className="text-sm text-muted-foreground">Master Toggle</span>
-                        <Switch 
-                          checked={settings.enabled} 
-                          onCheckedChange={(enabled) => saveSettings({ enabled })} 
+                        <Switch
+                          checked={settings.enabled}
+                          onCheckedChange={(enabled) => saveSettings({ enabled })}
                         />
                       </div>
                       <div className="flex items-center justify-between py-2">
@@ -217,7 +227,7 @@ export default function OptionsApp() {
                     <p className="text-sm opacity-90 leading-relaxed">
                       Using the Neural processing mode (BYOK or Hosted) allows CalmWeb to understand context and intent, not just keywords. This provides much more accurate protection against sophisticated clickbait.
                     </p>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('advanced')}
                       className="mt-4 text-xs font-bold uppercase tracking-wider bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
                     >
@@ -246,6 +256,15 @@ export default function OptionsApp() {
               </div>
             )}
 
+            {activeTab === 'neutralize' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <NeutralizeTab
+                  settings={settings.neutralization || defaultNeutralizationSettings}
+                  onChange={(neutralization) => saveSettings({ neutralization })}
+                />
+              </div>
+            )}
+
             {activeTab === 'advanced' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <AdvancedTab
@@ -263,8 +282,8 @@ export default function OptionsApp() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, trend, highlight = false }: { 
-  label: string, value: string, icon: any, trend?: string, highlight?: boolean 
+function StatCard({ label, value, icon: Icon, trend, highlight = false }: {
+  label: string, value: string, icon: any, trend?: string, highlight?: boolean
 }) {
   return (
     <Card className={clsx("relative overflow-hidden", highlight && "border-primary/30")}>
@@ -308,13 +327,132 @@ function PresetsTab({ presets, onChange }: PresetsTabProps) {
                 <p className="text-sm text-muted-foreground">{item.desc}</p>
               </div>
             </div>
-            <Switch 
-              checked={presets[item.id]} 
-              onCheckedChange={() => onChange({ ...presets, [item.id]: !presets[item.id] })} 
+            <Switch
+              checked={presets[item.id]}
+              onCheckedChange={() => onChange({ ...presets, [item.id]: !presets[item.id] })}
             />
           </Card>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Neutralize Tab Component
+// ============================================================================
+
+function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
+  const modes = [
+    { id: 'light', name: 'Light', desc: 'Only fix extreme cases (clickbait, obvious ragebait)', icon: '🌤️' },
+    { id: 'medium', name: 'Medium', desc: 'Balance between preserving voice and removing manipulation', icon: '⚖️' },
+    { id: 'strict', name: 'Strict', desc: 'Clinical, fact-only text. Maximum neutrality.', icon: '🔬' },
+  ] as const;
+
+  return (
+    <div className="space-y-8 max-w-2xl">
+      <Card padding="lg" className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-green-500/10 rounded-full text-green-500">
+            <Wand2 size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-lg">Enable Neutralization</h4>
+            <p className="text-sm text-muted-foreground">Automatically rewrite inflammatory headlines</p>
+          </div>
+        </div>
+        <Switch
+          checked={settings.enabled}
+          onCheckedChange={(enabled) => onChange({ ...settings, enabled })}
+        />
+      </Card>
+
+      <FormField
+        label="Neutralization Mode"
+        description="How aggressively to rewrite content"
+      >
+        <div className="grid grid-cols-1 gap-3 pt-2">
+          {modes.map((mode) => (
+            <div
+              key={mode.id}
+              onClick={() => onChange({ ...settings, mode: mode.id as 'light' | 'medium' | 'strict' })}
+              className={clsx(
+                "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                settings.mode === mode.id 
+                  ? "border-primary bg-primary/5" 
+                  : "border-transparent bg-muted/30 hover:bg-muted/50"
+              )}
+            >
+              <div className="text-2xl">{mode.icon}</div>
+              <div className="flex-1">
+                <div className="font-bold text-sm">{mode.name}</div>
+                <div className="text-xs text-muted-foreground">{mode.desc}</div>
+              </div>
+              <div className={clsx(
+                "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+                settings.mode === mode.id ? "border-primary" : "border-muted-foreground/30"
+              )}>
+                {settings.mode === mode.id && <div className="w-2 h-2 bg-primary rounded-full" />}
+              </div>
+            </div>
+          ))}
+        </div>
+      </FormField>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card padding="lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold mb-1">Show Indicator</h4>
+              <p className="text-xs text-muted-foreground">Display a badge on neutralized text</p>
+            </div>
+            <Switch
+              checked={settings.showIndicator}
+              onCheckedChange={(showIndicator) => onChange({ ...settings, showIndicator })}
+            />
+          </div>
+        </Card>
+
+        <Card padding="lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold mb-1">Show Diff on Hover</h4>
+              <p className="text-xs text-muted-foreground">Preview original vs rewritten on hover</p>
+            </div>
+            <Switch
+              checked={settings.showDiffOnHover}
+              onCheckedChange={(showDiffOnHover) => onChange({ ...settings, showDiffOnHover })}
+            />
+          </div>
+        </Card>
+      </div>
+
+      <FormField
+        label="Excluded Domains"
+        description="Domains where neutralization should not apply (one per line)"
+      >
+        <textarea
+          value={settings.excludeDomains.join('\n')}
+          onChange={(e) => {
+            const domains = e.target.value.split('\n').map(d => d.trim()).filter(Boolean);
+            onChange({ ...settings, excludeDomains: domains });
+          }}
+          placeholder="github.com&#10;stackoverflow.com&#10;docs.python.org"
+          className="flex min-h-[120px] w-full rounded-xl border border-input bg-background p-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono"
+        />
+      </FormField>
+
+      <Card padding="lg" className="bg-muted/50">
+        <h4 className="font-bold mb-2 flex items-center gap-2">
+          <Info size={16} className="text-primary" />
+          How it works
+        </h4>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          When neutralization is enabled, CalmWeb analyzes headlines and titles for emotional manipulation, 
+          clickbait patterns, and inflammatory language. Content is rewritten to be factual and neutral 
+          while preserving the core message. You can always click to see the original text.
+        </p>
+      </Card>
     </div>
   );
 }
@@ -337,7 +475,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, onChange }: Advanced
               { id: 'byok_llm', name: 'Custom AI (BYOK)', desc: 'Connect your own OpenAI/Anthropic key.', icon: Zap },
               { id: 'hosted_llm', name: 'CalmWeb Cloud', desc: 'Our managed neural engine (Pro).', icon: ShieldCheck },
             ].map((mode) => (
-              <div 
+              <div
                 key={mode.id}
                 onClick={() => onChange({ processingMode: mode.id as any })}
                 className={clsx(
@@ -436,7 +574,7 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
             <div className="w-2 h-8 bg-red-500 rounded-full" />
             <h3 className="text-lg font-bold">Blacklist</h3>
           </div>
-          
+
           <FormField
             label="Sources to Mute"
             description="Channel names or handles to remove from your feed."
@@ -467,7 +605,7 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
             <div className="w-2 h-8 bg-green-500 rounded-full" />
             <h3 className="text-lg font-bold">Whitelist</h3>
           </div>
-          
+
           <FormField
             label="Trusted Sources"
             description="Channels that will never be filtered."
@@ -496,5 +634,3 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
     </div>
   );
 }
-
-
