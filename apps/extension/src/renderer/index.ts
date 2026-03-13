@@ -1,6 +1,6 @@
 /**
  * Renderer Module for CalmWeb
- * 
+ *
  * Provides UI rendering for content decisions:
  * - Collapse: Placeholder with expand option
  * - Neutralize: Text replacement with indicator
@@ -15,4 +15,11 @@ export {
   type CollapseOptions,
 } from './collapse';
 
-export { createNeutralizeIndicator, createNeutralizeStyles, type NeutralizeOptions } from './neutralize';
+export {
+  createNeutralizeIndicator,
+  createNeutralizeStyles,
+  toggleNeutralizedView,
+  isNeutralized,
+  getNeutralizedInfo,
+  type NeutralizeOptions,
+} from './neutralize';
