@@ -13,7 +13,7 @@ import { z } from 'zod';
 export const ProcessingModeSchema = z.enum(['local_rules', 'byok_llm', 'hosted_llm']);
 export type ProcessingMode = z.infer<typeof ProcessingModeSchema>;
 
-export const ActionDecisionSchema = z.enum(['show', 'blur', 'hide', 'neutralize', 'rebuild']);
+export const ActionDecisionSchema = z.enum(['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild']);
 export type ActionDecision = z.infer<typeof ActionDecisionSchema>;
 
 // ============================================================================
