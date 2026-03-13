@@ -11,37 +11,7 @@ import type { ContentUnit, ClassificationResult, UserRules } from '@calmweb/shar
 import type { ApiClient } from '@dracon/wxt-shared/api';
 import { matchPresetKeywords, matchPresetChannel, getPreset } from '@/src/presets';
 
-// ============================================================================
-// Preset Keyword Definitions
-// ============================================================================
-
-const PRESET_KEYWORDS: Record<keyof PresetSelection, string[]> = {
-  politics: [
-    'election', 'vote', 'democrat', 'republican', 'biden', 'trump', 'congress', 'senate',
-    'political', 'president', 'white house', 'parliament', 'prime minister', 'candidate',
-    'campaign', 'ballot', 'poll', 'liberal', 'conservative', 'socialist', 'marxist',
-  ],
-  ragebait: [
-    'outrage', 'shocking', 'disgusting', 'makes you mad', 'angry', 'furious', 'fume',
-    'cannot believe', 'you won\'t believe', 'unbelievable', 'horrific', 'terrible',
-    'enraging', 'rant', 'hate', 'despicable', 'disgraceful',
-  ],
-  spoilers: [
-    'spoiler', 'ending explained', 'twist', 'dies', 'death', 'killed', 'murder',
-    'plot leak', 'revealed', 'conclusion', 'finale', 'who did it', 'secret ending',
-  ],
-  clickbait: [
-    'you need to see', 'mind blowing', 'will shock you', 'secret', 'they don\'t want you to know',
-    'doctors hate him', 'one weird trick', 'this Simple', 'miracle', 'amazing', 'incredible',
-    'you\'ll never guess', 'guess what', 'jaw-dropping', 'life changing', 'hack', 'cheat',
-  ],
-};
-
-function matchesPresetKeywords(title: string, preset: keyof PresetSelection): boolean {
-  const keywords = PRESET_KEYWORDS[preset];
-  const titleLower = title.toLowerCase();
-  return keywords.some(kw => titleLower.includes(kw.toLowerCase()));
-}
+const COLLAPSE_DECISIONS = ['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild'] as const;
 
 // ============================================================================
 // Rules Engine
@@ -53,34 +23,47 @@ function matchesPresetKeywords(title: string, preset: keyof PresetSelection): bo
  */
 export function applyLocalRules(unit: ContentUnit, rules: UserRules): ClassificationResult | null {
   const titleLower = unit.title.toLowerCase();
+  const presets = rules.presets;
 
   // 1. Check active presets (politics, ragebait, spoilers, clickbait)
-  const presets = rules.presets;
-  if (presets.politics && matchesPresetKeywords(unit.title, 'politics')) {
-    return { decision: 'hide', confidence: 0.9, reason: 'preset_politics' };
-  }
-  if (presets.ragebait && matchesPresetKeywords(unit.title, 'ragebait')) {
-    return { decision: 'hide', confidence: 0.9, reason: 'preset_ragebait' };
-  }
-  if (presets.spoilers && matchesPresetKeywords(unit.title, 'spoilers')) {
-    return { decision: 'hide', confidence: 0.9, reason: 'preset_spoilers' };
-  }
-  if (presets.clickbait && matchesPresetKeywords(unit.title, 'clickbait')) {
-    return { decision: 'hide', confidence: 0.9, reason: 'preset_clickbait' };
+  const presetIds = ['politics', 'ragebait', 'spoilers', 'clickbait'] as const;
+  
+  for (const presetId of presetIds) {
+    if (presets[presetId]) {
+      // Check keywords
+      if (matchPresetKeywords(unit.title, presetId)) {
+        const preset = getPreset(presetId);
+        return {
+          decision: preset?.actions.default || 'collapse',
+          confidence: preset?.actions.confidence || 0.85,
+          reason: `preset_${presetId}`,
+        };
+      }
+      
+      // Check channels
+      if (matchPresetChannel(unit.sourceName, presetId)) {
+        const preset = getPreset(presetId);
+        return {
+          decision: preset?.actions.default || 'collapse',
+          confidence: (preset?.actions.confidence || 0.85) + 0.1,
+          reason: `preset_${presetId}_channel`,
+        };
+      }
+    }
   }
 
   // 2. Check user-defined blocklist channels
   if (unit.sourceName && rules.blocklistChannels.length > 0) {
     const sourceLower = unit.sourceName.toLowerCase();
     if (rules.blocklistChannels.some(chan => sourceLower.includes(chan.toLowerCase()))) {
-      return { decision: 'hide', confidence: 1.0, reason: 'blocklist_channel' };
+      return { decision: 'collapse', confidence: 1.0, reason: 'blocklist_channel' };
     }
   }
 
   // 3. Check user-defined blocklist keywords
   if (rules.blocklistKeywords.length > 0) {
     if (rules.blocklistKeywords.some(keyword => titleLower.includes(keyword.toLowerCase()))) {
-      return { decision: 'hide', confidence: 0.9, reason: 'blocklist_keyword' };
+      return { decision: 'collapse', confidence: 0.9, reason: 'blocklist_keyword' };
     }
   }
 
