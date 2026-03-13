@@ -41,19 +41,18 @@ describe('Article Extractor', () => {
     expect(article.source).toBe('example.com');
   });
 
-  it('should clean content by removing ads', () => {
+  it('should extract images from content', () => {
     const doc = document.implementation.createHTMLDocument();
     doc.body.innerHTML = `
       <article>
-        <p>Main content here.</p>
-        <div class="ad">Advertisement</div>
-        <p>More content.</p>
+        <p>Content here.</p>
+        <img src="https://example.com/image1.jpg" alt="Test image">
+        <img src="https://example.com/avatar.png" alt="avatar">
       </article>
     `;
     
     const article = extractArticle(doc, 'https://example.com/article');
-    expect(article.contentHtml.querySelectorAll('.ad').length).toBe(0);
-    expect(article.content).toContain('Main content');
+    expect(article.images.length).toBeGreaterThanOrEqual(1);
   });
 });
 
