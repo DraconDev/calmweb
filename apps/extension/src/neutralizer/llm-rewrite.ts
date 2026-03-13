@@ -69,13 +69,14 @@ async function callLLM(
   mode: RewriteMode,
   config: LLMConfig
 ): Promise<LLMRewriteResponse> {
+  const response = await fetch(config.endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${settings.llmApiKey}`,
+      'Authorization': `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: settings.llmModel || 'gpt-3.5-turbo',
+      model: config.model,
       messages: [
         { role: 'system', content: buildSystemPrompt(mode) },
         { role: 'user', content: buildUserPrompt(text) },
@@ -88,6 +89,54 @@ async function callLLM(
   if (!response.ok) {
     throw new Error(`LLM request failed: ${response.status}`);
   }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  
+  if (!content) {
+    throw new Error('No content in LLM response');
+  }
+
+  try {
+    return JSON.parse(content) as LLMRewriteResponse;
+  } catch {
+    return {
+      rewritten: content.trim(),
+      changes: [],
+    };
+  }
+}
+
+export async function rewriteWithLLM(
+  text: string,
+  options: { mode: RewriteMode },
+  settings: UserSettings
+): Promise<RewriteResult> {
+  const config = getLLMConfig(settings);
+  if (!config) {
+    throw new Error('LLM not configured');
+  }
+
+  const response = await callLLM(text, options.mode, config);
+
+  const changes = response.changes.map(c => ({
+    original: c.original,
+    replacement: c.replacement,
+    reason: c.reason,
+  }));
+
+  const confidence = response.rewritten !== text 
+    ? Math.min(0.95, 0.7 + (changes.length * 0.05))
+    : 1.0;
+
+  return {
+    original: text,
+    rewritten: response.rewritten,
+    changes,
+    confidence,
+    mode: options.mode,
+  };
+}
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content;
