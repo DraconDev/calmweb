@@ -1,140 +1,93 @@
-/**
- * Sentiment Analysis for CalmWeb
- * 
- * Local, keyword-based sentiment analysis without external API calls.
- */
+import { z } from 'zod';
 
-import type { SentimentResult } from './types';
+export const SentimentResultSchema = z.object({
+  score: z.number().min(-1).max(1),
+  magnitude: z.number().min(0).max(1),
+  emotions: z.object({
+    anger: z.number().min(0).max(1),
+    fear: z.number().min(0).max(1),
+    sadness: z.number().min(0).max(1),
+    joy: z.number().min(0).max(1),
+    disgust: z.number().min(0).max(1),
+  }),
+});
 
-// Emotion keyword patterns with weights
-const EMOTION_PATTERNS = {
+export type SentimentResult = z.infer<typeof SentimentResultSchema>;
+
+const NEGATIVE_PATTERNS = {
   anger: [
-    { pattern: /\b(outrage|outraged|outraging)\b/gi, weight: 0.9 },
-    { pattern: /\b(furious|fury|fuming)\b/gi, weight: 0.85 },
-    { pattern: /\b(angry|anger|enraged)\b/gi, weight: 0.7 },
-    { pattern: /\b(hate|hatred|loathe|despise)\b/gi, weight: 0.8 },
-    { pattern: /\b(disgusting|disgust|appalling)\b/gi, weight: 0.75 },
-    { pattern: /\b(despicable|disgraceful|shameful)\b/gi, weight: 0.7 },
-    { pattern: /\b(rage|enraging|infuriating)\b/gi, weight: 0.85 },
-    { pattern: /\b(makes? you (mad|angry|furious))\b/gi, weight: 0.8 },
+    /\b(outrage|furious|angry|rage|fuming|livid|irate|incensed)\b/gi,
+    /\b(hate|loathe|despise|detest)\b/gi,
+    /\b(this will make you (angry|furious|mad))\b/gi,
   ],
   fear: [
-    { pattern: /\b(terrifying|terrified|terror)\b/gi, weight: 0.9 },
-    { pattern: /\b(scary|scared|frightening)\b/gi, weight: 0.7 },
-    { pattern: /\b(danger|dangerous|threat)\b/gi, weight: 0.75 },
-    { pattern: /\b(crisis|disaster|catastrophe)\b/gi, weight: 0.8 },
-    { pattern: /\b(warning|warn|alert)\b/gi, weight: 0.5 },
-    { pattern: /\b(fear|fearful|afraid)\b/gi, weight: 0.75 },
-    { pattern: /\b(doom|collapse|ruin)\b/gi, weight: 0.85 },
-    { pattern: /\b(panic|panicking|hysteria)\b/gi, weight: 0.8 },
+    /\b(terrifying|horrifying|scary|nightmare|doom|crisis)\b/gi,
+    /\b(they don't want you to know)\b/gi,
+    /\b(warning|alert|danger|threat)\b/gi,
   ],
   sadness: [
-    { pattern: /\b(sad|sadness|unhappy)\b/gi, weight: 0.6 },
-    { pattern: /\b(tragic|tragedy|heartbreaking)\b/gi, weight: 0.85 },
-    { pattern: /\b(grief|grieving|mourn)\b/gi, weight: 0.8 },
-    { pattern: /\b(depressing|depressed|depression)\b/gi, weight: 0.75 },
-    { pattern: /\b(devastating|devastated)\b/gi, weight: 0.85 },
-    { pattern: /\b(hopeless|despair|misery)\b/gi, weight: 0.8 },
-    { pattern: /\b(suffering|suffer|painful)\b/gi, weight: 0.7 },
-    { pattern: /\b(loss|lost|died|death)\b/gi, weight: 0.65 },
-  ],
-  joy: [
-    { pattern: /\b(amazing|wonderful|fantastic)\b/gi, weight: 0.8 },
-    { pattern: /\b(happy|happiness|joy)\b/gi, weight: 0.7 },
-    { pattern: /\b(exciting|excited|thrilled)\b/gi, weight: 0.75 },
-    { pattern: /\b(celebrat|cheer|delight)\b/gi, weight: 0.7 },
-    { pattern: /\b(love|loved|loving)\b/gi, weight: 0.65 },
-    { pattern: /\b(beautiful|gorgeous|stunning)\b/gi, weight: 0.6 },
-    { pattern: /\b(success|successful|triumph)\b/gi, weight: 0.7 },
-    { pattern: /\b(win|won|victory)\b/gi, weight: 0.65 },
+    /\b(devastating|heartbreaking|tragic|tearjerker|grief)\b/gi,
+    /\b(sob story|sad|depressing|melancholy)\b/gi,
   ],
   disgust: [
-    { pattern: /\b(gross|disgusting|repulsive)\b/gi, weight: 0.85 },
-    { pattern: /\b(nasty|vile|filthy)\b/gi, weight: 0.8 },
-    { pattern: /\b(revolting|repugnant|sickening)\b/gi, weight: 0.85 },
-    { pattern: /\b(ew|yuck|blech)\b/gi, weight: 0.9 },
-    { pattern: /\b(crime|criminal|scandal)\b/gi, weight: 0.6 },
-    { pattern: /\b(corrupt|corruption)\b/gi, weight: 0.65 },
+    /\b(disgusting|revolting|repulsive|gross|vile|sickening)\b/gi,
+    /\b(nasty|appalling|atrocious)\b/gi,
+  ],
+  joy: [
+    /\b(amazing|incredible|wonderful|fantastic|thrilled|ecstatic)\b/gi,
+    /\b(joy|delight|happiness|bliss)\b/gi,
   ],
 };
 
-// General sentiment patterns
-const NEGATIVE_PATTERNS = [
-  /\b(bad|terrible|horrible|awful)\b/gi,
-  /\b(worst|fail|failure|failed)\b/gi,
-  /\b(wrong|mistake|error|broken)\b/gi,
-  /\b(problem|issue|trouble|difficult)\b/gi,
-  /\b(never|don'?t|won'?t|can'?t)\b/gi,
-];
+const INTENSITY_WORDS: Record<string, number> = {
+  'extremely': 0.9,
+  'incredibly': 0.85,
+  'absolutely': 0.8,
+  'totally': 0.75,
+  'very': 0.7,
+  'really': 0.65,
+  'quite': 0.5,
+  'somewhat': 0.4,
+  'slightly': 0.3,
+  'a bit': 0.2,
+};
 
-const POSITIVE_PATTERNS = [
-  /\b(good|great|excellent|superb)\b/gi,
-  /\b(best|perfect|amazing|awesome)\b/gi,
-  /\b(right|correct|success|works?)\b/gi,
-  /\b(easy|simple|fast|quick)\b/gi,
-  /\b(love|recommend|must( have| watch| read))\b/gi,
-];
+function countMatches(text: string, patterns: RegExp[]): number {
+  let count = 0;
+  for (const pattern of patterns) {
+    const matches = text.match(pattern);
+    if (matches) count += matches.length;
+  }
+  return count;
+}
 
-const INTENSIFIERS = [
-  /\b(very|really|extremely|incredibly)\b/gi,
-  /\b(absolutely|totally|completely|utterly)\b/gi,
-  /\b(so|such|quite|rather)\b/gi,
-];
+function getIntensityModifier(text: string): number {
+  for (const [word, value] of Object.entries(INTENSITY_WORDS)) {
+    if (text.toLowerCase().includes(word)) {
+      return value;
+    }
+  }
+  return 0.5;
+}
 
 export function analyzeSentiment(text: string): SentimentResult {
-  const emotions: SentimentResult['emotions'] = {
-    anger: 0,
-    fear: 0,
-    sadness: 0,
-    joy: 0,
-    disgust: 0,
+  const emotions = {
+    anger: Math.min(1, countMatches(text, NEGATIVE_PATTERNS.anger) * 0.25),
+    fear: Math.min(1, countMatches(text, NEGATIVE_PATTERNS.fear) * 0.25),
+    sadness: Math.min(1, countMatches(text, NEGATIVE_PATTERNS.sadness) * 0.25),
+    joy: Math.min(1, countMatches(text, NEGATIVE_PATTERNS.joy) * 0.2),
+    disgust: Math.min(1, countMatches(text, NEGATIVE_PATTERNS.disgust) * 0.25),
   };
 
-  // Analyze emotions
-  for (const [emotion, patterns] of Object.entries(EMOTION_PATTERNS)) {
-    let score = 0;
-    for (const { pattern, weight } of patterns) {
-      const matches = text.match(pattern);
-      if (matches) {
-        score += matches.length * weight;
-      }
-    }
-    // Normalize to 0-1 range
-    emotions[emotion as keyof typeof emotions] = Math.min(1, score / 3);
-  }
+  const negativeEmotions = emotions.anger + emotions.fear + emotions.sadness + emotions.disgust;
+  const positiveEmotions = emotions.joy;
 
-  // Calculate overall sentiment score
-  let positiveScore = 0;
-  let negativeScore = 0;
-
-  for (const pattern of POSITIVE_PATTERNS) {
-    const matches = text.match(pattern);
-    if (matches) positiveScore += matches.length;
-  }
-
-  for (const pattern of NEGATIVE_PATTERNS) {
-    const matches = text.match(pattern);
-    if (matches) negativeScore += matches.length;
-  }
-
-  // Check for intensifiers
-  let intensifierMultiplier = 1;
-  for (const pattern of INTENSIFIERS) {
-    const matches = text.match(pattern);
-    if (matches) intensifierMultiplier += matches.length * 0.2;
-  }
-
-  // Calculate final score (-1 to +1)
-  const totalMatches = positiveScore + negativeScore;
-  let score = 0;
-  if (totalMatches > 0) {
-    score = ((positiveScore - negativeScore) / totalMatches) * intensifierMultiplier;
-    score = Math.max(-1, Math.min(1, score));
-  }
-
-  // Calculate magnitude (intensity)
-  const emotionSum = Object.values(emotions).reduce((a, b) => a + b, 0);
-  const magnitude = Math.min(1, (emotionSum + totalMatches * 0.1) / 5);
+  const intensityModifier = getIntensityModifier(text);
+  
+  const rawScore = (positiveEmotions - negativeEmotions) / 4;
+  const score = Math.max(-1, Math.min(1, rawScore));
+  
+  const magnitude = Math.min(1, (negativeEmotions + positiveEmotions) * intensityModifier);
 
   return {
     score,
@@ -143,10 +96,14 @@ export function analyzeSentiment(text: string): SentimentResult {
   };
 }
 
-export function isNegativeSentiment(result: SentimentResult, threshold = -0.3): boolean {
-  return result.score < threshold;
+export function isHighlyNegative(result: SentimentResult, threshold = 0.3): boolean {
+  return result.score < -threshold && result.magnitude > 0.4;
 }
 
-export function isHighlyEmotional(result: SentimentResult, threshold = 0.5): boolean {
-  return result.magnitude > threshold;
+export function hasHighAnger(result: SentimentResult, threshold = 0.3): boolean {
+  return result.emotions.anger > threshold;
+}
+
+export function hasHighFear(result: SentimentResult, threshold = 0.3): boolean {
+  return result.emotions.fear > threshold;
 }
