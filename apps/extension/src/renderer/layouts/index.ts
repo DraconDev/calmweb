@@ -179,7 +179,6 @@ const renderFooter = (article: ExtractedArticle): string => `
 `;
 
 function escapeHtml(text: string): string {
-  const div = { textContent: '' };
   const span = document.createElement('span');
   span.textContent = text;
   return span.innerHTML;
