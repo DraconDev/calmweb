@@ -142,7 +142,7 @@ export const defaultShortcuts: ShortcutDefinition[] = [
     description: 'Enable or disable CalmWeb globally',
     defaultCombo: SHORTCUT_DEFAULTS.toggleExtension,
     action: () => {
-      browser.runtime.sendMessage({ type: 'TOGGLE_EXTENSION' });
+      console.log('[CalmWeb] Toggle extension shortcut triggered');
     },
   },
   {
@@ -151,7 +151,7 @@ export const defaultShortcuts: ShortcutDefinition[] = [
     description: 'Open or close the Super Reader overlay',
     defaultCombo: SHORTCUT_DEFAULTS.toggleReader,
     action: () => {
-      browser.runtime.sendMessage({ type: 'TOGGLE_READER' });
+      console.log('[CalmWeb] Toggle reader shortcut triggered');
     },
   },
   {
@@ -160,7 +160,7 @@ export const defaultShortcuts: ShortcutDefinition[] = [
     description: 'Switch to the next reader layout',
     defaultCombo: SHORTCUT_DEFAULTS.cycleLayout,
     action: () => {
-      browser.runtime.sendMessage({ type: 'CYCLE_READER_LAYOUT' });
+      console.log('[CalmWeb] Cycle layout shortcut triggered');
     },
   },
 ];
