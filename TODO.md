@@ -33,6 +33,11 @@ A browser extension that transforms your web experience in three ways:
 - ✅ Enhanced stats tracking (daily history, time saved)
 - ✅ Keyboard shortcuts management
 
+### Final Polish ✅
+- ✅ Overhauled popup with quick toggles
+- ✅ Hash-based tab navigation for settings page
+- ✅ Context menu permission added
+
 ---
 
 ## Test Results
@@ -44,109 +49,36 @@ TypeScript: Compiles clean
 
 ---
 
-## Architecture
+## Popup Features
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    CALMWEB ARCHITECTURE                  │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│   ┌──────────┐    ┌──────────┐    ┌──────────────────┐   │
-│   │  CONTENT │───►│ CLASSIFY │───►│     DECIDE       │   │
-│   │  SCRIPTS │    │  ENGINE  │    │  (hide/blur/     │   │
-│   │          │    │          │    │   neutralize/    │   │
-│   │  Site    │    │  Rules   │    │   collapse/      │   │
-│   │  Adapters│    │  Cache   │    │   reader)        │   │
-│   └──────────┘    │  LLM     │    └──────────────────┘   │
-│                    └──────────┘             │            │
-│                                             ▼            │
-│   ┌──────────────────────────────────────────────────┐   │
-│   │                   RENDERER                       │   │
-│   │  ┌─────────┐ ┌─────────┐ ┌──────────────────┐   │   │
-│   │  │ Collapse│ │Neutralize│ │  SUPER READER   │   │   │
-│   │  │ Overlay │ │Indicator │ │  5 Layouts      │   │   │
-│   │  └─────────┘ └─────────┘ │  4 Themes       │   │   │
-│   │                          └──────────────────┘   │   │
-│   └──────────────────────────────────────────────────┘   │
-│                                                           │
-│   ┌──────────────────────────────────────────────────┐   │
-│   │              PERFORMANCE & STATS                  │   │
-│   │  LazyClassifier • BatchProcessor • EnhancedStats │   │
-│   │  Debounce • Throttle • Context Menu              │   │
-│   └──────────────────────────────────────────────────┘   │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-```
+The new popup (380x520px) includes:
+- **Header**: Shield icon with status indicator, master toggle
+- **Stats Card**: Total filtered, presets active, neutralization status
+- **Quick Filters**: 4 preset toggles (Politics, Ragebait, Spoilers, Clickbait)
+- **Neutralization Toggle**: One-click enable/disable with status
+- **Action Buttons**: Presets, Rules, Dashboard (opens settings page in new tab)
+
+## Settings Page
+
+Full dashboard with sidebar navigation:
+- **Overview**: Stats, status, master toggle
+- **Presets**: Toggle presets with descriptions
+- **Custom Rules**: Blocklist/allowlist channels & keywords
+- **Neutralize**: Mode, indicators, domain exclusions
+- **AI & Advanced**: Processing mode, API keys, cache
+
+Hash routing: `options.html#presets`, `options.html#rules`, etc.
 
 ---
 
-## Key Files Created
+## Context Menu Items
 
-### Core Modules
-```
-apps/extension/src/
-├── neutralizer/          # Text neutralization
-│   ├── sentiment.ts      # Emotion detection
-│   ├── tone-classifier.ts # Tone detection
-│   ├── rewriter.ts       # Rewriting engine
-│   ├── local-rules.ts    # 30+ patterns
-│   └── llm-rewrite.ts    # LLM integration
-│
-├── renderer/             # UI rendering
-│   ├── collapse.ts       # Collapse placeholder
-│   ├── neutralize.ts     # Neutralization indicator
-│   ├── reader.ts         # Reader overlay
-│   ├── extractor/        # Article extraction
-│   ├── layouts/          # 5 layouts
-│   └── themes/           # 4 themes
-│
-├── presets/              # Filter presets
-│   ├── politics.ts       # 60+ keywords
-│   ├── ragebait.ts       # Outrage patterns
-│   ├── spoilers.ts       # Spoiler detection
-│   └── clickbait.ts      # Clickbait patterns
-│
-├── performance/          # Optimizations
-│   └── index.ts          # LazyClassifier, BatchProcessor
-│
-├── shortcuts/            # Keyboard shortcuts
-│   └── index.ts          # ShortcutManager
-│
-└── stats/                # Enhanced statistics
-    └── index.ts          # Tracking, weekly reports
-```
-
----
-
-## Features Summary
-
-### Filtering
-- Hide, blur, collapse, or neutralize content
-- Preset libraries for politics, ragebait, spoilers, clickbait
-- Custom blocklist/allowlist for channels and keywords
-- Per-site adapter support (YouTube, Reddit, X, universal)
-
-### Neutralization
-- Sentiment analysis with emotion detection
-- Tone classification (6 manipulation types)
-- 3 modes: light, medium, strict
-- Local rules + LLM fallback
-- Visual indicators with diff view
-
-### Super Reader
-- Article extraction from any webpage
-- 5 layouts: Newspaper, Terminal, Card, Feed, Magazine
-- 4 themes: Light, Dark, Sepia, Midnight
-- Keyboard shortcut: Alt+R
-- Toolbar with layout/theme switching
-
-### Infrastructure
-- Lazy classification with IntersectionObserver
-- Batch processing for performance
-- Context menu integration (6 items)
-- Enhanced stats with daily history
-- Weekly report generation
-- Debounce/throttle utilities
+Right-click anywhere to access:
+1. Toggle CalmWeb
+2. Open in Super Reader
+3. Neutralize Selected Text
+4. Open Settings
+5. View Statistics
 
 ---
 
@@ -158,16 +90,6 @@ apps/extension/src/
 | `Alt+Shift+E` | Toggle Extension |
 | `Alt+L` | Cycle Reader Layout |
 | `Esc` | Close Reader |
-
----
-
-## Context Menu Items
-
-1. **Toggle CalmWeb** - Enable/disable globally
-2. **Open in Super Reader** - Launch reader on current page
-3. **Neutralize Selected Text** - Rewrite selected text
-4. **Open Settings** - Open options page
-5. **View Statistics** - View filtering stats
 
 ---
 
