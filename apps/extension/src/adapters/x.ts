@@ -73,6 +73,19 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
     return;
   }
 
+  if (result.decision === 'collapse') {
+    const placeholder = createCollapsePlaceholder({
+      reason: result.reason,
+      originalElement: element,
+      result,
+      siteId: 'x',
+    });
+    element.style.display = 'none';
+    element.insertAdjacentElement('afterend', placeholder);
+    element.setAttribute('data-calmweb-processed', 'collapsed');
+    return;
+  }
+
   if (result.decision === 'blur') {
     element.classList.add('calmweb-blurred');
     element.setAttribute('data-calmweb-processed', 'blur');

@@ -6,6 +6,7 @@
 
 import type { SiteAdapter } from '@calmweb/shared';
 import { generateFingerprint } from '@calmweb/shared';
+import { createCollapsePlaceholder } from '@/src/renderer/collapse';
 
 // Generic selectors for common web content
 const SELECTORS = {
@@ -56,6 +57,16 @@ export const universalAdapter: SiteAdapter = {
     if (result.decision === 'hide') {
       element.style.display = 'none';
       element.setAttribute('data-calmweb-processed', 'hidden');
+    } else if (result.decision === 'collapse') {
+      const placeholder = createCollapsePlaceholder({
+        reason: result.reason,
+        originalElement: element,
+        result,
+        siteId: 'universal',
+      });
+      element.style.display = 'none';
+      element.insertAdjacentElement('afterend', placeholder);
+      element.setAttribute('data-calmweb-processed', 'collapsed');
     } else if (result.decision === 'blur') {
       element.classList.add('calmweb-blurred');
       element.setAttribute('data-calmweb-processed', 'blur');
