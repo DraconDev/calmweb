@@ -48,7 +48,11 @@ interface NeutralizeTabProps {
 }
 
 export default function OptionsApp() {
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const hash = window.location.hash.slice(1) as TabId;
+    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize', 'advanced'];
+    return validTabs.includes(hash) ? hash : 'overview';
+  });
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [stats, setStats] = useState<Stats>({ totalFiltered: 0, lastReset: Date.now() });
   const [loading, setLoading] = useState(true);
@@ -57,6 +61,10 @@ export default function OptionsApp() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    window.location.hash = activeTab;
+  }, [activeTab]);
 
   const loadData = async () => {
     try {
