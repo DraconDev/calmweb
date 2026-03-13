@@ -16,7 +16,7 @@ export default defineContentScript({
         }
       });
 
-      browser.runtime.onMessage.addListener((message) => {
+      browser.runtime.onMessage.addListener((message: { type: string }) => {
         if (message.type === 'TOGGLE_READER') {
           toggleReader();
         }
