@@ -164,8 +164,7 @@ Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if 
     }
 
     // Validate decision
-    const validDecisions = ['show', 'blur', 'hide', 'neutralize', 'rebuild'];
-    if (!validDecisions.includes(parsed.decision)) {
+    if (!VALID_DECISIONS.includes(parsed.decision as typeof VALID_DECISIONS[number])) {
       parsed.decision = 'show';
     }
 
