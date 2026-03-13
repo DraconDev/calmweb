@@ -44,7 +44,8 @@ function getReasonIcon(reason: string): string {
 }
 
 export function createCollapsePlaceholder(options: CollapseOptions): HTMLElement {
-  const { reason, originalElement, result, onExpand, siteId } = options;
+  const { reason, originalElement, result: _result, onExpand, siteId } = options;
+  _result;
   
   const container = document.createElement('div');
   container.className = 'calmweb-collapse-container';
