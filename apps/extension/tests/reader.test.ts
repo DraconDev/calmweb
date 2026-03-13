@@ -52,7 +52,7 @@ describe('Article Extractor', () => {
     `;
     
     const article = extractArticle(doc, 'https://example.com/article');
-    expect(article.content).not.toContain('Advertisement');
+    expect(article.contentHtml.querySelectorAll('.ad').length).toBe(0);
     expect(article.content).toContain('Main content');
   });
 });
