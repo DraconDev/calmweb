@@ -243,22 +243,21 @@ Respond with JSON: { "decision": "...", "confidence": 0.0-1.0, "reason": "...", 
     } catch (e) {
       // Fallback: parse plain text response
       const content = contentStr.toLowerCase();
-      if (content.includes('hide')) {
+      if (content.includes('collapse')) {
+        parsed = { decision: 'collapse', confidence: 0.9, reason: 'hosted' };
+      } else if (content.includes('hide')) {
         parsed = { decision: 'hide', confidence: 0.9, reason: 'hosted' };
       } else if (content.includes('blur')) {
         parsed = { decision: 'blur', confidence: 0.9, reason: 'hosted' };
       } else if (content.includes('neutralize')) {
         parsed = { decision: 'neutralize', confidence: 0.9, reason: 'hosted' };
-      } else if (content.includes('rebuild')) {
-        parsed = { decision: 'rebuild', confidence: 0.9, reason: 'hosted' };
       } else {
         parsed = { decision: 'show', confidence: 0.9, reason: 'hosted' };
       }
     }
 
     // Validate decision
-    const validDecisions = ['show', 'blur', 'hide', 'neutralize', 'rebuild'];
-    if (!validDecisions.includes(parsed.decision)) {
+    if (!VALID_DECISIONS.includes(parsed.decision as typeof VALID_DECISIONS[number])) {
       parsed.decision = 'show';
     }
 
