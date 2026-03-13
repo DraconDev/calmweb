@@ -29,12 +29,12 @@ const NEUTRALIZATION_RULES: NeutralizationRule[] = [
     strength: 'light',
   },
   {
-    pattern: /\b(outrage( over| about| as)?)\b/gi,
+    pattern: /\boutrage\b/gi,
     replacement: 'discussion',
     strength: 'medium',
   },
   {
-    pattern: /\b(furious( about| over| at)?)\b/gi,
+    pattern: /\bfurious\b/gi,
     replacement: 'concerned',
     strength: 'medium',
   },
