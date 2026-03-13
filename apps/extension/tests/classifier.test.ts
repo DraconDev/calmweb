@@ -12,7 +12,7 @@ describe('applyLocalRules', () => {
     isNew: false,
   };
 
-  it('should hide based on blocklist channel', () => {
+  it('should collapse based on blocklist channel', () => {
     const rules: UserRules = {
       blocklistChannels: ['CNN'],
       blocklistKeywords: [],
@@ -23,11 +23,11 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, sourceName: 'CNN News' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('collapse');
     expect(result!.reason).toBe('blocklist_channel');
   });
 
-  it('should hide based on blocklist keyword (case insensitive)', () => {
+  it('should collapse based on blocklist keyword (case insensitive)', () => {
     const rules: UserRules = {
       blocklistChannels: [],
       blocklistKeywords: ['spoiler'],
@@ -38,7 +38,7 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, title: 'This movie has a SPOILER' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('collapse');
     expect(result!.reason).toBe('blocklist_keyword');
   });
 
@@ -95,7 +95,7 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, title: 'Election results coming in' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('collapse');
     expect(result!.reason).toBe('preset_politics');
   });
 
@@ -110,7 +110,7 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, title: 'This will make you angry' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('collapse');
     expect(result!.reason).toBe('preset_ragebait');
   });
 
@@ -125,7 +125,7 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, title: 'The twist ending revealed' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('blur');
     expect(result!.reason).toBe('preset_spoilers');
   });
 
@@ -140,7 +140,7 @@ describe('applyLocalRules', () => {
     const unit = { ...baseUnit, title: 'You won\'t believe this hack' };
     const result = applyLocalRules(unit, rules);
     expect(result).not.toBeNull();
-    expect(result!.decision).toBe('hide');
+    expect(result!.decision).toBe('collapse');
     expect(result!.reason).toBe('preset_clickbait');
   });
 });
