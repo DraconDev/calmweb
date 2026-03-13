@@ -214,10 +214,10 @@ export async function classifyWithHosted(
           role: 'system',
           content: `You are CalmWeb moderation assistant. Classify content as one of:
 - "show": safe content
-- "blur": sensitive but not harmful
-- "hide": undesirable content (clickbait, ragebait, spam, explicit)
+- "blur": sensitive but not harmful (spoilers, mild content)
+- "collapse": potentially unwanted content (politics, clickbait, ragebait) - show placeholder
+- "hide": clearly harmful content (spam, explicit, misinformation)
 - "neutralize": misleading title, suggest better one
-- "rebuild": problematic structure, needs reformatting
 
 Respond with JSON: { "decision": "...", "confidence": 0.0-1.0, "reason": "...", "neutralizedTitle?" "optional" }`,
         },
