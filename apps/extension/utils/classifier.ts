@@ -11,7 +11,7 @@ import type { ContentUnit, ClassificationResult, UserRules } from '@calmweb/shar
 import type { ApiClient } from '@dracon/wxt-shared/api';
 import { matchPresetKeywords, matchPresetChannel, getPreset } from '@/src/presets';
 
-const COLLAPSE_DECISIONS = ['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild'] as const;
+const VALID_DECISIONS = ['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild'] as const;
 
 // ============================================================================
 // Rules Engine
@@ -103,20 +103,20 @@ Your job is to classify content cards (e.g., video titles, post headlines) and d
 
 Available actions:
 - "show": Content is safe, informative, or desirable. No action needed.
-- "blur": Content is sensitive but not harmful (e.g., adult-adjacent, mild profanity, spoilers). Blur it but allow hover-to-reveal.
-- "hide": Content is undesirable: clickbait, ragebait, misinformation, explicit content, spam. Hide it entirely.
+- "blur": Content is sensitive but not harmful (e.g., spoilers, mild content). Blur it but allow hover-to-reveal.
+- "collapse": Content is potentially unwanted (e.g., politics, clickbait, ragebait). Show a placeholder with option to expand.
+- "hide": Content is clearly harmful or completely unwanted. Hide it entirely.
 - "neutralize": The title is misleading or sensational but the underlying content might be okay. Provide a better, neutral title.
-- "rebuild": The content card structure is problematic and needs to be reformatted (rare).
 
 Respond with ONLY valid JSON:
 {
-  "decision": "show|blur|hide|neutralize|rebuild",
+  "decision": "show|blur|collapse|hide|neutralize",
   "confidence": 0.0-1.0,
   "reason": "brief explanation",
   "neutralizedTitle": "optional, only if decision is neutralize"
 }
 
-Be strict. If in doubt, choose "show".`;
+Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if unsure.`;
 
   try {
     const response = await fetch(endpoint, {
