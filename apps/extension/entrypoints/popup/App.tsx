@@ -8,7 +8,6 @@ import {
   BarChart3,
   Settings,
   Wand2,
-  BookOpen,
   Radio,
   Newspaper,
   AlertTriangle,
