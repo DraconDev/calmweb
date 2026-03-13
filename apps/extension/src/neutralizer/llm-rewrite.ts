@@ -1,127 +1,178 @@
-/**
- * LLM-powered Text Rewriter for CalmWeb
- * 
- * Uses BYOK or hosted LLM for more sophisticated neutralization.
- */
-
-import type { RewriteResult, NeutralizationMode, TextChange } from './types';
 import type { UserSettings } from '@calmweb/shared';
-import type { ApiClient } from '@dracon/wxt-shared/api';
+import type { RewriteMode, RewriteResult, TextChange } from './rewriter';
 
-const MODE_PROMPTS: Record<NeutralizationMode, string> = {
-  light: `Only remove extreme manipulation and deception. Keep most emotional language intact.`,
-  medium: `Remove emotional manipulation and sensational language. Keep factual content.`,
-  strict: `Transform to clinical, fact-only text. Remove ALL emotional language, opinions, and subjective descriptors.`,
-  custom: `Follow the user's specific preferences for tone.`,
-};
+interface LLMRewriteResponse {
+  rewritten: string;
+  changes: Array<{
+    original: string;
+    replacement: string;
+    reason: string;
+  }>;
+}
 
-export async function rewriteWithLLM(
-  text: string,
-  mode: NeutralizationMode,
-  settings: UserSettings,
-  apiClient?: ApiClient
-): Promise<RewriteResult> {
-  const systemPrompt = `You are a text neutralization assistant for CalmWeb, a browser extension that helps users control their content experience.
+function buildSystemPrompt(mode: RewriteMode): string {
+  const modeDescriptions: Record<RewriteMode, string> = {
+    light: 'Only remove extreme emotional manipulation and obvious clickbait patterns.',
+    medium: 'Remove emotional language while preserving the core message and tone.',
+    strict: 'Transform to clinical, fact-only text. Remove all emotional content.',
+  };
+
+  return `You are a text neutralization assistant for CalmWeb.
 
 Your job is to rewrite headlines and titles to be:
 - Factual and neutral
 - Free of emotional manipulation
-- Clear and informative
+- Accurate to the original meaning
+- Concise (prefer shorter when possible)
 
-Neutralization mode: ${mode}
-${MODE_PROMPTS[mode]}
+Mode: ${mode}
+${modeDescriptions[mode]}
 
-RULES:
-1. Keep core factual information intact
-2. Remove: sensationalism, emotional triggers, clickbait patterns
-3. Use neutral, professional language
-4. If already neutral, return unchanged
+Rules:
+1. Keep the core factual information
+2. Remove: sensationalism, emotional triggers, clickbait patterns, partisan language
+3. Use neutral, objective language
+4. If the original is already neutral, return it unchanged
+5. Preserve the approximate length - don't make it much longer or shorter
 
-Examples:
-- "This WILL make you FURIOUS" → "A notable situation"
-- "Doctors HATE this trick" → "A medical approach"
-- "SHOCKING truth REVEALED" → "New information available"
+Respond with JSON only, no markdown:
+{ "rewritten": "...", "changes": [{ "original": "...", "replacement": "...", "reason": "..." }] }`;
+}
 
-Respond with JSON:
-{
-  "rewritten": "the neutralized text",
-  "changes": [{"original": "what was changed", "replacement": "what replaced it", "reason": "why"}],
-  "confidence": 0.0-1.0,
-  "tone": "neutral|sensational|manipulative"
-}`;
+function buildUserPrompt(text: string): string {
+  return `Rewrite this headline/title to be neutral and factual:
+
+"${text}"
+
+Return JSON with the rewritten text and list of changes made.`;
+}
+
+async function callBYOKLLM(
+  text: string,
+  mode: RewriteMode,
+  settings: UserSettings
+): Promise<LLMRewriteResponse> {
+  if (!settings.llmEndpoint || !settings.llmApiKey) {
+    throw new Error('BYOK LLM not configured');
+  }
+
+  const response = await fetch(settings.llmEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.llmApiKey}`,
+    },
+    body: JSON.stringify({
+      model: settings.llmModel || 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: buildSystemPrompt(mode) },
+        { role: 'user', content: buildUserPrompt(text) },
+      ],
+      temperature: 0.3,
+      max_tokens: 200,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`LLM request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  
+  if (!content) {
+    throw new Error('No content in LLM response');
+  }
 
   try {
-    let response: { choices: Array<{ message?: { content?: string } }> };
-    
-    if (settings.processingMode === 'byok_llm' && settings.byokKey) {
-      const endpoint = 'https://api.openai.com/v1/chat/completions';
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${settings.byokKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Neutralize this text:\n\n"${text}"` },
-          ],
-          temperature: 0.2,
-          max_tokens: 500,
-        }),
-      });
-      
-      if (!res.ok) {
-        throw new Error(`BYOK API error: ${res.status}`);
-      }
-      
-      response = await res.json();
-    } else if (settings.processingMode === 'hosted_llm' && apiClient) {
-      response = await apiClient.chatCompletions({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Neutralize this text:\n\n"${text}"` },
-        ],
-      });
-    } else {
-      throw new Error('No LLM available');
-    }
-    
-    const content = response.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from LLM');
-    }
-    
-    // Parse JSON response
-    let parsed: RewriteResult;
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('Could not parse LLM response');
-      }
-    }
-    
-    // Validate and clean
+    return JSON.parse(content) as LLMRewriteResponse;
+  } catch {
     return {
-      original: text,
-      rewritten: parsed.rewritten || text,
-      changes: parsed.changes || [],
-      confidence: Math.max(0, Math.min(1, parsed.confidence || 0.7)),
-      tone: parsed.tone,
-    };
-  } catch (error) {
-    console.error('[Neutralizer] LLM error:', error);
-    return {
-      original: text,
-      rewritten: text,
+      rewritten: content.trim(),
       changes: [],
-      confidence: 0,
-      tone: 'neutral',
     };
   }
+}
+
+async function callHostedLLM(
+  text: string,
+  mode: RewriteMode,
+  settings: UserSettings
+): Promise<LLMRewriteResponse> {
+  if (!settings.hostedApiKey) {
+    throw new Error('Hosted LLM not configured');
+  }
+
+  const endpoint = settings.hostedEndpoint || 'https://api.openai.com/v1/chat/completions';
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.hostedApiKey}`,
+    },
+    body: JSON.stringify({
+      model: settings.hostedModel || 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: buildSystemPrompt(mode) },
+        { role: 'user', content: buildUserPrompt(text) },
+      ],
+      temperature: 0.3,
+      max_tokens: 200,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Hosted LLM request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  
+  if (!content) {
+    throw new Error('No content in hosted LLM response');
+  }
+
+  try {
+    return JSON.parse(content) as LLMRewriteResponse;
+  } catch {
+    return {
+      rewritten: content.trim(),
+      changes: [],
+    };
+  }
+}
+
+export async function rewriteWithLLM(
+  text: string,
+  options: { mode: RewriteMode },
+  settings: UserSettings
+): Promise<RewriteResult> {
+  let response: LLMRewriteResponse;
+
+  if (settings.processingMode === 'byok') {
+    response = await callBYOKLLM(text, options.mode, settings);
+  } else if (settings.processingMode === 'hosted') {
+    response = await callHostedLLM(text, options.mode, settings);
+  } else {
+    throw new Error('No LLM processing mode configured');
+  }
+
+  const changes: TextChange[] = response.changes.map(c => ({
+    original: c.original,
+    replacement: c.replacement,
+    reason: c.reason,
+  }));
+
+  const confidence = response.rewritten !== text 
+    ? Math.min(0.95, 0.7 + (changes.length * 0.05))
+    : 1.0;
+
+  return {
+    original: text,
+    rewritten: response.rewritten,
+    changes,
+    confidence,
+    mode: options.mode,
+  };
 }
