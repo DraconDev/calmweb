@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { LazyClassifier, ScrollPreloader, BatchProcessor, debounce, throttle, parseShortcut, formatShortcut } from '../src/performance';
-import { ShortcutManager, createShortcutManager } from '../src/shortcuts';
+import { LazyClassifier, ScrollPreloader, BatchProcessor, debounce, throttle } from '../src/performance';
+import { ShortcutManager, createShortcutManager, parseShortcut, formatShortcut } from '../src/shortcuts';
 
 describe('Performance - LazyClassifier', () => {
   it('should create a lazy classifier instance', () => {
