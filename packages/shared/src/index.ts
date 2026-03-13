@@ -224,7 +224,46 @@ export function validateUserSettings(settings: unknown): UserSettings {
 }
 
 // ============================================================================
-// Statistics
+// Enhanced Statistics
+// ============================================================================
+
+export const EnhancedStatsSchema = z.object({
+  totalFiltered: z.number().default(0),
+  byAction: z.object({
+    hide: z.number().default(0),
+    blur: z.number().default(0),
+    neutralize: z.number().default(0),
+    collapse: z.number().default(0),
+  }).default({ hide: 0, blur: 0, neutralize: 0, collapse: 0 }),
+  byPreset: z.object({
+    politics: z.number().default(0),
+    ragebait: z.number().default(0),
+    spoilers: z.number().default(0),
+    clickbait: z.number().default(0),
+  }).default({ politics: 0, ragebait: 0, spoilers: 0, clickbait: 0 }),
+  timeSaved: z.number().default(0),
+  topFilteredSources: z.array(z.string()).default([]),
+  dailyHistory: z.array(z.object({
+    date: z.string(),
+    count: z.number(),
+  })).default([]),
+  lastReset: z.number().default(Date.now()),
+});
+
+export type EnhancedStats = z.infer<typeof EnhancedStatsSchema>;
+
+export const defaultEnhancedStats: EnhancedStats = {
+  totalFiltered: 0,
+  byAction: { hide: 0, blur: 0, neutralize: 0, collapse: 0 },
+  byPreset: { politics: 0, ragebait: 0, spoilers: 0, clickbait: 0 },
+  timeSaved: 0,
+  topFilteredSources: [],
+  dailyHistory: [],
+  lastReset: Date.now(),
+};
+
+// ============================================================================
+// Statistics (Legacy)
 // ============================================================================
 
 /**
