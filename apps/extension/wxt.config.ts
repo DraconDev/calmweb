@@ -11,7 +11,7 @@ export default defineConfig({
     description: "__MSG_extDescription__",
     default_locale: "en",
     version: "1.0.0",
-    permissions: ["storage", "activeTab", "scripting"],
+    permissions: ["storage", "activeTab", "scripting", "contextMenus"],
     host_permissions: [
       "*://*.youtube.com/*",
       "*://*.reddit.com/*",
