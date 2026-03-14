@@ -1,8 +1,8 @@
-import { createCanvas } from 'canvas';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createCanvas } from '@napi-rs/canvas';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sizes = [16, 32, 48, 96, 128];
@@ -63,16 +63,20 @@ function drawIcon(ctx, size) {
   ctx.fill();
 }
 
-for (const size of sizes) {
-  const canvas = createCanvas(size, size);
-  const ctx = canvas.getContext('2d');
+async function main() {
+  for (const size of sizes) {
+    const canvas = createCanvas(size, size);
+    const ctx = canvas.getContext('2d');
+    
+    drawIcon(ctx, size);
+    
+    const buffer = await canvas.toBuffer('image/png');
+    const outputPath = join(__dirname, '..', 'public', 'icon', `${size}.png`);
+    writeFileSync(outputPath, buffer);
+    console.log(`Generated ${size}x${size} icon`);
+  }
   
-  drawIcon(ctx, size);
-  
-  const buffer = canvas.toBuffer('image/png');
-  const outputPath = join(__dirname, '..', 'public', 'icon', `${size}.png`);
-  writeFileSync(outputPath, buffer);
-  console.log(`Generated ${size}x${size} icon`);
+  console.log('All icons generated successfully!');
 }
 
-console.log('All icons generated successfully!');
+main().catch(console.error);
