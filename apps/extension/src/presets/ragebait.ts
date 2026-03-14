@@ -28,6 +28,12 @@ export const ragebaitPreset: FilterPreset = {
       'this is why', 'reason why', 'here\'s why', 'the real reason',
       'everyone is talking about', 'trending', 'viral',
       'backlash', 'uproar', 'firestorm', 'fury',
+      'karen', 'entitled', 'bridezilla', 'choosing beggar',
+      'faith in humanity', 'lost faith', 'lose faith',
+      'instant karma', 'justice served', 'petty revenge',
+      'audacity', 'the nerve', 'unacceptable',
+      'blood boil', 'blood boiling', 'makes my blood',
+      'lose your mind', 'losing my mind', 'lost my mind',
     ],
     channels: [],
     regex: [
