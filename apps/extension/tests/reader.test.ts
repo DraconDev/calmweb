@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor/article';
-import { getLayout, allLayouts, newspaperLayout, terminalLayout } from '../src/renderer/layouts';
+import { getLayout, allLayouts, newspaperLayout, terminalLayout, readerLayout, focusLayout } from '../src/renderer/layouts';
 import { getTheme, allThemes, defaultTheme, darkTheme } from '../src/renderer/themes';
 
 describe('Article Extractor', () => {
@@ -57,41 +57,82 @@ describe('Article Extractor', () => {
 });
 
 describe('Layout Engine', () => {
-  it('should return all layouts', () => {
-    expect(allLayouts.length).toBe(5);
-    expect(allLayouts.map(l => l.id)).toContain('newspaper');
-    expect(allLayouts.map(l => l.id)).toContain('terminal');
-    expect(allLayouts.map(l => l.id)).toContain('card');
-    expect(allLayouts.map(l => l.id)).toContain('feed');
-    expect(allLayouts.map(l => l.id)).toContain('magazine');
+  it('should return 6 layouts', () => {
+    expect(allLayouts.length).toBe(6);
+  });
+
+  it('should contain all layout ids', () => {
+    const ids = allLayouts.map(l => l.id);
+    expect(ids).toContain('reader');
+    expect(ids).toContain('focus');
+    expect(ids).toContain('terminal');
+    expect(ids).toContain('compact');
+    expect(ids).toContain('visual');
+    expect(ids).toContain('academic');
   });
 
   it('should get layout by id', () => {
-    const layout = getLayout('newspaper');
-    expect(layout.id).toBe('newspaper');
-    expect(layout.name).toBe('Newspaper');
+    const layout = getLayout('reader');
+    expect(layout.id).toBe('reader');
+    expect(layout.name).toBe('Reader');
   });
 
-  it('should return newspaper as default for unknown id', () => {
+  it('should return reader as default for unknown id', () => {
     const layout = getLayout('unknown');
-    expect(layout.id).toBe('newspaper');
+    expect(layout.id).toBe('reader');
   });
 
-  it('should have correct newspaper layout properties', () => {
-    expect(newspaperLayout.columns).toBe(2);
-    expect(newspaperLayout.fontFamily).toContain('Georgia');
+  it('should have correct reader layout properties', () => {
+    expect(readerLayout.columns).toBe(1);
+    expect(readerLayout.fontFamily).toContain('Georgia');
+    expect(readerLayout.bestFor).toContain('articles');
   });
 
   it('should have correct terminal layout properties', () => {
     expect(terminalLayout.id).toBe('terminal');
     expect(terminalLayout.columns).toBe(1);
-    expect(terminalLayout.fontFamily).toContain('monospace');
+    expect(terminalLayout.fontFamily).toContain('Mono');
+    expect(terminalLayout.bestFor).toContain('code');
+  });
+
+  it('should have correct focus layout properties', () => {
+    expect(focusLayout.id).toBe('focus');
+    expect(focusLayout.columns).toBe(1);
+    expect(focusLayout.bestFor).toContain('deep reading');
+  });
+
+  it('should have correct compact layout properties', () => {
+    const compact = getLayout('compact');
+    expect(compact.columns).toBe(2);
+    expect(compact.bestFor).toContain('news');
+  });
+
+  it('should have correct visual layout properties', () => {
+    const visual = getLayout('visual');
+    expect(visual.bestFor).toContain('photo essays');
+  });
+
+  it('should have correct academic layout properties', () => {
+    const academic = getLayout('academic');
+    expect(academic.columns).toBe(2);
+    expect(academic.bestFor).toContain('papers');
   });
 
   it('should have render method for each layout', () => {
     allLayouts.forEach(layout => {
       expect(typeof layout.render).toBe('function');
     });
+  });
+
+  it('should have bestFor array for each layout', () => {
+    allLayouts.forEach(layout => {
+      expect(Array.isArray(layout.bestFor)).toBe(true);
+      expect(layout.bestFor.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('should export newspaperLayout as alias for readerLayout', () => {
+    expect(newspaperLayout.id).toBe('reader');
   });
 });
 
