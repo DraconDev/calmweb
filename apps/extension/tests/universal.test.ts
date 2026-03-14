@@ -167,15 +167,18 @@ describe('Universal Adapter', () => {
   });
 
   describe('discoverUnits', () => {
-    it('should discover article elements', () => {
+    it('should discover article elements with proper dimensions', () => {
       document.body.innerHTML = `
-        <article><h2>Article 1</h2><p>Content for article 1 with enough text.</p></article>
-        <article><h2>Article 2</h2><p>Content for article 2 with enough text.</p></article>
-        <article><h2>Article 3</h2><p>Content for article 3 with enough text.</p></article>
+        <article style="height: 100px; width: 200px;"><h2>Article 1</h2><p>Content for article 1 with enough text.</p></article>
+        <article style="height: 100px; width: 200px;"><h2>Article 2</h2><p>Content for article 2 with enough text.</p></article>
+        <article style="height: 100px; width: 200px;"><h2>Article 3</h2><p>Content for article 3 with enough text.</p></article>
       `;
 
-      Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { get: () => 100 });
-      Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { get: () => 200 });
+      const articles = document.querySelectorAll('article');
+      articles.forEach(el => {
+        Object.defineProperty(el, 'offsetHeight', { value: 100 });
+        Object.defineProperty(el, 'offsetWidth', { value: 200 });
+      });
 
       const units = universalAdapter.discoverUnits!(document);
       expect(units.length).toBeGreaterThanOrEqual(3);
