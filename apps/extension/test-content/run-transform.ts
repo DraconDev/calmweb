@@ -19,11 +19,11 @@ for (const category of categories) {
     const sentiment = analyzeSentiment(original);
     const tone = classifyTone(original);
     const analysis = analyzeForNeutralization(original);
-    const neutralized = rewriteWithLocalRules(original, 'medium');
+    const neutralized = rewriteWithLocalRules(original, { mode: 'medium' });
 
     console.log(`\n[Entry ${i + 1}]`);
     console.log(`Sentiment: ${sentiment.score.toFixed(2)} (magnitude: ${sentiment.magnitude.toFixed(2)})`);
-    console.log(`Tones: ${tone.tones.join(', ') || 'neutral'} (confidence: ${tone.confidence.toFixed(2)})`);
+    console.log(`Tone: ${tone.primary} (confidence: ${tone.confidence.toFixed(2)})`);
     console.log(`Should neutralize: ${analysis.shouldNeutralize}`);
     console.log(`\nBEFORE:`);
     console.log(`  "${original}"`);
@@ -50,7 +50,7 @@ for (const category of categories) {
   let changed = 0;
 
   for (const item of items) {
-    const neutralized = rewriteWithLocalRules(item, 'medium');
+    const neutralized = rewriteWithLocalRules(item, { mode: 'medium' });
     if (item !== neutralized.rewritten) changed++;
   }
 
