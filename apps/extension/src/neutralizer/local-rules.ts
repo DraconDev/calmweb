@@ -258,7 +258,7 @@ const NEUTRALIZATION_RULES: NeutralizationRule[] = [
   { pattern: /\b(FOR REAL)\b/gi, replacement: 'genuinely', strength: 'light' },
   { pattern: /\b(NO LIE)\b/gi, replacement: 'honestly', strength: 'light' },
   { pattern: /\b(FR FR)\b/gi, replacement: 'honestly', strength: 'light' },
-  { pattern: /\b(PERIOD(T)?\b/gi, replacement: 'definitively', strength: 'light' },
+  { pattern: /\b(PERIODT?)\b/gi, replacement: 'definitively', strength: 'light' },
   { pattern: /\b(PERIODT)\b/gi, replacement: 'definitively', strength: 'light' },
   { pattern: /\b(AND I MEAN IT)\b/gi, replacement: '', strength: 'light' },
   { pattern: /\b(SAY IT LOUDER)\b/gi, replacement: 'I agree', strength: 'light' },
