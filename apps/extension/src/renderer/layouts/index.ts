@@ -528,4 +528,4 @@ export function getLayout(id: string): ReaderLayout {
   return allLayouts.find(l => l.id === id) || readerLayout;
 }
 
-export { readerLayout as newspaperLayout, terminalLayout };
+export { readerLayout as newspaperLayout };
