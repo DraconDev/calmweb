@@ -211,8 +211,8 @@ export default function Popup() {
       {/* Quick Toggles */}
       <div className="px-4 mt-3 flex-1">
         <div className="flex items-center gap-2 mb-2">
-          <EyeOff size={14} className="text-purple-400/60" />
-          <span className="text-xs font-semibold text-purple-400/60 uppercase tracking-wider">Quick Filters</span>
+          <EyeOff size={14} className="text-[#555]" />
+          <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Quick Filters</span>
         </div>
         
         <div className="grid grid-cols-2 gap-2">
@@ -221,28 +221,24 @@ export default function Popup() {
             label="Politics"
             enabled={settings?.rules.presets.politics || false}
             onClick={() => togglePreset('politics')}
-            color="blue"
           />
           <PresetToggle
             icon={AlertTriangle}
             label="Ragebait"
             enabled={settings?.rules.presets.ragebait || false}
             onClick={() => togglePreset('ragebait')}
-            color="red"
           />
           <PresetToggle
             icon={EyeOff}
             label="Spoilers"
             enabled={settings?.rules.presets.spoilers || false}
             onClick={() => togglePreset('spoilers')}
-            color="purple"
           />
           <PresetToggle
             icon={Radio}
             label="Clickbait"
             enabled={settings?.rules.presets.clickbait || false}
             onClick={() => togglePreset('clickbait')}
-            color="orange"
           />
         </div>
 
@@ -250,21 +246,21 @@ export default function Popup() {
         <button
           onClick={toggleNeutralization}
           className={clsx(
-            "w-full mt-3 p-3 rounded-xl border-2 transition-all flex items-center gap-3",
+            "w-full mt-3 p-3 rounded-xl border transition-all flex items-center gap-3",
             settings?.neutralization?.enabled
-              ? "border-purple-500/30 bg-purple-500/10"
-              : "border-purple-500/10 bg-[#1a1a2e] hover:bg-purple-500/5"
+              ? "border-[#333] bg-[#1a1a1a]"
+              : "border-[#222] bg-[#111] hover:bg-[#151515]"
           )}
         >
           <div className={clsx(
             "p-2 rounded-lg",
-            settings?.neutralization?.enabled ? "bg-gradient-to-br from-purple-500 to-violet-500 text-white" : "bg-purple-500/10 text-purple-400"
+            settings?.neutralization?.enabled ? "bg-[#a78bfa] text-white" : "bg-[#222] text-[#666]"
           )}>
             <Wand2 size={16} />
           </div>
           <div className="flex-1 text-left">
             <div className="text-sm font-semibold text-white">Text Neutralization</div>
-            <div className="text-[11px] text-purple-400/70">
+            <div className="text-[11px] text-[#666]">
               {settings?.neutralization?.enabled ? 'Active - Rewriting inflammatory text' : 'Inactive'}
             </div>
           </div>
@@ -276,30 +272,30 @@ export default function Popup() {
       </div>
 
       {/* Action Buttons */}
-      <div className="px-4 py-3 border-t border-purple-500/10 bg-[#0d0d15]">
+      <div className="px-4 py-3 border-t border-[#222] bg-[#080808]">
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => openOptions('presets')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
           >
-            <Shield size={18} className="text-purple-400" />
-            <span className="text-[11px] font-semibold text-purple-300">Presets</span>
+            <Shield size={18} className="text-[#a78bfa]" />
+            <span className="text-[11px] font-semibold text-[#888]">Presets</span>
           </button>
 
           <button
             onClick={() => openOptions('rules')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
           >
-            <Settings size={18} className="text-purple-400/70" />
-            <span className="text-[11px] font-semibold text-purple-300">Rules</span>
+            <Settings size={18} className="text-[#666]" />
+            <span className="text-[11px] font-semibold text-[#888]">Rules</span>
           </button>
 
           <button
             onClick={() => openOptions()}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-purple-500/10 transition-colors"
+            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
           >
-            <ExternalLink size={18} className="text-purple-400/70" />
-            <span className="text-[11px] font-semibold text-purple-300">Dashboard</span>
+            <ExternalLink size={18} className="text-[#666]" />
+            <span className="text-[11px] font-semibold text-[#888]">Dashboard</span>
           </button>
         </div>
       </div>
@@ -312,38 +308,28 @@ interface PresetToggleProps {
   label: string;
   enabled: boolean;
   onClick: () => void;
-  color: 'blue' | 'red' | 'purple' | 'orange';
 }
 
-function PresetToggle({ icon: Icon, label, enabled, onClick, color }: PresetToggleProps) {
-  const colorClasses = {
-    blue: enabled ? 'bg-blue-500/20 border-blue-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
-    red: enabled ? 'bg-red-500/20 border-red-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
-    purple: enabled ? 'bg-purple-500/20 border-purple-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
-    orange: enabled ? 'bg-orange-500/20 border-orange-500/40' : 'bg-[#1a1a2e] border-purple-500/10 hover:bg-purple-500/5',
-  };
-
-  const iconColorClasses = {
-    blue: enabled ? 'bg-blue-500 text-white' : 'bg-purple-500/10 text-purple-400',
-    red: enabled ? 'bg-red-500 text-white' : 'bg-purple-500/10 text-purple-400',
-    purple: enabled ? 'bg-gradient-to-br from-purple-500 to-violet-500 text-white' : 'bg-purple-500/10 text-purple-400',
-    orange: enabled ? 'bg-orange-500 text-white' : 'bg-purple-500/10 text-purple-400',
-  };
-
+function PresetToggle({ icon: Icon, label, enabled, onClick }: PresetToggleProps) {
   return (
     <button
       onClick={onClick}
       className={clsx(
-        "p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2",
-        colorClasses[color]
+        "p-3 rounded-xl border transition-all flex flex-col items-center gap-2",
+        enabled
+          ? "border-[#333] bg-[#1a1a1a]"
+          : "border-[#222] bg-[#111] hover:bg-[#151515]"
       )}
     >
-      <div className={clsx("p-1.5 rounded-lg", iconColorClasses[color])}>
+      <div className={clsx(
+        "p-1.5 rounded-lg",
+        enabled ? "bg-[#a78bfa] text-white" : "bg-[#222] text-[#666]"
+      )}>
         <Icon size={14} />
       </div>
-      <span className="text-[11px] font-semibold text-purple-200">{label}</span>
+      <span className="text-[11px] font-semibold text-[#aaa]">{label}</span>
       {enabled && (
-        <span className="text-[9px] font-bold uppercase text-emerald-400">On</span>
+        <span className="text-[9px] font-bold uppercase text-[#4ade80]">On</span>
       )}
     </button>
   );
