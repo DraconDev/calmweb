@@ -127,17 +127,17 @@ export default function Popup() {
   const presetsEnabled = Object.values(settings?.rules.presets || {}).filter(Boolean).length;
 
   return (
-    <Container className="w-[380px] min-h-[520px] p-0 flex flex-col bg-[#0f0f1a]">
+    <Container className="w-[380px] min-h-[520px] p-0 flex flex-col bg-[#0a0a0a]">
       {/* Header */}
-      <header className="bg-gradient-to-br from-purple-900/40 via-purple-800/20 to-transparent border-b border-purple-500/10 p-4">
+      <header className="bg-[#111] border-b border-[#222] p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="p-2.5 bg-gradient-to-br from-purple-600 to-purple-500 rounded-xl text-white shadow-lg shadow-purple-500/40">
+              <div className="p-2.5 bg-gradient-to-br from-[#333] to-[#222] rounded-xl text-[#a78bfa] border border-[#333]">
                 <Shield size={22} />
               </div>
               {enabled && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0f0f1a]" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#4ade80] rounded-full border-2 border-[#0a0a0a]" />
               )}
             </div>
             <div>
@@ -145,13 +145,13 @@ export default function Popup() {
               <div className="flex items-center gap-1.5 text-[11px]">
                 {enabled ? (
                   <>
-                    <Activity size={10} className="text-emerald-400" />
-                    <span className="text-emerald-400 font-medium">Active</span>
+                    <Activity size={10} className="text-[#4ade80]" />
+                    <span className="text-[#4ade80] font-medium">Active</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 bg-gray-500 rounded-full" />
-                    <span className="text-gray-400">Paused</span>
+                    <span className="w-2 h-2 bg-[#444] rounded-full" />
+                    <span className="text-[#666]">Paused</span>
                   </>
                 )}
               </div>
@@ -167,41 +167,41 @@ export default function Popup() {
 
       {/* Stats Card */}
       <div className="px-4 -mt-1">
-        <Card className="p-4 border-purple-500/10 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]/80">
+        <Card className="p-4 border-[#222] bg-[#111]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-purple-400" />
-              <span className="text-xs font-semibold text-purple-300/80 uppercase tracking-wider">Statistics</span>
+              <BarChart3 size={16} className="text-[#888]" />
+              <span className="text-xs font-semibold text-[#666] uppercase tracking-wider">Statistics</span>
             </div>
             <button
               onClick={() => openOptions()}
-              className="text-[10px] font-bold text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-[10px] font-bold text-[#a78bfa] hover:text-[#c4b5fd] transition-colors"
             >
               View Details
             </button>
           </div>
           
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-2 rounded-lg bg-purple-500/10">
-              <div className="text-2xl font-black text-purple-300">{stats.totalFiltered.toLocaleString()}</div>
-              <div className="text-[10px] font-medium text-purple-400/70 mt-0.5">Total Filtered</div>
+            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
+              <div className="text-2xl font-black text-white">{stats.totalFiltered.toLocaleString()}</div>
+              <div className="text-[10px] font-medium text-[#666] mt-0.5">Total Filtered</div>
             </div>
-            <div className="text-center p-2 rounded-lg bg-emerald-500/10">
-              <div className="text-2xl font-black text-emerald-400">{presetsEnabled}</div>
-              <div className="text-[10px] font-medium text-emerald-400/70 mt-0.5">Presets On</div>
+            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
+              <div className="text-2xl font-black text-[#4ade80]">{presetsEnabled}</div>
+              <div className="text-[10px] font-medium text-[#666] mt-0.5">Presets On</div>
             </div>
-            <div className="text-center p-2 rounded-lg bg-violet-500/10">
-              <div className="text-2xl font-black text-violet-400">{settings?.neutralization?.enabled ? 'On' : 'Off'}</div>
-              <div className="text-[10px] font-medium text-violet-400/70 mt-0.5">Neutralize</div>
+            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
+              <div className="text-2xl font-black text-[#a78bfa]">{settings?.neutralization?.enabled ? 'On' : 'Off'}</div>
+              <div className="text-[10px] font-medium text-[#666] mt-0.5">Neutralize</div>
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-purple-500/10 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-purple-400/60">
+          <div className="mt-3 pt-3 border-t border-[#222] flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-[#555]">
               <Radio size={12} />
               <span className="truncate max-w-[180px]" title={currentSite}>{currentSite}</span>
             </div>
-            <div className="text-[10px] font-medium text-purple-400/40">
+            <div className="text-[10px] font-medium text-[#444]">
               v1.0.0
             </div>
           </div>
