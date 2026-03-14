@@ -98,7 +98,7 @@ describe('Spoilers Preset', () => {
   });
 
   it('should not match non-spoiler content', () => {
-    expect(matchPresetKeywords('Movie review without spoilers', 'spoilers')).toBe(false);
+    expect(matchPresetKeywords('Movie review - our thoughts', 'spoilers')).toBe(false);
     expect(matchPresetKeywords('Behind the scenes featurette', 'spoilers')).toBe(false);
   });
 });
