@@ -37,6 +37,7 @@ A browser extension that transforms your web experience in three ways:
 - ✅ Overhauled popup with quick toggles
 - ✅ Hash-based tab navigation for settings page
 - ✅ Context menu permission added
+- ✅ PNG icons generated (16, 32, 48, 96, 128px)
 
 ---
 
