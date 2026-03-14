@@ -1,4 +1,4 @@
-import { analyzeForNeutralization, neutralizeText } from '../src/neutralizer';
+import { analyzeForNeutralization, rewriteWithLocalRules, classifyTone, analyzeSentiment } from '../src/neutralizer';
 import { samples } from './samples';
 
 console.log('\n' + '='.repeat(80));
@@ -16,18 +16,22 @@ for (const category of categories) {
 
   for (let i = 0; i < items.length; i++) {
     const original = items[i];
+    const sentiment = analyzeSentiment(original);
+    const tone = classifyTone(original);
     const analysis = analyzeForNeutralization(original);
-    const neutralized = neutralizeText(original, { mode: 'medium' });
+    const neutralized = rewriteWithLocalRules(original, 'medium');
 
     console.log(`\n[Entry ${i + 1}]`);
-    console.log(`Score: ${analysis.overallScore.toFixed(2)} | Tone: ${analysis.tones.join(', ') || 'neutral'}`);
+    console.log(`Sentiment: ${sentiment.score.toFixed(2)} (magnitude: ${sentiment.magnitude.toFixed(2)})`);
+    console.log(`Tones: ${tone.tones.join(', ') || 'neutral'} (confidence: ${tone.confidence.toFixed(2)})`);
+    console.log(`Should neutralize: ${analysis.shouldNeutralize}`);
     console.log(`\nBEFORE:`);
     console.log(`  "${original}"`);
     console.log(`\nAFTER:`);
-    console.log(`  "${neutralized}"`);
+    console.log(`  "${neutralized.rewritten}"`);
 
-    if (original !== neutralized) {
-      console.log(`\nCHANGES DETECTED ✓`);
+    if (original !== neutralized.rewritten) {
+      console.log(`\nCHANGES DETECTED ✓ (${neutralized.changes.length} modifications)`);
     } else {
       console.log(`\nNo changes (text already neutral or below threshold)`);
     }
@@ -46,8 +50,8 @@ for (const category of categories) {
   let changed = 0;
 
   for (const item of items) {
-    const neutralized = neutralizeText(item, { mode: 'medium' });
-    if (item !== neutralized) changed++;
+    const neutralized = rewriteWithLocalRules(item, 'medium');
+    if (item !== neutralized.rewritten) changed++;
   }
 
   totalProcessed += items.length;
