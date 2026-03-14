@@ -97,7 +97,7 @@ const NEUTRALIZATION_RULES: NeutralizationRule[] = [
   { pattern: /\b(NEED TO)\b/g, replacement: 'may want to', strength: 'light' },
   { pattern: /\b(URGENT:?)\b/gi, replacement: '', strength: 'light' },
   { pattern: /\b(act now)\b/gi, replacement: 'consider', strength: 'medium' },
-  { pattern: /\b(before it's too late\)/gi, replacement: '', strength: 'medium' },
+  { pattern: /\b(before it's too late)\b/gi, replacement: '', strength: 'medium' },
   { pattern: /\b(will leave you (speechless|furious|angry|outraged))\b/gi, replacement: 'may interest you', strength: 'medium' },
   { pattern: /\b(make you (lose faith|sick|angry|furious))\b/gi, replacement: 'may concern you', strength: 'medium' },
   { pattern: /\b(ROASTING)\b/g, replacement: 'criticizing', strength: 'medium' },
