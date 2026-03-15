@@ -27,8 +27,8 @@ import {
   Moon
 } from 'lucide-react';
 import clsx from 'clsx';
-import { allLayouts, type ReaderLayout } from '@/src/renderer/layouts';
-import { allThemes, type ReaderTheme } from '@/src/renderer/themes';
+import { allLayouts } from '@/src/renderer/layouts';
+import { allThemes } from '@/src/renderer/themes';
 
 type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'reader' | 'advanced';
 
