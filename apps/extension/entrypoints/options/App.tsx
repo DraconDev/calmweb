@@ -666,3 +666,155 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
     </div>
   );
 }
+
+function ReaderTab({ defaultLayout, defaultTheme, onChange }: ReaderTabProps) {
+  const layoutIcons: Record<string, string> = {
+    reader: '📖',
+    focus: '🎯',
+    terminal: '💻',
+    compact: '📰',
+    visual: '🖼️',
+    academic: '📄',
+  };
+
+  const themeIcons: Record<string, any> = {
+    default: Sun,
+    dark: Moon,
+    sepia: Palette,
+    midnight: Moon,
+  };
+
+  return (
+    <div className="space-y-8">
+      <Card padding="lg" className="bg-primary/5 border-primary/20">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-primary rounded-xl text-primary-foreground">
+            <BookOpen size={24} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-lg mb-1">Super Reader</h3>
+            <p className="text-sm text-muted-foreground">
+              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Alt+R</kbd> on any page to open a distraction-free reading view. 
+              Content is extracted and rendered in your chosen layout.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <FormField
+        label="Default Layout"
+        description="Choose how content is displayed in Super Reader"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+          {allLayouts.map((layout) => (
+            <div
+              key={layout.id}
+              onClick={() => onChange({ defaultLayout: layout.id })}
+              className={clsx(
+                "p-4 rounded-xl border-2 cursor-pointer transition-all",
+                defaultLayout === layout.id
+                  ? "border-primary bg-primary/5"
+                  : "border-transparent bg-muted/30 hover:bg-muted/50"
+              )}
+            >
+              <div className="text-2xl mb-2">{layoutIcons[layout.id] || '📄'}</div>
+              <div className="font-bold text-sm">{layout.name}</div>
+              <div className="text-xs text-muted-foreground mt-1">{layout.description}</div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {layout.bestFor.slice(0, 2).map((use) => (
+                  <span key={use} className="text-[10px] px-1.5 py-0.5 bg-muted rounded-full">{use}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </FormField>
+
+      <FormField
+        label="Default Theme"
+        description="Color scheme for Super Reader"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+          {allThemes.map((theme) => {
+            const ThemeIcon = themeIcons[theme.id] || Sun;
+            return (
+              <div
+                key={theme.id}
+                onClick={() => onChange({ defaultTheme: theme.id })}
+                className={clsx(
+                  "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                  defaultTheme === theme.id
+                    ? "border-primary bg-primary/5"
+                    : "border-transparent bg-muted/30 hover:bg-muted/50"
+                )}
+              >
+                <div 
+                  className="w-8 h-8 rounded-full border-2"
+                  style={{ 
+                    background: theme.background,
+                    borderColor: theme.isDark ? '#374151' : '#e5e7eb'
+                  }}
+                >
+                  <ThemeIcon size={14} className="m-auto mt-1.5" style={{ color: theme.isDark ? '#fff' : '#374151' }} />
+                </div>
+                <div>
+                  <div className="font-bold text-sm">{theme.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{theme.isDark ? 'Dark' : 'Light'}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </FormField>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card padding="lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold mb-1">Show in Context Menu</h4>
+              <p className="text-xs text-muted-foreground">Add "Open in Reader" to right-click menu</p>
+            </div>
+            <Switch
+              checked={true}
+              onCheckedChange={(showInContextMenu) => onChange({})}
+            />
+          </div>
+        </Card>
+
+        <Card padding="lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold mb-1">Remember Layout</h4>
+              <p className="text-xs text-muted-foreground">Save layout changes between sessions</p>
+            </div>
+            <Switch
+              checked={true}
+              onCheckedChange={() => {}}
+            />
+          </div>
+        </Card>
+      </div>
+
+      <Card padding="lg" className="bg-muted/50">
+        <h4 className="font-bold mb-3 flex items-center gap-2">
+          <Columns size={16} className="text-primary" />
+          Layout Details
+        </h4>
+        <div className="space-y-3 text-sm">
+          {allLayouts.map((layout) => (
+            <div key={layout.id} className="flex items-center justify-between py-2 border-b last:border-0">
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{layoutIcons[layout.id]}</span>
+                <span className="font-medium">{layout.name}</span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>{layout.columns === 1 ? 'Single column' : `${layout.columns} columns`}</span>
+                <span>{layout.fontSize} font</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
