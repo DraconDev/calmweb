@@ -116,6 +116,7 @@ export default function OptionsApp() {
     { id: 'presets', label: 'Presets', icon: ShieldCheck },
     { id: 'rules', label: 'Custom Rules', icon: Database },
     { id: 'neutralize', label: 'Neutralize', icon: Wand2 },
+    { id: 'reader', label: 'Super Reader', icon: BookOpen },
     { id: 'advanced', label: 'AI & Advanced', icon: Zap },
   ] as const;
 
