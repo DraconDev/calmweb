@@ -786,13 +786,13 @@ app.listen(3000);</code></pre>
     html: `<!DOCTYPE html>
 <html>
 <head>
-  <title>Simple Page</title>
+  <title>Welcome to My Page</title>
 </head>
 <body>
   <div>
     <div>
       <div>
-        <font size="5"><b>Welcome to My Page</b></font>
+        <font size="5"><b>Page Title</b></font>
       </div>
       <div>
         <p>This is a simple page with minimal structure. It doesn't use semantic HTML elements like article or main.</p>
