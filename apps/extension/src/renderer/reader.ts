@@ -198,7 +198,7 @@ export function openReader(options: ReaderOptions = {}): void {
   const existing = document.getElementById(OVERLAY_ID);
   if (existing) return;
 
-  currentLayout = getLayout(options.layoutId || 'newspaper');
+  currentLayout = getLayout(options.layoutId || 'reader');
   currentTheme = getTheme(options.themeId || 'default');
 
   const article = extractArticle(document, window.location.href);
