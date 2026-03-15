@@ -57,7 +57,7 @@ interface NeutralizeTabProps {
 export default function OptionsApp() {
   const [activeTab, setActiveTab] = useState<TabId>(() => {
     const hash = window.location.hash.slice(1) as TabId;
-    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize', 'advanced'];
+    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize', 'reader', 'advanced'];
     return validTabs.includes(hash) ? hash : 'overview';
   });
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
