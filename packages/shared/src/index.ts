@@ -87,13 +87,29 @@ export const NeutralizationSettingsSchema = z.object({
 });
 export type NeutralizationSettings = z.infer<typeof NeutralizationSettingsSchema>;
 
-// Default neutralization settings
 export const defaultNeutralizationSettings: NeutralizationSettings = {
   enabled: true,
   mode: 'medium',
   showIndicator: true,
   showDiffOnHover: true,
   excludeDomains: [],
+};
+
+export const ReaderSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  defaultLayout: z.string().default('reader'),
+  defaultTheme: z.string().default('default'),
+  autoOpen: z.boolean().default(false),
+  showInContextMenu: z.boolean().default(true),
+});
+export type ReaderSettings = z.infer<typeof ReaderSettingsSchema>;
+
+export const defaultReaderSettings: ReaderSettings = {
+  enabled: true,
+  defaultLayout: 'reader',
+  defaultTheme: 'default',
+  autoOpen: false,
+  showInContextMenu: true,
 };
 
 // ============================================================================
