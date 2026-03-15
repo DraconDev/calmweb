@@ -54,6 +54,12 @@ interface NeutralizeTabProps {
   onChange: (settings: NeutralizationSettings) => void;
 }
 
+interface ReaderTabProps {
+  defaultLayout: string;
+  defaultTheme: string;
+  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean }) => void;
+}
+
 export default function OptionsApp() {
   const [activeTab, setActiveTab] = useState<TabId>(() => {
     const hash = window.location.hash.slice(1) as TabId;
