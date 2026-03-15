@@ -776,7 +776,7 @@ function ReaderTab({ defaultLayout, defaultTheme, onChange }: ReaderTabProps) {
             </div>
             <Switch
               checked={true}
-              onCheckedChange={(showInContextMenu) => onChange({})}
+              onCheckedChange={() => onChange({})}
             />
           </div>
         </Card>
