@@ -24,9 +24,8 @@ interface TestCase {
   };
 }
 
-function createDoc(html: string): Document {
-  const parser = new DOMParser();
-  return parser.parseFromString(html, 'text/html');
+function createDoc(html: string) {
+  return parser.parseFromString(html, 'text/html') as unknown as Document;
 }
 
 function evaluateExtraction(result: ExtractedArticle, expected: TestCase['expected']): { passed: boolean; issues: string[] } {
