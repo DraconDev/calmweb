@@ -1557,9 +1557,9 @@ export function runExtractorTests(): void {
     let failed = 0;
     const issues: string[] = [];
 
-    console.log('-'.repeat(80));
+    console.log(DASH);
     console.log(`CATEGORY: ${category.toUpperCase()} (${categoryTests.length} tests)`);
-    console.log('-'.repeat(80));
+    console.log(DASH);
 
     for (const test of categoryTests) {
       const doc = createDoc(test.html);
@@ -1588,9 +1588,9 @@ export function runExtractorTests(): void {
     results.push({ category, passed, failed, issues });
   }
 
-  console.log('\n' + '=''.repeat(80));
+  console.log('\n' + LINE);
   console.log('SUMMARY');
-  console.log('='.repeat(80));
+  console.log(LINE);
 
   let totalPassed = 0;
   let totalFailed = 0;
