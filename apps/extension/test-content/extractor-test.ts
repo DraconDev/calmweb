@@ -1604,10 +1604,10 @@ export function runExtractorTests(): void {
     totalFailed += result.failed;
   }
 
-  console.log('-'.repeat(80));
+  console.log(DASH);
   const totalPct = ((totalPassed / (totalPassed + totalFailed)) * 100).toFixed(0);
   console.log(`TOTAL           : ${totalPassed}/${totalPassed + totalFailed} passed (${totalPct}%)`);
-  console.log('='.repeat(80) + '\n');
+  console.log(LINE + '\n');
 
   if (totalFailed > 0) {
     console.log('FAILURES:');
