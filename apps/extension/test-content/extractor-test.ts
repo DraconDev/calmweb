@@ -1533,10 +1533,13 @@ createApp({
   },
 ];
 
+const LINE = '='.repeat(80);
+const DASH = '-'.repeat(80);
+
 export function runExtractorTests(): void {
-  console.log('\n' + '=''.repeat(80));
+  console.log('\n' + LINE);
   console.log('CALMWEB ARTICLE EXTRACTOR TEST REPORT');
-  console.log('='.repeat(80));
+  console.log(LINE);
   console.log(`Total test cases: ${testCases.length}\n`);
 
   const results: {
