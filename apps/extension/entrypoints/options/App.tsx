@@ -19,11 +19,18 @@ import {
   RefreshCw,
   Info,
   Activity,
-  Wand2
+  Wand2,
+  BookOpen,
+  Palette,
+  Columns,
+  Sun,
+  Moon
 } from 'lucide-react';
 import clsx from 'clsx';
+import { allLayouts, type ReaderLayout } from '@/src/renderer/layouts';
+import { allThemes, type ReaderTheme } from '@/src/renderer/themes';
 
-type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'advanced';
+type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'reader' | 'advanced';
 
 interface PresetsTabProps {
   presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean };
