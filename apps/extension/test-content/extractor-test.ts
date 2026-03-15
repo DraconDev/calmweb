@@ -3,7 +3,10 @@
  * Tests extraction against various real-world HTML page structures
  */
 
+import { GlobalRegistrator } from 'happy-dom';
 import { extractArticle, type ExtractedArticle } from '../src/renderer/extractor/article';
+
+await GlobalRegistrator.register();
 
 interface TestCase {
   name: string;
