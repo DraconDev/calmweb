@@ -281,6 +281,16 @@ export default function OptionsApp() {
               </div>
             )}
 
+            {activeTab === 'reader' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <ReaderTab
+                  defaultLayout={settings.reader?.defaultLayout || 'reader'}
+                  defaultTheme={settings.reader?.defaultTheme || 'default'}
+                  onChange={(reader) => saveSettings({ reader: { ...settings.reader, ...reader } })}
+                />
+              </div>
+            )}
+
             {activeTab === 'advanced' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <AdvancedTab
