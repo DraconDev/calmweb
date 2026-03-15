@@ -129,10 +129,10 @@ export const UserSettingsSchema = z.object({
   }),
   byokKey: z.string().optional(),
   neutralization: NeutralizationSettingsSchema.default(defaultNeutralizationSettings),
+  reader: ReaderSettingsSchema.default(defaultReaderSettings),
 });
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
-// Default settings instance
 export const defaultUserSettings: UserSettings = {
   enabled: true,
   processingMode: 'local_rules',
@@ -146,6 +146,7 @@ export const defaultUserSettings: UserSettings = {
   },
   byokKey: undefined,
   neutralization: defaultNeutralizationSettings,
+  reader: defaultReaderSettings,
 };
 
 // ============================================================================
