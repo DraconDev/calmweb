@@ -65,7 +65,7 @@ export function extractSearchResults(doc: Document = document): GoogleSearchResu
     const elements = doc.querySelectorAll(selector);
     if (elements.length === 0) continue;
 
-    elements.forEach((el, index) => {
+    elements.forEach((el) => {
       const html = el as HTMLElement;
 
       // Extract title and URL
