@@ -113,6 +113,7 @@ export const ReaderSettingsSchema = z.object({
   defaultLayout: z.string().default('auto'),
   defaultTheme: z.string().default('default'),
   autoOpen: z.boolean().default(true),
+  textOnly: z.boolean().default(true),
   showInContextMenu: z.boolean().default(true),
 });
 export type ReaderSettings = z.infer<typeof ReaderSettingsSchema>;
@@ -122,6 +123,7 @@ export const defaultReaderSettings: ReaderSettings = {
   defaultLayout: 'auto',
   defaultTheme: 'default',
   autoOpen: true,
+  textOnly: true,
   showInContextMenu: true,
 };
 
