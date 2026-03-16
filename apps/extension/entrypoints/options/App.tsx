@@ -60,7 +60,7 @@ interface NeutralizeTabProps {
 interface ReaderTabProps {
   defaultLayout: string;
   defaultTheme: string;
-  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean }) => void;
+  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean; textOnly?: boolean }) => void;
 }
 
 export default function OptionsApp() {
