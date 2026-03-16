@@ -7,7 +7,7 @@
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { universalAdapter } from '@/src/adapters/universal';
-import { youtubeAdapter, redditAdapter, xAdapter } from '@/src/adapters';
+import { youtubeAdapter, redditAdapter, xAdapter, isGoogleSearchPage } from '@/src/adapters';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import { observeAndHideAds } from '@/src/adfilter';
 import type { ClassificationResult, ContentUnit } from '@calmweb/shared';
@@ -16,6 +16,9 @@ export default defineContentScript({
   matches: ['<all_urls>'],
   runAt: 'document_idle',
   main() {
+    // Skip on Google Search pages - handled by google.ts entrypoint
+    if (isGoogleSearchPage()) return;
+
     // Skip if a specific adapter is already handling the page
     const url = window.location.href;
     const specificSite = [youtubeAdapter, redditAdapter, xAdapter].some(adapter => 
