@@ -8580,7 +8580,7 @@ Metadata: ${unit.metadata.join(", ")}`
   let ws;
   function getDevServerWebSocket() {
     if (ws == null) {
-      const serverUrl = "ws://localhost:3001";
+      const serverUrl = "ws://localhost:3003";
       logger.debug("Connecting to dev server @", serverUrl);
       ws = new WebSocket(serverUrl, "vite-hmr");
       ws.addWxtEventListener = ws.addEventListener.bind(ws);
