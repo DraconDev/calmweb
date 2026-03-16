@@ -195,11 +195,16 @@ let currentTheme: ReaderTheme;
 let currentArticle: ExtractedArticle | null = null;
 
 export function openReader(options: ReaderOptions = {}): void {
-  const existing = document.getElementById(OVERLAY_ID);
-  if (existing) return;
+  try {
+    const existing = document.getElementById(OVERLAY_ID);
+    if (existing) return;
 
-  const article = extractArticle(document, window.location.href);
-  currentArticle = article;
+    const article = extractArticle(document, window.location.href);
+    if (!article || !article.title) {
+      console.warn('[CalmWeb] Could not extract article content');
+      return;
+    }
+    currentArticle = article;
 
   // Auto-detect layout unless explicitly specified
   currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article);
