@@ -502,7 +502,6 @@ function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
 function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }: AdvancedTabProps) {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
-  const [customModel, setCustomModel] = useState('');
 
   const testConnection = async () => {
     if (!byokKey) {
@@ -589,25 +588,73 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
 
         {processingMode === 'byok_llm' && (
           <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
+            {/* API Key + Test */}
             <FormField
               label="OpenRouter API Key"
               description="Your OpenRouter API key. Free tier available at openrouter.ai. Stored only on your device."
             >
-              <div className="relative">
-                <input
-                  type="password"
-                  value={byokKey}
-                  onChange={(e) => onChange({ byokKey: e.target.value })}
-                  placeholder="sk-or-..."
-                  className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-                <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="password"
+                    value={byokKey}
+                    onChange={(e) => onChange({ byokKey: e.target.value })}
+                    placeholder="sk-or-..."
+                    className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                  <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
+                </div>
+                <button
+                  onClick={testConnection}
+                  disabled={testing || !byokKey}
+                  className={clsx(
+                    "shrink-0 h-12 px-5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border",
+                    testing
+                      ? "bg-muted text-muted-foreground cursor-wait border-border"
+                      : testResult?.success
+                        ? "bg-green-500/10 text-green-500 border-green-500/20"
+                        : testResult?.error
+                          ? "bg-red-500/10 text-red-500 border-red-500/20"
+                          : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+                  )}
+                >
+                  {testing ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Testing...
+                    </>
+                  ) : testResult?.success ? (
+                    <>
+                      <CheckCircle2 size={14} />
+                      Connected
+                    </>
+                  ) : testResult?.error ? (
+                    <>
+                      <XCircle size={14} />
+                      Failed
+                    </>
+                  ) : (
+                    <>
+                      <TestTube size={14} />
+                      Test
+                    </>
+                  )}
+                </button>
               </div>
+              {testResult?.error && !testing && (
+                <p className="mt-2 text-xs text-red-500">{testResult.error}</p>
+              )}
+              {testResult?.success && (
+                <p className="mt-2 text-xs text-green-500">
+                  Connected to {testResult.model} successfully
+                </p>
+              )}
             </FormField>
 
+            {/* Preset Models */}
             <FormField
               label="AI Model"
-              description="Select the model for classification and neutralization. Free models work great for most use cases."
+              description="Pick a preset or type any OpenRouter model ID below."
             >
               <div className="grid grid-cols-1 gap-2 pt-2">
                 {AI_MODELS.map((model) => (
@@ -629,6 +676,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
                     </div>
                     <div className="flex-1">
                       <span className="text-sm font-medium">{model.label}</span>
+                      <span className="text-[10px] text-muted-foreground ml-2 font-mono">{model.id}</span>
                     </div>
                     {model.free && (
                       <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
@@ -638,6 +686,30 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
                   </div>
                 ))}
               </div>
+            </FormField>
+
+            {/* Custom Model Input */}
+            <FormField
+              label="Custom Model ID"
+              description="Enter any OpenRouter model ID. Overrides preset selection above."
+            >
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={isPresetModel ? '' : aiModel}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    onChange({ aiModel: val || DEFAULT_OPENROUTER_MODEL });
+                  }}
+                  placeholder="e.g. openai/gpt-4o, anthropic/claude-3-opus"
+                  className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+              {!isPresetModel && aiModel && (
+                <p className="mt-2 text-xs text-primary font-mono">
+                  Using custom model: {aiModel}
+                </p>
+              )}
             </FormField>
           </div>
         )}
