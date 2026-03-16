@@ -9,6 +9,7 @@ import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { universalAdapter } from '@/src/adapters/universal';
 import { youtubeAdapter, redditAdapter, xAdapter } from '@/src/adapters';
 import { MESSAGE_TYPES } from '@/src/messaging';
+import { observeAndHideAds } from '@/src/adfilter';
 import type { ClassificationResult, ContentUnit } from '@calmweb/shared';
 
 export default defineContentScript({

@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   EyeOff,
   ExternalLink,
+  BookOpen,
 } from 'lucide-react';
 import clsx from 'clsx';
 import type { UserSettings, Stats } from '@calmweb/shared';
