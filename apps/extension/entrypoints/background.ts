@@ -227,6 +227,48 @@ const handlers: Record<string, MessageHandler> = {
     }
     return await statsStore.getValue();
   },
+
+  // Test AI connection via OpenRouter
+  [MESSAGE_TYPES.TEST_CONNECTION]: async (message: any, sender: any) => {
+    sender; // unused
+    const { apiKey, model, endpoint } = message;
+    const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
+    const testModel = model || 'meta-llama/llama-3.1-8b-instruct:free';
+
+    try {
+      const response = await fetch(testEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://calmweb.app',
+          'X-Title': 'CalmWeb',
+        },
+        body: JSON.stringify({
+          model: testModel,
+          messages: [{ role: 'user', content: 'Reply with just "OK".' }],
+          max_tokens: 5,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (content) {
+        return { success: true, model: testModel };
+      }
+      return { success: false, error: 'No response content' };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  },
 };
 
 // Create router with API client for proxy requests
