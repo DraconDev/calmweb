@@ -16,7 +16,6 @@ import {
   Zap,
   Bot,
   CheckCircle2,
-  XCircle,
   Loader2,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -284,14 +283,14 @@ export default function Popup() {
               onClick={testAIConnection}
               disabled={testing}
               className={clsx(
-                "w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all",
+                "w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all border",
                 testing
-                  ? "bg-[#1a1a1a] text-[#555] cursor-wait"
+                  ? "bg-[#1a1a1a] text-[#555] cursor-wait border-[#222]"
                   : testResult?.success
-                    ? "bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80]/20"
+                    ? "bg-[#4ade80]/10 text-[#4ade80] border-[#4ade80]/20"
                     : testResult?.error
-                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                      : "bg-[#1a1a1a] text-[#888] hover:bg-[#222] hover:text-white border border-[#222]"
+                      ? "bg-[#1a1a1a] text-[#888] hover:bg-[#222] hover:text-white border-[#222]"
+                      : "bg-[#1a1a1a] text-[#888] hover:bg-[#222] hover:text-white border-[#222]"
               )}
             >
               {testing ? (
@@ -306,8 +305,8 @@ export default function Popup() {
                 </>
               ) : testResult?.error ? (
                 <>
-                  <XCircle size={10} />
-                  Failed
+                  <Zap size={10} />
+                  Retry
                 </>
               ) : (
                 <>
