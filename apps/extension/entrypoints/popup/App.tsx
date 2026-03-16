@@ -178,7 +178,7 @@ export default function Popup() {
       </header>
 
       {/* Stats Card */}
-      <div className="px-4 -mt-1">
+      <div className="px-4 mt-3">
         <Card className="p-4 border-[#222] bg-[#111]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
