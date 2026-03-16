@@ -97,7 +97,8 @@ export type CalmWebMessage =
   | UpdateSettingsMessage
   | ClearCacheMessage
   | GetStatsMessage
-  | IncrementStatMessage;
+  | IncrementStatMessage
+  | TestConnectionMessage;
 
 // ============================================================================
 // Response Types
