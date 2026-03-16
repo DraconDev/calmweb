@@ -159,6 +159,8 @@ export const defaultUserSettings: UserSettings = {
     presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
   },
   byokKey: undefined,
+  aiModel: DEFAULT_OPENROUTER_MODEL,
+  customEndpoint: undefined,
   neutralization: defaultNeutralizationSettings,
   reader: defaultReaderSettings,
 };
