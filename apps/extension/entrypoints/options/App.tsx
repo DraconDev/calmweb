@@ -203,12 +203,12 @@ export default function OptionsApp() {
           <div className="max-w-4xl mx-auto space-y-8">
             {activeTab === 'overview' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                {/* Stats Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <StatCard
                     label="Items Filtered"
                     value={stats.totalFiltered.toLocaleString()}
                     icon={ShieldAlert}
-                    trend="+12% today"
                   />
                   <StatCard
                     label="Active Rules"
@@ -216,51 +216,157 @@ export default function OptionsApp() {
                     icon={Database}
                   />
                   <StatCard
-                    label="Protection Level"
-                    value={settings.processingMode === 'local_rules' ? "Basic" : "Neural"}
+                    label="Protection"
+                    value={settings.processingMode === 'local_rules' ? 'Basic' : 'Neural'}
                     icon={Zap}
                     highlight
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card padding="lg" className="space-y-4">
-                    <h3 className="font-bold text-lg flex items-center gap-2">
-                      <Activity size={20} className="text-primary" />
-                      Status Overview
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between py-2 border-b">
-                        <span className="text-sm text-muted-foreground">Engine Status</span>
-                        <span className="text-sm font-bold text-green-500">Online</span>
+                {/* Master Toggle */}
+                <Card padding="lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${settings.enabled ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
+                        <ShieldCheck size={20} />
                       </div>
-                      <div className="flex items-center justify-between py-2 border-b">
-                        <span className="text-sm text-muted-foreground">Master Toggle</span>
-                        <Switch
-                          checked={settings.enabled}
-                          onCheckedChange={(enabled) => saveSettings({ enabled })}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-sm text-muted-foreground">Last Reset</span>
-                        <span className="text-sm font-medium">{new Date(stats.lastReset).toLocaleDateString()}</span>
+                      <div>
+                        <h3 className="font-bold">Protection {settings.enabled ? 'Active' : 'Paused'}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {settings.enabled ? 'Filtering content on all pages' : 'All content is shown unfiltered'}
+                        </p>
                       </div>
                     </div>
-                  </Card>
+                    <Switch
+                      checked={settings.enabled}
+                      onCheckedChange={(enabled) => saveSettings({ enabled })}
+                    />
+                  </div>
+                </Card>
 
-                  <Card padding="lg" className="bg-primary text-primary-foreground shadow-xl shadow-primary/20">
-                    <h3 className="font-bold text-lg mb-2">Did you know?</h3>
-                    <p className="text-sm opacity-90 leading-relaxed">
-                      Using the Neural processing mode (BYOK or Hosted) allows CalmWeb to understand context and intent, not just keywords. This provides much more accurate protection against sophisticated clickbait.
-                    </p>
+                {/* Quick Preset Toggles */}
+                <Card padding="lg">
+                  <h3 className="font-bold mb-4 flex items-center gap-2">
+                    <ShieldAlert size={18} className="text-primary" />
+                    Quick Filters
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { id: 'politics', label: 'Politics', icon: '🏛️' },
+                      { id: 'ragebait', label: 'Ragebait', icon: '😤' },
+                      { id: 'spoilers', label: 'Spoilers', icon: '🙈' },
+                      { id: 'clickbait', label: 'Clickbait', icon: '🎣' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => {
+                          const newPresets = { ...settings.rules.presets, [preset.id]: !settings.rules.presets[preset.id as keyof typeof settings.rules.presets] };
+                          saveSettings({ rules: { ...settings.rules, presets: newPresets } });
+                        }}
+                        className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                          settings.rules.presets[preset.id as keyof typeof settings.rules.presets]
+                            ? 'border-primary bg-primary/5'
+                            : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                        }`}
+                      >
+                        <span className="text-lg">{preset.icon}</span>
+                        <span className="text-sm font-medium">{preset.label}</span>
+                        {settings.rules.presets[preset.id as keyof typeof settings.rules.presets] && (
+                          <span className="ml-auto text-[10px] font-bold uppercase text-green-500">On</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* AI Engine */}
+                <Card padding="lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold flex items-center gap-2">
+                      <Zap size={18} className="text-primary" />
+                      AI Engine
+                    </h3>
+                    <span className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${
+                      settings.processingMode === 'byok_llm' && settings.byokKey
+                        ? 'bg-green-500/10 text-green-500'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Off'}
+                    </span>
+                  </div>
+                  {settings.processingMode === 'byok_llm' && settings.byokKey ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Model: <span className="font-mono text-foreground">{settings.aiModel || DEFAULT_OPENROUTER_MODEL}</span>
+                      </p>
+                      <TestConnectionButton
+                        byokKey={settings.byokKey}
+                        aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">Enable AI for smarter content analysis</p>
+                      <button
+                        onClick={() => setActiveTab('advanced')}
+                        className="text-xs font-bold text-primary hover:underline"
+                      >
+                        Configure →
+                      </button>
+                    </div>
+                  )}
+                </Card>
+
+                {/* Neutralization */}
+                <Card padding="lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${settings.neutralization?.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                        <Wand2 size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold">Text Neutralization</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {settings.neutralization?.enabled
+                            ? `Mode: ${settings.neutralization.mode} — rewriting inflammatory headlines`
+                            : 'Rewrite inflammatory headlines automatically'}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.neutralization?.enabled || false}
+                      onCheckedChange={(enabled) =>
+                        saveSettings({
+                          neutralization: { ...settings.neutralization, enabled },
+                        })
+                      }
+                    />
+                  </div>
+                </Card>
+
+                {/* Super Reader */}
+                <Card padding="lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        <BookOpen size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold">Super Reader</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+Shift+R</kbd> on any page
+                          {settings.reader?.autoOpen && ' (auto-opens on articles)'}
+                        </p>
+                      </div>
+                    </div>
                     <button
-                      onClick={() => setActiveTab('advanced')}
-                      className="mt-4 text-xs font-bold uppercase tracking-wider bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+                      onClick={() => setActiveTab('reader')}
+                      className="text-xs font-bold text-primary hover:underline"
                     >
-                      Upgrade Protection
+                      Configure →
                     </button>
-                  </Card>
-                </div>
+                  </div>
+                </Card>
               </div>
             )}
 
