@@ -218,7 +218,7 @@ export default function Popup() {
       </header>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2.5 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-2.5 scrollbar-thin">
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-2">
           <StatPill
