@@ -283,8 +283,25 @@ export default function Popup() {
         </button>
       </div>
 
+      {/* Super Reader Button */}
+      <div className="px-4 mt-3">
+        <button
+          onClick={toggleReader}
+          className="w-full p-3 rounded-xl border border-[#333] bg-gradient-to-r from-[#1a1a2e] to-[#1a1a1a] hover:from-[#222244] hover:to-[#222] transition-all flex items-center gap-3"
+        >
+          <div className="p-2 rounded-lg bg-[#a78bfa] text-white">
+            <BookOpen size={16} />
+          </div>
+          <div className="flex-1 text-left">
+            <div className="text-sm font-semibold text-white">Super Reader</div>
+            <div className="text-[11px] text-[#888]">Distraction-free reading mode</div>
+          </div>
+          <ExternalLink size={14} className="text-[#555]" />
+        </button>
+      </div>
+
       {/* Action Buttons */}
-      <div className="px-4 py-3 border-t border-[#222] bg-[#080808]">
+      <div className="px-4 py-3 mt-3 border-t border-[#222] bg-[#080808]">
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => openOptions('presets')}
