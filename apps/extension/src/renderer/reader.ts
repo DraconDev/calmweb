@@ -282,6 +282,9 @@ export function openReader(options: ReaderOptions = {}): void {
   currentLayout.render(article, contentEl);
 
   setupEventListeners(shadow, overlay, options);
+  } catch (err) {
+    console.error('[CalmWeb] Failed to open reader:', err);
+  }
 }
 
 export function closeReader(): void {
