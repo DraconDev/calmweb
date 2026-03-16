@@ -836,7 +836,7 @@ function ReaderTab({ defaultLayout, defaultTheme, onChange }: ReaderTabProps) {
           <div className="flex-1">
             <h3 className="font-bold text-lg mb-1">Super Reader</h3>
             <p className="text-sm text-muted-foreground">
-              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Alt+R</kbd> on any page to open a distraction-free reading view. 
+              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+Shift+R</kbd> or <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Alt+R</kbd> on any page to open a distraction-free reading view. 
               Content is extracted and rendered in your chosen layout.
             </p>
           </div>
