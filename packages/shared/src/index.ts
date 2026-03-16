@@ -13,13 +13,14 @@ import { z } from 'zod';
 export const ProcessingModeSchema = z.enum(['local_rules', 'byok_llm', 'hosted_llm']);
 export type ProcessingMode = z.infer<typeof ProcessingModeSchema>;
 
-export const DEFAULT_OPENROUTER_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
+export const DEFAULT_OPENROUTER_MODEL = 'openrouter/auto';
 export const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 export const AI_MODELS = [
-  { id: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B (Free)', free: true },
-  { id: 'mistralai/mistral-7b-instruct:free', label: 'Mistral 7B (Free)', free: true },
-  { id: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B (Free)', free: true },
+  { id: 'openrouter/auto', label: 'Auto (Free Router)', free: true },
+  { id: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B', free: true },
+  { id: 'mistralai/mistral-7b-instruct:free', label: 'Mistral 7B', free: true },
+  { id: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B', free: true },
   { id: 'meta-llama/llama-3.1-70b-instruct', label: 'Llama 3.1 70B', free: false },
   { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', free: false },
   { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini', free: false },
