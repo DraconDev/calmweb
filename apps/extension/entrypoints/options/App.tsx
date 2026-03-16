@@ -24,7 +24,11 @@ import {
   Palette,
   Columns,
   Sun,
-  Moon
+  Moon,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  TestTube,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { allLayouts } from '@/src/renderer/layouts';
