@@ -34,6 +34,7 @@ export default function Popup() {
   const [stats, setStats] = useState<Stats>({ totalFiltered: 0, lastReset: 0 });
   const [loading, setLoading] = useState(true);
   const [currentSite, setCurrentSite] = useState<string>('');
+  const [isReadable, setIsReadable] = useState(false);
 
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<TestConnectionResponse | null>(null);
