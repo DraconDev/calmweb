@@ -57,16 +57,16 @@ Return JSON with the rewritten text and list of changes made.`;
 function getLLMConfig(settings: UserSettings): LLMConfig | null {
   if (settings.processingMode === 'byok_llm' && settings.byokKey) {
     return {
-      endpoint: 'https://api.openai.com/v1/chat/completions',
+      endpoint: settings.customEndpoint || OPENROUTER_ENDPOINT,
       apiKey: settings.byokKey,
-      model: 'gpt-3.5-turbo',
+      model: settings.aiModel || DEFAULT_OPENROUTER_MODEL,
     };
   }
   if (settings.processingMode === 'hosted_llm' && settings.byokKey) {
     return {
-      endpoint: 'https://api.openai.com/v1/chat/completions',
+      endpoint: settings.customEndpoint || OPENROUTER_ENDPOINT,
       apiKey: settings.byokKey,
-      model: 'gpt-3.5-turbo',
+      model: settings.aiModel || DEFAULT_OPENROUTER_MODEL,
     };
   }
   return null;
