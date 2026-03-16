@@ -810,5 +810,3 @@ export function autoDetectLayout(article: ExtractedArticle): ReaderLayout {
   // Default: standard reader layout
   return readerLayout;
 }
-
-export { readerLayout as newspaperLayout };
