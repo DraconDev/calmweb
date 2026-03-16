@@ -57,12 +57,13 @@ describe('Article Extractor', () => {
 });
 
 describe('Layout Engine', () => {
-  it('should return 6 layouts', () => {
-    expect(allLayouts.length).toBe(6);
+  it('should return 7 layouts', () => {
+    expect(allLayouts.length).toBe(7);
   });
 
   it('should contain all layout ids', () => {
     const ids = allLayouts.map(l => l.id);
+    expect(ids).toContain('auto');
     expect(ids).toContain('reader');
     expect(ids).toContain('focus');
     expect(ids).toContain('terminal');
@@ -77,9 +78,9 @@ describe('Layout Engine', () => {
     expect(layout.name).toBe('Reader');
   });
 
-  it('should return reader as default for unknown id', () => {
+  it('should return auto as default for unknown id', () => {
     const layout = getLayout('unknown');
-    expect(layout.id).toBe('reader');
+    expect(layout.id).toBe('auto');
   });
 
   it('should have correct reader layout properties', () => {
