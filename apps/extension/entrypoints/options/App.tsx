@@ -60,6 +60,7 @@ interface NeutralizeTabProps {
 interface ReaderTabProps {
   defaultLayout: string;
   defaultTheme: string;
+  textOnly: boolean;
   onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean; textOnly?: boolean }) => void;
 }
 
@@ -457,8 +458,9 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
             {activeTab === 'reader' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <ReaderTab
-                  defaultLayout={settings.reader?.defaultLayout || 'reader'}
+                  defaultLayout={settings.reader?.defaultLayout || 'auto'}
                   defaultTheme={settings.reader?.defaultTheme || 'default'}
+                  textOnly={settings.reader?.textOnly !== false}
                   onChange={(reader) => saveSettings({ reader: { ...settings.reader, ...reader } })}
                 />
               </div>
