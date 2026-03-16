@@ -26,7 +26,6 @@ import {
   Sun,
   Moon,
   CheckCircle2,
-  XCircle,
   Loader2,
   TestTube,
 } from 'lucide-react';
@@ -614,7 +613,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
                       : testResult?.success
                         ? "bg-green-500/10 text-green-500 border-green-500/20"
                         : testResult?.error
-                          ? "bg-red-500/10 text-red-500 border-red-500/20"
+                          ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
                           : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
                   )}
                 >
@@ -630,8 +629,8 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
                     </>
                   ) : testResult?.error ? (
                     <>
-                      <XCircle size={14} />
-                      Failed
+                      <TestTube size={14} />
+                      Retry
                     </>
                   ) : (
                     <>
