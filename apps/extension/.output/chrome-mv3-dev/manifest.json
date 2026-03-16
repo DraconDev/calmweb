@@ -35,9 +35,7 @@
       "32": "icon/32.png",
       "48": "icon/48.png",
       "128": "icon/128.png"
-    },
-    "default_title": "CalmWeb",
-    "default_popup": "popup.html"
+    }
   },
   "options_ui": {
     "page": "options.html"
