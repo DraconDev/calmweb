@@ -330,7 +330,7 @@ export default function Popup() {
             <EyeOff size={11} className="text-[#444]" />
             <span className="text-[10px] font-semibold text-[#444] uppercase tracking-wider">Quick Filters</span>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5 overflow-hidden">
             <PresetToggle
               icon={Newspaper}
               label="Politics"
