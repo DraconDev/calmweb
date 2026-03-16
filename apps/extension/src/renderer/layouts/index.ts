@@ -524,8 +524,32 @@ export const allLayouts: ReaderLayout[] = [
   academicLayout,
 ];
 
+/**
+ * Auto layout - detects the best layout for each page dynamically.
+ * Uses autoDetectLayout when rendering.
+ */
+export const autoLayout: ReaderLayout = {
+  id: 'auto',
+  name: 'Auto',
+  description: 'Automatically picks the best layout based on page content',
+  bestFor: ['everything'],
+  columns: 1,
+  maxWidth: '680px',
+  fontFamily: 'Georgia, Charter, "Times New Roman", serif',
+  fontSize: '18px',
+  lineHeight: '1.7',
+  render(article, container) {
+    const detected = autoDetectLayout(article);
+    console.log('[CalmWeb] Auto-detected layout:', detected.name);
+    detected.render(article, container);
+  },
+};
+
+// Insert auto at the start
+allLayouts.unshift(autoLayout);
+
 export function getLayout(id: string): ReaderLayout {
-  return allLayouts.find(l => l.id === id) || readerLayout;
+  return allLayouts.find(l => l.id === id) || autoLayout;
 }
 
 /**

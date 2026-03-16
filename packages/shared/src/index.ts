@@ -110,7 +110,7 @@ export const defaultNeutralizationSettings: NeutralizationSettings = {
 
 export const ReaderSettingsSchema = z.object({
   enabled: z.boolean().default(true),
-  defaultLayout: z.string().default('reader'),
+  defaultLayout: z.string().default('auto'),
   defaultTheme: z.string().default('default'),
   autoOpen: z.boolean().default(true),
   showInContextMenu: z.boolean().default(true),
