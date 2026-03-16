@@ -295,10 +295,17 @@ export default defineBackground(() => {
       await initializeStores();
       // Setup context menus
       await setupContextMenu();
+      // Open dashboard on install
+      browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
     },
     onUpdate: () => {
       console.log('[Background] CalmWeb updated');
     },
+  });
+
+  // Clicking extension icon opens the dashboard
+  browser.action.onClicked.addListener(() => {
+    browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
   });
 
   // Message listener
