@@ -89,14 +89,13 @@ const DATE_SELECTORS = [
   '[property="article:published_time"]',
 ];
 
-export function extractArticle(doc: Document, url: string): ExtractedArticle {
+export function extractArticle(doc: Document, url: string, textOnly = true): ExtractedArticle {
   const title = extractTitle(doc);
   const author = extractAuthor(doc);
   const date = extractDate(doc);
   const mainContent = findMainContent(doc);
-  // Extract images BEFORE cleaning (cleaning removes img/figure elements)
-  const images = extractImages(mainContent);
-  const cleanedContent = cleanContent(mainContent);
+  const images = textOnly ? [] : extractImages(mainContent);
+  const cleanedContent = cleanContent(mainContent, textOnly);
   const favicon = extractFavicon(doc);
   const readingTime = calculateReadingTime(cleanedContent.textContent || '');
 
@@ -192,12 +191,19 @@ function findMainContent(doc: Document): HTMLElement {
   return best || doc.body;
 }
 
-function cleanContent(el: HTMLElement): HTMLElement {
+function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
   const clone = el.cloneNode(true) as HTMLElement;
 
   REMOVE_SELECTORS.forEach((selector) => {
     clone.querySelectorAll(selector).forEach((el) => el.remove());
   });
+
+  // Strip images, videos, and other media in text-only mode
+  if (textOnly) {
+    MEDIA_SELECTORS.forEach((selector) => {
+      clone.querySelectorAll(selector).forEach((el) => el.remove());
+    });
+  }
 
   clone.querySelectorAll('a').forEach((a) => {
     const href = a.getAttribute('href');
