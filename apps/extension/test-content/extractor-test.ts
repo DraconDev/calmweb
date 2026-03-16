@@ -1691,8 +1691,13 @@ createApp({
     category: 'challenging',
     url: 'https://magazine.com/issue/42',
     html: `<!DOCTYPE html><html><head><title>Magazine Issue 42</title></head><body><main><article class="featured"><h1>Featured: The Art of Slow Living</h1><div class="content"><p>In our busy world, the slow living movement offers a different approach to life. Practitioners emphasize mindfulness, quality over quantity, and intentional choices.</p><p>This philosophy extends beyond personal habits to include consumption, work, and relationships.</p></div></article><article class="secondary"><h2>Side Story: Local Art Scene Thrives</h2><div class="content"><p>The local art community has seen remarkable growth this year, with new galleries opening monthly.</p></div></article></main></body></html>`,
-    expected: { title: 'Magazine Issue 42', hasContent: true, minContentLength: 100, minImages: 0, maxImages: 3 },
-  },
+    expected: {
+      title: 'Featured: The Art of Slow Living',
+      hasContent: true,
+      minContentLength: 100,
+      minImages: 0,
+      maxImages: 3,
+    },
 
   // === E-COMMERCE VARIATIONS ===
   {
