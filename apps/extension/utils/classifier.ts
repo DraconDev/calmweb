@@ -308,6 +308,8 @@ export async function classifyContent(
     strictness: number;
     rules: UserRules;
     byokKey?: string;
+    aiModel?: string;
+    customEndpoint?: string;
   },
   options: ClassifierOptions = {}
 ): Promise<ClassificationResult> {
@@ -319,7 +321,7 @@ export async function classifyContent(
 
   // 2. If rules didn't match, use LLM based on processing mode
   if (settings.processingMode === 'byok_llm' && settings.byokKey) {
-    return classifyWithBYOK(unit, settings.byokKey, settings.strictness);
+    return classifyWithBYOK(unit, settings.byokKey, settings.strictness, settings.customEndpoint, settings.aiModel);
   }
 
   if (settings.processingMode === 'hosted_llm' && options.apiClient) {
