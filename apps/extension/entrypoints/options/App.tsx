@@ -1079,7 +1079,20 @@ function ReaderTab({ defaultLayout, defaultTheme, textOnly, onChange }: ReaderTa
         </div>
       </FormField>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card padding="lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold mb-1">Text Only</h4>
+              <p className="text-xs text-muted-foreground">Strip images and videos for pure reading</p>
+            </div>
+            <Switch
+              checked={textOnly}
+              onCheckedChange={(val) => onChange({ textOnly: val })}
+            />
+          </div>
+        </Card>
+
         <Card padding="lg">
           <div className="flex items-center justify-between">
             <div>
