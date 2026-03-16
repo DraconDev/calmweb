@@ -1698,6 +1698,7 @@ createApp({
       minImages: 0,
       maxImages: 3,
     },
+  },
 
   // === E-COMMERCE VARIATIONS ===
   {
