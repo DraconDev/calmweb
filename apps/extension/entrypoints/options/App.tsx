@@ -134,8 +134,66 @@ export default function OptionsApp() {
       <Container className="flex items-center justify-center min-h-screen">
         <Spinner size="lg" />
       </Container>
-    );
-  }
+  );
+}
+
+// ============================================================================
+// Test Connection Button (reusable)
+// ============================================================================
+
+function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: string }) {
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
+
+  const test = async () => {
+    setTesting(true);
+    setResult(null);
+    try {
+      const res = await sendToBackground<{ success: boolean; model?: string; error?: string }>({
+        type: MESSAGE_TYPES.TEST_CONNECTION,
+        apiKey: byokKey,
+        model: aiModel,
+      });
+      setResult(res || { success: false, error: 'No response' });
+    } catch (error) {
+      setResult({ success: false, error: error instanceof Error ? error.message : String(error) });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={test}
+        disabled={testing}
+        className={clsx(
+          "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border",
+          testing
+            ? "bg-muted text-muted-foreground cursor-wait border-border"
+            : result?.success
+              ? "bg-green-500/10 text-green-500 border-green-500/20"
+              : result?.error
+                ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+                : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
+        )}
+      >
+        {testing ? (
+          <><Loader2 size={14} className="animate-spin" /> Testing...</>
+        ) : result?.success ? (
+          <><CheckCircle2 size={14} /> Connected to {result.model}</>
+        ) : result?.error ? (
+          <><TestTube size={14} /> Retry Test</>
+        ) : (
+          <><TestTube size={14} /> Test Connection</>
+        )}
+      </button>
+      {result?.error && !testing && (
+        <p className="text-xs text-red-500">{result.error}</p>
+      )}
+    </div>
+  );
+}
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
