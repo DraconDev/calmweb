@@ -182,8 +182,8 @@ export default function Popup() {
   return (
     <div className="w-[380px] h-[520px] flex flex-col bg-[#0a0a0a] overflow-hidden">
       {/* Header - Fixed */}
-      <header className="shrink-0 bg-[#111] border-b border-[#1a1a1a] px-4 py-3">
-        <div className="flex items-center justify-between">
+      <header className="shrink-0 bg-[#111] border-b border-[#1a1a1a] px-3 py-3">
+        <div className="flex items-center justify-between gap-2 min-w-0">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="p-2 bg-gradient-to-br from-[#2a2a3e] to-[#1a1a2a] rounded-xl text-[#a78bfa] border border-[#2a2a3e]">
