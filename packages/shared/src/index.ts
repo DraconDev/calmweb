@@ -119,7 +119,7 @@ export type ReaderSettings = z.infer<typeof ReaderSettingsSchema>;
 
 export const defaultReaderSettings: ReaderSettings = {
   enabled: true,
-  defaultLayout: 'reader',
+  defaultLayout: 'auto',
   defaultTheme: 'default',
   autoOpen: true,
   showInContextMenu: true,
