@@ -554,20 +554,55 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
         </FormField>
 
         {processingMode === 'byok_llm' && (
-          <div className="animate-in slide-in-from-top-2 duration-300">
+          <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
             <FormField
-              label="API Provider Key"
-              description="OpenAI compatible API key. Stored only on your device."
+              label="OpenRouter API Key"
+              description="Your OpenRouter API key. Free tier available at openrouter.ai. Stored only on your device."
             >
               <div className="relative">
                 <input
                   type="password"
                   value={byokKey}
                   onChange={(e) => onChange({ byokKey: e.target.value })}
-                  placeholder="sk-..."
+                  placeholder="sk-or-..."
                   className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
                 <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
+              </div>
+            </FormField>
+
+            <FormField
+              label="AI Model"
+              description="Select the model for classification and neutralization. Free models work great for most use cases."
+            >
+              <div className="grid grid-cols-1 gap-2 pt-2">
+                {AI_MODELS.map((model) => (
+                  <div
+                    key={model.id}
+                    onClick={() => onChange({ aiModel: model.id })}
+                    className={clsx(
+                      "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
+                      aiModel === model.id
+                        ? "border-primary bg-primary/5"
+                        : "border-transparent bg-muted/30 hover:bg-muted/50"
+                    )}
+                  >
+                    <div className={clsx(
+                      "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                      aiModel === model.id ? "border-primary" : "border-muted-foreground/30"
+                    )}>
+                      {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm font-medium">{model.label}</span>
+                    </div>
+                    {model.free && (
+                      <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
+                        Free
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             </FormField>
           </div>
