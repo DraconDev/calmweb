@@ -187,7 +187,7 @@ export function hideAds(root: Document | HTMLElement = document): AdFilterResult
   for (const selector of AD_SELECTORS) {
     try {
       const elements = root.querySelectorAll(selector);
-      for (const el of elements) {
+      for (const el of Array.from(elements)) {
         if (el instanceof HTMLElement) {
           el.style.setProperty('display', 'none', 'important');
           el.setAttribute('data-calmweb-ad-hidden', 'true');
@@ -201,7 +201,7 @@ export function hideAds(root: Document | HTMLElement = document): AdFilterResult
 
   // Also handle iframes with ad sources
   const iframes = root.querySelectorAll('iframe');
-  for (const iframe of iframes) {
+  for (const iframe of Array.from(iframes)) {
     const src = iframe.getAttribute('src') || '';
     if (AD_URL_PATTERNS.some(pattern => src.includes(pattern))) {
       (iframe as HTMLElement).style.setProperty('display', 'none', 'important');
@@ -219,7 +219,7 @@ export function hideAds(root: Document | HTMLElement = document): AdFilterResult
 export function restoreAds(root: Document | HTMLElement = document): number {
   let restored = 0;
   const hiddenAds = root.querySelectorAll('[data-calmweb-ad-hidden="true"]');
-  for (const el of hiddenAds) {
+  for (const el of Array.from(hiddenAds)) {
     if (el instanceof HTMLElement) {
       el.style.removeProperty('display');
       el.removeAttribute('data-calmweb-ad-hidden');
