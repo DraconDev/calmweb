@@ -26,6 +26,8 @@ export const MESSAGE_TYPES = {
   TOGGLE_READER: 'calmweb:toggleReader',
   OPEN_READER: 'calmweb:openReader',
   CLOSE_READER: 'calmweb:closeReader',
+  // AI Connection
+  TEST_CONNECTION: 'calmweb:testConnection',
 } as const;
 
 export type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
