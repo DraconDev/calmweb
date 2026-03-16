@@ -74,6 +74,19 @@ export interface IncrementStatMessage {
   amount?: number;
 }
 
+export interface TestConnectionMessage {
+  type: typeof MESSAGE_TYPES.TEST_CONNECTION;
+  apiKey: string;
+  model?: string;
+  endpoint?: string;
+}
+
+export interface TestConnectionResponse {
+  success: boolean;
+  model?: string;
+  error?: string;
+}
+
 // ============================================================================
 // Union Type for All Messages
 // ============================================================================
