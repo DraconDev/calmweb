@@ -14,9 +14,20 @@ import {
   ExternalLink,
   BookOpen,
   Zap,
+  Bot,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
 import clsx from 'clsx';
 import type { UserSettings, Stats } from '@calmweb/shared';
+import { DEFAULT_OPENROUTER_MODEL, AI_MODELS } from '@calmweb/shared';
+
+interface TestConnectionResponse {
+  success: boolean;
+  model?: string;
+  error?: string;
+}
 
 export default function Popup() {
   const [enabled, setEnabled] = useState(true);
@@ -24,6 +35,9 @@ export default function Popup() {
   const [stats, setStats] = useState<Stats>({ totalFiltered: 0, lastReset: 0 });
   const [loading, setLoading] = useState(true);
   const [currentSite, setCurrentSite] = useState<string>('');
+
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<TestConnectionResponse | null>(null);
 
   useEffect(() => {
     loadData();
@@ -128,6 +142,31 @@ export default function Popup() {
     }
   };
 
+  const testAIConnection = async () => {
+    if (!settings?.byokKey) {
+      setTestResult({ success: false, error: 'No API key configured' });
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const result = await sendToBackground<TestConnectionResponse>({
+        type: MESSAGE_TYPES.TEST_CONNECTION,
+        apiKey: settings.byokKey,
+        model: settings.aiModel || DEFAULT_OPENROUTER_MODEL,
+        endpoint: settings.customEndpoint,
+      });
+      setTestResult(result || { success: false, error: 'No response' });
+    } catch (error) {
+      setTestResult({ 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-[380px] h-[520px] flex items-center justify-center bg-[#0a0a0a]">
@@ -137,6 +176,9 @@ export default function Popup() {
   }
 
   const presetsEnabled = Object.values(settings?.rules.presets || {}).filter(Boolean).length;
+  const hasAPIKey = !!settings?.byokKey;
+  const isAIMode = settings?.processingMode === 'byok_llm';
+  const modelName = AI_MODELS.find(m => m.id === (settings?.aiModel || DEFAULT_OPENROUTER_MODEL))?.label || settings?.aiModel || 'Llama 3.1 8B (Free)';
 
   return (
     <div className="w-[380px] h-[520px] flex flex-col bg-[#0a0a0a] overflow-hidden">
@@ -201,6 +243,86 @@ export default function Popup() {
         <div className="flex items-center gap-1.5 px-1">
           <Radio size={10} className="text-[#333]" />
           <span className="text-[10px] text-[#444] truncate" title={currentSite}>{currentSite}</span>
+        </div>
+
+        {/* AI Status */}
+        <div className={clsx(
+          "p-2.5 rounded-xl border transition-all",
+          isAIMode && hasAPIKey
+            ? "border-[#4ade80]/20 bg-[#4ade80]/5"
+            : "border-[#1a1a1a] bg-[#111]"
+        )}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className={clsx(
+                "p-1 rounded-md shrink-0",
+                isAIMode && hasAPIKey ? "bg-[#4ade80] text-white" : "bg-[#1a1a1a] text-[#444]"
+              )}>
+                <Bot size={12} />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-white">AI Engine</span>
+                <span className={clsx(
+                  "ml-2 text-[9px] font-bold uppercase",
+                  isAIMode && hasAPIKey ? "text-[#4ade80]" : "text-[#444]"
+                )}>
+                  {isAIMode && hasAPIKey ? 'Active' : 'Off'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {isAIMode && (
+            <div className="text-[10px] text-[#555] mb-2">
+              {modelName}
+            </div>
+          )}
+
+          {/* Test Connection Button */}
+          {hasAPIKey && (
+            <button
+              onClick={testAIConnection}
+              disabled={testing}
+              className={clsx(
+                "w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all",
+                testing
+                  ? "bg-[#1a1a1a] text-[#555] cursor-wait"
+                  : testResult?.success
+                    ? "bg-[#4ade80]/10 text-[#4ade80] border border-[#4ade80]/20"
+                    : testResult?.error
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                      : "bg-[#1a1a1a] text-[#888] hover:bg-[#222] hover:text-white border border-[#222]"
+              )}
+            >
+              {testing ? (
+                <>
+                  <Loader2 size={10} className="animate-spin" />
+                  Testing...
+                </>
+              ) : testResult?.success ? (
+                <>
+                  <CheckCircle2 size={10} />
+                  Connected
+                </>
+              ) : testResult?.error ? (
+                <>
+                  <XCircle size={10} />
+                  Failed
+                </>
+              ) : (
+                <>
+                  <Zap size={10} />
+                  Test Connection
+                </>
+              )}
+            </button>
+          )}
+
+          {testResult?.error && !testing && (
+            <div className="mt-1.5 text-[9px] text-red-400/70 truncate" title={testResult.error}>
+              {testResult.error}
+            </div>
+          )}
         </div>
 
         {/* Quick Filters */}
