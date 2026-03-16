@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import type { UserSettings, UserRules, Stats, NeutralizationSettings } from '@calmweb/shared';
-import { defaultUserSettings, defaultNeutralizationSettings } from '@calmweb/shared';
+import { defaultUserSettings, defaultNeutralizationSettings, AI_MODELS, DEFAULT_OPENROUTER_MODEL } from '@calmweb/shared';
 import {
   Container,
   Card,
