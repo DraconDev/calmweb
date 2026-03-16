@@ -1,8 +1,8 @@
 /**
  * Reader Entry Point for CalmWeb
  *
- * Auto-opens on content pages by default.
- * Users can toggle with Ctrl+Shift+R or close with Escape.
+ * Opens on EVERY page by default - this is the primary way to browse.
+ * Raw mode toggle available in toolbar to see original page.
  */
 
 import { defineContentScript } from 'wxt/utils/define-content-script';
@@ -12,82 +12,68 @@ import { sendToBackground } from '@dracon/wxt-shared/extension';
 import browser from 'webextension-polyfill';
 import type { UserSettings } from '@calmweb/shared';
 
-// Sites where reader should NEVER auto-open (interactive web apps)
-const SKIP_SITES = [
-  'mail.google.com',
-  'calendar.google.com',
-  'drive.google.com',
-  'docs.google.com',
-  'sheets.google.com',
-  'slides.google.com',
-  'meet.google.com',
-  'gmail.com',
-  'github.com',
-  'gitlab.com',
-  'bitbucket.org',
-  'slack.com',
-  'discord.com',
-  'notion.so',
-  'figma.com',
-  'linear.app',
-  'jira.',
-  'trello.com',
-  'asana.com',
-  'airtable.com',
-  'sheets.',
-  'docs.',
-  'admin.',
-  'dashboard.',
-  'app.',
-];
+const FLOATING_BTN_ID = 'calmweb-raw-toggle';
 
-// Sites where reader works well but user might not want it
-const OPTIONAL_SITES = [
-  'youtube.com',
-  'reddit.com',
-  'twitter.com',
-  'x.com',
-  'facebook.com',
-  'instagram.com',
-  'linkedin.com',
-  'tiktok.com',
-  'pinterest.com',
-  'amazon.com',
-  'ebay.com',
-  'walmart.com',
-  'netflix.com',
-  'spotify.com',
-  'twitch.tv',
-];
-
-function shouldSkipSite(): boolean {
-  const hostname = window.location.hostname.toLowerCase();
-  const path = window.location.pathname;
-
-  // Always skip interactive web apps
-  if (SKIP_SITES.some(s => hostname.includes(s) || hostname.startsWith(s))) return true;
-  if (SKIP_SITES.some(s => path.startsWith('/' + s.replace('.', '/')))) return true;
-
-  // Skip social/media sites (reader doesn't help much there)
-  if (OPTIONAL_SITES.some(s => hostname.includes(s))) return true;
-
-  // Skip if page is mostly interactive (login, checkout, forms)
-  const forms = document.querySelectorAll('form');
-  const inputs = document.querySelectorAll('input:not([type="hidden"])');
-  if (forms.length > 2 || inputs.length > 5) return true;
-
-  // Skip if very little text content
+function hasContent(): boolean {
   const bodyText = document.body?.textContent || '';
-  if (bodyText.trim().length < 500) return true;
+  return bodyText.trim().length >= 200;
+}
 
-  return false;
+function showFloatingButton(): void {
+  if (document.getElementById(FLOATING_BTN_ID)) return;
+
+  const btn = document.createElement('div');
+  btn.id = FLOATING_BTN_ID;
+  btn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  `;
+  btn.title = 'Open Filtered View (Ctrl+Shift+R)';
+  Object.assign(btn.style, {
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px',
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    background: '#a78bfa',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: '2147483646',
+    boxShadow: '0 4px 20px rgba(167, 139, 250, 0.4)',
+    transition: 'all 0.2s ease',
+    border: 'none',
+  });
+  btn.addEventListener('mouseenter', () => {
+    btn.style.transform = 'scale(1.1)';
+    btn.style.boxShadow = '0 6px 24px rgba(167, 139, 250, 0.5)';
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = 'scale(1)';
+    btn.style.boxShadow = '0 4px 20px rgba(167, 139, 250, 0.4)';
+  });
+  btn.addEventListener('click', () => {
+    btn.remove();
+    try { openReader(); } catch (err) { console.error('[CalmWeb]', err); }
+  });
+  document.body.appendChild(btn);
+}
+
+function hideFloatingButton(): void {
+  document.getElementById(FLOATING_BTN_ID)?.remove();
 }
 
 function safeToggleReader(): void {
   try {
     if (isReaderOpen()) {
       closeReader();
+      showFloatingButton();
     } else {
+      hideFloatingButton();
       openReader();
     }
   } catch (err) {
@@ -122,26 +108,39 @@ export default defineContentScript({
         safeToggleReader();
       }
       if (message.type === MESSAGE_TYPES.OPEN_READER) {
+        hideFloatingButton();
         try { if (!isReaderOpen()) openReader(); } catch (err) { console.error('[CalmWeb]', err); }
       }
       if (message.type === MESSAGE_TYPES.CLOSE_READER) {
-        try { if (isReaderOpen()) closeReader(); } catch (err) { console.error('[CalmWeb]', err); }
+        try { if (isReaderOpen()) { closeReader(); showFloatingButton(); } } catch (err) { console.error('[CalmWeb]', err); }
       }
     });
 
-    // Auto-open on content pages
+    // Auto-open on ALL pages (unless disabled in settings)
     try {
       const settings = await sendToBackground<UserSettings>({
         type: MESSAGE_TYPES.GET_SETTINGS,
       });
-      if (settings?.reader?.autoOpen && settings?.enabled && !shouldSkipSite()) {
+      if (settings?.reader?.autoOpen !== false && settings?.enabled !== false && hasContent()) {
         setTimeout(() => {
-          console.log('[CalmWeb] Auto-opening reader');
-          safeToggleReader();
-        }, 1200);
+          console.log('[CalmWeb] Auto-opening filtered view');
+          try {
+            openReader();
+          } catch (err) {
+            console.error('[CalmWeb] Failed to open reader:', err);
+          }
+        }, 800);
+      } else if (settings?.reader?.autoOpen !== false && settings?.enabled !== false) {
+        // No content to show, show floating button
+        showFloatingButton();
       }
     } catch {
-      // Silently fail
+      // If settings fail, default to opening
+      if (hasContent()) {
+        setTimeout(() => {
+          try { openReader(); } catch (err) { console.error('[CalmWeb]', err); }
+        }, 800);
+      }
     }
   },
 });
