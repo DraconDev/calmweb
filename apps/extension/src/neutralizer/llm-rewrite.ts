@@ -1,4 +1,5 @@
 import type { UserSettings } from '@calmweb/shared';
+import { OPENROUTER_ENDPOINT, DEFAULT_OPENROUTER_MODEL } from '@calmweb/shared';
 import type { RewriteMode, RewriteResult } from './rewriter';
 
 interface LLMRewriteResponse {
