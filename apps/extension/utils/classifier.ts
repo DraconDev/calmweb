@@ -96,9 +96,10 @@ export async function classifyWithBYOK(
   unit: ContentUnit,
   apiKey: string,
   strictness: number,
-  customEndpoint?: string
+  customEndpoint?: string,
+  model?: string
 ): Promise<ClassificationResult> {
-  const endpoint = customEndpoint || 'https://api.openai.com/v1/chat/completions';
+  const endpoint = customEndpoint || OPENROUTER_ENDPOINT;
   const systemPrompt = `You are a content moderation assistant for a browser extension called CalmWeb.
 Your job is to classify content cards (e.g., video titles, post headlines) and decide what action to take.
 
@@ -125,9 +126,11 @@ Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if 
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://calmweb.app',
+        'X-Title': 'CalmWeb',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: model || DEFAULT_OPENROUTER_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { 
