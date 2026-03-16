@@ -22,6 +22,10 @@ export const MESSAGE_TYPES = {
   // Statistics
   GET_STATS: 'calmweb:getStats',
   INCREMENT_STAT: 'calmweb:incrementStat',
+  // Reader
+  TOGGLE_READER: 'calmweb:toggleReader',
+  OPEN_READER: 'calmweb:openReader',
+  CLOSE_READER: 'calmweb:closeReader',
 } as const;
 
 export type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
