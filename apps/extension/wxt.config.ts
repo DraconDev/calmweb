@@ -60,6 +60,11 @@ export default defineConfig({
         run_at: "document_idle",
       },
       {
+        matches: ["<all_urls>"],
+        js: ["reader.js"],
+        run_at: "document_end",
+      },
+      {
         matches: ["*://*.youtube.com/*"],
         js: ["youtube.js"],
         run_at: "document_idle",
