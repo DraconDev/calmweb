@@ -10,6 +10,7 @@
 import type { ContentUnit, ClassificationResult, UserRules } from '@calmweb/shared';
 import type { ApiClient } from '@dracon/wxt-shared/api';
 import { matchPresetKeywords, matchPresetChannel, getPreset } from '@/src/presets';
+import { OPENROUTER_ENDPOINT, DEFAULT_OPENROUTER_MODEL } from '@calmweb/shared';
 
 const VALID_DECISIONS = ['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild'] as const;
 
