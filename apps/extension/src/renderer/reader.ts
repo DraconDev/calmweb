@@ -23,10 +23,13 @@ const OVERLAY_STYLES = `
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100vw;
+    height: 100vh;
     z-index: 2147483647;
     background: var(--reader-bg, #ffffff);
     color: var(--reader-text, #1f2937);
     overflow-y: auto;
+    overflow-x: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
@@ -206,12 +209,20 @@ export function openReader(options: ReaderOptions = {}): void {
     }
     currentArticle = article;
 
+    // Hide all page content and lock scrolling
+    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+    document.body.style.setProperty('overflow', 'hidden', 'important');
+    document.body.style.setProperty('visibility', 'hidden', 'important');
+    document.documentElement.style.setProperty('visibility', 'hidden', 'important');
+
   // Auto-detect layout unless explicitly specified
   currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article);
   currentTheme = getTheme(options.themeId || 'default');
 
   const overlay = document.createElement('div');
   overlay.id = OVERLAY_ID;
+  // Make overlay visible even though body is hidden
+  overlay.style.setProperty('visibility', 'visible', 'important');
 
   const shadow = overlay.attachShadow({ mode: 'open' });
 
@@ -299,6 +310,11 @@ export function closeReader(): void {
   if (overlay) {
     overlay.remove();
   }
+  // Restore page visibility and scrolling
+  document.documentElement.style.removeProperty('overflow');
+  document.documentElement.style.removeProperty('visibility');
+  document.body.style.removeProperty('overflow');
+  document.body.style.removeProperty('visibility');
 }
 
 function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: ReaderOptions): void {

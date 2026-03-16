@@ -35,6 +35,9 @@ const REMOVE_SELECTORS = [
   '.breadcrumb', '.breadcrumbs',
   '.pagination', '.pager',
   '.cookie-notice', '.gdpr',
+  // Media (reading-focused, not visual browsing)
+  'img', 'video', 'audio', 'picture', 'svg', 'canvas',
+  'figure', 'figcaption',
 ];
 
 const CONTENT_SELECTORS = [
@@ -89,8 +92,9 @@ export function extractArticle(doc: Document, url: string): ExtractedArticle {
   const author = extractAuthor(doc);
   const date = extractDate(doc);
   const mainContent = findMainContent(doc);
+  // Extract images BEFORE cleaning (cleaning removes img/figure elements)
+  const images = extractImages(mainContent);
   const cleanedContent = cleanContent(mainContent);
-  const images = extractImages(cleanedContent);
   const favicon = extractFavicon(doc);
   const readingTime = calculateReadingTime(cleanedContent.textContent || '');
 

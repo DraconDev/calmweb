@@ -1,8 +1,9 @@
 /**
  * Reader Entry Point for CalmWeb
  *
- * Opens on EVERY page by default - this is the primary way to browse.
- * Raw mode toggle available in toolbar to see original page.
+ * Hides the page IMMEDIATELY and shows a loading screen.
+ * Then extracts content and shows filtered layout.
+ * No flash of original page.
  */
 
 import { defineContentScript } from 'wxt/utils/define-content-script';
@@ -12,11 +13,74 @@ import { sendToBackground } from '@dracon/wxt-shared/extension';
 import browser from 'webextension-polyfill';
 import type { UserSettings } from '@calmweb/shared';
 
+const LOADING_ID = 'calmweb-loading';
 const FLOATING_BTN_ID = 'calmweb-raw-toggle';
 
-function hasContent(): boolean {
-  const bodyText = document.body?.textContent || '';
-  return bodyText.trim().length >= 200;
+const LOADING_STYLES = `
+  #${LOADING_ID} {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    z-index: 2147483647;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .calmweb-loading-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid #222;
+    border-top-color: #a78bfa;
+    border-radius: 50%;
+    animation: calmweb-spin 0.8s linear infinite;
+  }
+  .calmweb-loading-text {
+    color: #666;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .calmweb-loading-logo {
+    color: #a78bfa;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  @keyframes calmweb-spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+function showLoading(): void {
+  if (document.getElementById(LOADING_ID)) return;
+
+  // Hide page immediately
+  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+  document.documentElement.style.setProperty('visibility', 'hidden', 'important');
+  document.body.style.setProperty('overflow', 'hidden', 'important');
+  document.body.style.setProperty('visibility', 'hidden', 'important');
+
+  const loader = document.createElement('div');
+  loader.id = LOADING_ID;
+  loader.style.setProperty('visibility', 'visible', 'important');
+  loader.innerHTML = `
+    <style>${LOADING_STYLES}</style>
+    <div class="calmweb-loading-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+    <div class="calmweb-loading-spinner"></div>
+    <div class="calmweb-loading-text">Filtering...</div>
+  `;
+  document.body.appendChild(loader);
+}
+
+function hideLoading(): void {
+  document.getElementById(LOADING_ID)?.remove();
 }
 
 function showFloatingButton(): void {
@@ -29,7 +93,7 @@ function showFloatingButton(): void {
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
     </svg>
   `;
-  btn.title = 'Open Filtered View (Ctrl+Shift+R)';
+  btn.title = 'Filtered View (Ctrl+Shift+R)';
   Object.assign(btn.style, {
     position: 'fixed',
     bottom: '20px',
@@ -48,17 +112,15 @@ function showFloatingButton(): void {
     transition: 'all 0.2s ease',
     border: 'none',
   });
-  btn.addEventListener('mouseenter', () => {
-    btn.style.transform = 'scale(1.1)';
-    btn.style.boxShadow = '0 6px 24px rgba(167, 139, 250, 0.5)';
-  });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.transform = 'scale(1)';
-    btn.style.boxShadow = '0 4px 20px rgba(167, 139, 250, 0.4)';
-  });
+  btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.1)'; });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = 'scale(1)'; });
   btn.addEventListener('click', () => {
     btn.remove();
-    try { openReader(); } catch (err) { console.error('[CalmWeb]', err); }
+    showLoading();
+    setTimeout(() => {
+      hideLoading();
+      try { openReader(); } catch (err) { console.error('[CalmWeb]', err); }
+    }, 300);
   });
   document.body.appendChild(btn);
 }
@@ -104,9 +166,7 @@ export default defineContentScript({
 
     // Message handlers
     browser.runtime.onMessage.addListener((message: any) => {
-      if (message.type === MESSAGE_TYPES.TOGGLE_READER) {
-        safeToggleReader();
-      }
+      if (message.type === MESSAGE_TYPES.TOGGLE_READER) safeToggleReader();
       if (message.type === MESSAGE_TYPES.OPEN_READER) {
         hideFloatingButton();
         try { if (!isReaderOpen()) openReader(); } catch (err) { console.error('[CalmWeb]', err); }
@@ -116,31 +176,35 @@ export default defineContentScript({
       }
     });
 
-    // Auto-open on ALL pages (unless disabled in settings)
+    // Check settings
+    let shouldFilter = true;
     try {
       const settings = await sendToBackground<UserSettings>({
         type: MESSAGE_TYPES.GET_SETTINGS,
       });
-      if (settings?.reader?.autoOpen !== false && settings?.enabled !== false && hasContent()) {
-        setTimeout(() => {
-          console.log('[CalmWeb] Auto-opening filtered view');
-          try {
-            openReader();
-          } catch (err) {
-            console.error('[CalmWeb] Failed to open reader:', err);
-          }
-        }, 800);
-      } else if (settings?.reader?.autoOpen !== false && settings?.enabled !== false) {
-        // No content to show, show floating button
-        showFloatingButton();
+      if (settings?.reader?.autoOpen === false || settings?.enabled === false) {
+        shouldFilter = false;
       }
     } catch {
-      // If settings fail, default to opening
-      if (hasContent()) {
-        setTimeout(() => {
-          try { openReader(); } catch (err) { console.error('[CalmWeb]', err); }
-        }, 800);
-      }
+      // Default to filtering
+    }
+
+    if (shouldFilter) {
+      // Show loading immediately, then open reader
+      showLoading();
+      setTimeout(() => {
+        hideLoading();
+        try {
+          openReader();
+        } catch (err) {
+          console.error('[CalmWeb] Failed to open reader:', err);
+          // If reader fails, restore the page
+          document.documentElement.style.removeProperty('overflow');
+          document.documentElement.style.removeProperty('visibility');
+          document.body.style.removeProperty('overflow');
+          document.body.style.removeProperty('visibility');
+        }
+      }, 600);
     }
   },
 });
