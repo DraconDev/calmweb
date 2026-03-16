@@ -12,6 +12,7 @@ import { getTheme, allThemes, applyTheme } from './themes';
 export interface ReaderOptions {
   layoutId?: string;
   themeId?: string;
+  textOnly?: boolean;
   onClose?: () => void;
 }
 
