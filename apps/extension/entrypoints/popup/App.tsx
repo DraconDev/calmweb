@@ -440,7 +440,7 @@ function PresetToggle({ icon: Icon, label, enabled, onClick }: PresetToggleProps
     <button
       onClick={onClick}
       className={clsx(
-        "p-2 rounded-lg border transition-all flex items-center gap-2 text-left",
+        "p-2 rounded-lg border transition-all flex items-center gap-2 text-left min-w-0",
         enabled
           ? "border-[#a78bfa]/20 bg-[#a78bfa]/5"
           : "border-[#1a1a1a] bg-[#111] hover:bg-[#151515] hover:border-[#222]"
