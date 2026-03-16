@@ -223,7 +223,7 @@ export function openReader(options: ReaderOptions = {}): void {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
-          Super Reader
+          Filtered
         </div>
         <div class="calmweb-reader-title">${escapeHtml(article.title)}</div>
       </div>
@@ -354,6 +354,12 @@ function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: 
 
   const closeBtn = shadow.querySelector('[data-action="close"]');
   closeBtn?.addEventListener('click', () => {
+    closeReader();
+    options.onClose?.();
+  });
+
+  const rawBtn = shadow.querySelector('[data-action="raw"]');
+  rawBtn?.addEventListener('click', () => {
     closeReader();
     options.onClose?.();
   });
