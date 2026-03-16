@@ -495,7 +495,7 @@ function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
 // Advanced Tab Component
 // ============================================================================
 
-function AdvancedTab({ processingMode, strictness, byokKey, onChange }: AdvancedTabProps) {
+function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }: AdvancedTabProps) {
   return (
     <div className="space-y-8 max-w-2xl">
       <div className="space-y-6">
