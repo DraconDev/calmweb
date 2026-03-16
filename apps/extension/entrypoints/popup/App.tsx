@@ -477,7 +477,7 @@ function FooterButton({
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[#1a1a1a] transition-colors"
+      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[#1a1a1a] transition-colors w-full"
     >
       <Icon size={15} className="text-[#555]" />
       <span className="text-[10px] font-medium text-[#555]">{label}</span>
