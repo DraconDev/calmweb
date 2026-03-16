@@ -57,8 +57,8 @@ describe('Article Extractor', () => {
 });
 
 describe('Layout Engine', () => {
-  it('should return 7 layouts', () => {
-    expect(allLayouts.length).toBe(7);
+  it('should return 10 layouts', () => {
+    expect(allLayouts.length).toBe(10);
   });
 
   it('should contain all layout ids', () => {
@@ -70,6 +70,9 @@ describe('Layout Engine', () => {
     expect(ids).toContain('compact');
     expect(ids).toContain('visual');
     expect(ids).toContain('academic');
+    expect(ids).toContain('magazine');
+    expect(ids).toContain('minimal');
+    expect(ids).toContain('newspaper');
   });
 
   it('should get layout by id', () => {
