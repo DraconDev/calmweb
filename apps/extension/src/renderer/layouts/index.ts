@@ -515,6 +515,206 @@ export const academicLayout: ReaderLayout = {
   },
 };
 
+// ============================================================================
+// Additional Layouts
+// ============================================================================
+
+export const magazineLayout: ReaderLayout = {
+  id: 'magazine',
+  name: 'Magazine',
+  description: 'Editorial magazine style with large headers and pull quotes',
+  bestFor: ['magazines', 'features', 'long reads', 'editorials'],
+  columns: 1,
+  maxWidth: '720px',
+  fontFamily: 'Georgia, "Times New Roman", serif',
+  fontSize: '18px',
+  lineHeight: '1.8',
+  render(article, container) {
+    const heroImage = article.images[0];
+    container.innerHTML = `
+      <style>
+        .reader-container { 
+          max-width: ${this.maxWidth}; 
+          margin: 0 auto; 
+          padding: 0 24px 48px; 
+          font-family: ${this.fontFamily}; 
+          font-size: ${this.fontSize}; 
+          line-height: ${this.lineHeight}; 
+          color: #2d2d2d;
+        }
+        .reader-hero-wrap { margin: 0 -100px 40px; }
+        .reader-hero { width: 100%; height: auto; display: block; }
+        .reader-header { margin-bottom: 40px; border-bottom: 3px double #333; padding-bottom: 24px; }
+        .reader-title { 
+          font-size: 2.75em; 
+          font-weight: 900; 
+          line-height: 1.1; 
+          margin: 0 0 16px; 
+          letter-spacing: -0.03em;
+        }
+        .reader-meta { font-size: 0.85em; color: #888; text-transform: uppercase; letter-spacing: 0.1em; }
+        .reader-content { font-variant-numeric: oldstyle-nums; }
+        .reader-content p:first-child::first-letter { 
+          float: left; font-size: 4.5em; line-height: 0.75; margin: 8px 12px 0 0; font-weight: 700;
+        }
+        .reader-content blockquote { 
+          font-size: 1.35em; font-style: italic; border: none; padding: 1em 0; 
+          margin: 2em 0; text-align: center; color: #555;
+        }
+        ${baseTypography}
+        .reader-footer { margin-top: 48px; text-align: center; border-top: 1px solid #ddd; }
+        @media (max-width: 800px) { .reader-hero-wrap { margin: 0 0 24px; } }
+        @media (prefers-color-scheme: dark) {
+          .reader-container { color: #d4d4d4; }
+          .reader-title { color: #f5f5f5; }
+          .reader-header { border-bottom-color: #555; }
+          .reader-content blockquote { color: #aaa; }
+        }
+      </style>
+      <div class="reader-container">
+        ${heroImage ? `<div class="reader-hero-wrap"><img class="reader-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}"></div>` : ''}
+        <header class="reader-header">
+          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
+          ${renderMeta(article)}
+        </header>
+        <article class="reader-content">${article.contentHtml.innerHTML}</article>
+        ${renderFooter(article)}
+      </div>
+    `;
+  },
+};
+
+export const minimalLayout: ReaderLayout = {
+  id: 'minimal',
+  name: 'Minimal',
+  description: 'Clean minimal design with maximum whitespace',
+  bestFor: ['essays', 'philosophy', 'personal writing', 'letters'],
+  columns: 1,
+  maxWidth: '560px',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontSize: '17px',
+  lineHeight: '1.85',
+  render(article, container) {
+    container.innerHTML = `
+      <style>
+        .reader-container { 
+          max-width: ${this.maxWidth}; 
+          margin: 0 auto; 
+          padding: 80px 24px; 
+          font-family: ${this.fontFamily}; 
+          font-size: ${this.fontSize}; 
+          line-height: ${this.lineHeight}; 
+          color: #333;
+        }
+        .reader-header { margin-bottom: 48px; }
+        .reader-title { 
+          font-size: 1.5em; 
+          font-weight: 400; 
+          line-height: 1.4; 
+          margin: 0 0 12px; 
+          color: #000;
+        }
+        .reader-meta { font-size: 0.8em; color: #bbb; }
+        .reader-content p { margin-bottom: 1.5em; }
+        ${baseTypography}
+        .reader-footer { margin-top: 60px; border: none; text-align: center; color: #ccc; font-size: 0.75em; }
+        @media (prefers-color-scheme: dark) {
+          .reader-container { color: #ccc; }
+          .reader-title { color: #eee; }
+          .reader-meta { color: #666; }
+          .reader-footer { color: #444; }
+        }
+      </style>
+      <div class="reader-container">
+        <header class="reader-header">
+          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
+          ${renderMeta(article)}
+        </header>
+        <article class="reader-content">${article.contentHtml.innerHTML}</article>
+        ${renderFooter(article)}
+      </div>
+    `;
+  },
+};
+
+export const newspaperLayout: ReaderLayout = {
+  id: 'newspaper',
+  name: 'Newspaper',
+  description: 'Classic newspaper column layout',
+  bestFor: ['news', 'columns', 'opinion', 'journalism'],
+  columns: 3,
+  maxWidth: '960px',
+  fontFamily: '"Times New Roman", Times, Georgia, serif',
+  fontSize: '15px',
+  lineHeight: '1.55',
+  render(article, container) {
+    container.innerHTML = `
+      <style>
+        .reader-container { 
+          max-width: ${this.maxWidth}; 
+          margin: 0 auto; 
+          padding: 32px 24px; 
+          font-family: ${this.fontFamily}; 
+          font-size: ${this.fontSize}; 
+          line-height: ${this.lineHeight}; 
+          color: #1a1a1a;
+          background: #fdfcf8;
+        }
+        .reader-header { 
+          text-align: center; 
+          border-bottom: 2px solid #1a1a1a; 
+          border-top: 4px double #1a1a1a;
+          padding: 16px 0; 
+          margin-bottom: 24px; 
+        }
+        .reader-title { 
+          font-size: 2em; 
+          font-weight: 900; 
+          line-height: 1.15; 
+          margin: 0 0 8px; 
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+        .reader-meta { justify-content: center; font-size: 0.8em; }
+        .reader-content { 
+          column-count: 3; 
+          column-gap: 24px; 
+          column-rule: 1px solid #ccc;
+          text-align: justify;
+          hyphens: auto;
+        }
+        .reader-content p { margin-bottom: 0.75em; text-indent: 1.5em; }
+        .reader-content p:first-of-type { text-indent: 0; }
+        .reader-content h2, .reader-content h3, .reader-content blockquote, .reader-content pre, .reader-content figure { 
+          column-span: all; text-indent: 0;
+        }
+        ${baseTypography}
+        .reader-footer { 
+          margin-top: 32px; padding-top: 12px; 
+          border-top: 2px solid #1a1a1a; column-span: all; text-align: center;
+        }
+        @media (max-width: 800px) { .reader-content { column-count: 2; } }
+        @media (max-width: 500px) { .reader-content { column-count: 1; } }
+        @media (prefers-color-scheme: dark) {
+          .reader-container { background: #1a1a18; color: #ccc; }
+          .reader-header { border-bottom-color: #555; border-top-color: #555; }
+          .reader-title { color: #f0f0f0; }
+          .reader-content { column-rule-color: #444; }
+          .reader-footer { border-top-color: #555; }
+        }
+      </style>
+      <div class="reader-container">
+        <header class="reader-header">
+          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
+          ${renderMeta(article)}
+        </header>
+        <article class="reader-content">${article.contentHtml.innerHTML}</article>
+        ${renderFooter(article)}
+      </div>
+    `;
+  },
+};
+
 export const allLayouts: ReaderLayout[] = [
   readerLayout,
   focusLayout,
@@ -522,6 +722,9 @@ export const allLayouts: ReaderLayout[] = [
   compactLayout,
   visualLayout,
   academicLayout,
+  magazineLayout,
+  minimalLayout,
+  newspaperLayout,
 ];
 
 /**
