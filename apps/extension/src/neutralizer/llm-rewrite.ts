@@ -82,6 +82,8 @@ async function callLLM(
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${config.apiKey}`,
+      'HTTP-Referer': 'https://calmweb.app',
+      'X-Title': 'CalmWeb',
     },
     body: JSON.stringify({
       model: config.model,
