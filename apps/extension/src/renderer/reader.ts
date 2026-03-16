@@ -6,7 +6,7 @@ import type { ExtractedArticle } from './extractor';
 import type { ReaderLayout } from './layouts';
 import type { ReaderTheme } from './themes';
 import { extractArticle } from './extractor';
-import { getLayout, allLayouts } from './layouts';
+import { getLayout, allLayouts, autoDetectLayout } from './layouts';
 import { getTheme, allThemes, applyTheme } from './themes';
 
 export interface ReaderOptions {
@@ -198,11 +198,12 @@ export function openReader(options: ReaderOptions = {}): void {
   const existing = document.getElementById(OVERLAY_ID);
   if (existing) return;
 
-  currentLayout = getLayout(options.layoutId || 'reader');
-  currentTheme = getTheme(options.themeId || 'default');
-
   const article = extractArticle(document, window.location.href);
   currentArticle = article;
+
+  // Auto-detect layout unless explicitly specified
+  currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article);
+  currentTheme = getTheme(options.themeId || 'default');
 
   const overlay = document.createElement('div');
   overlay.id = OVERLAY_ID;

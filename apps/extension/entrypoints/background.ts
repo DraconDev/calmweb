@@ -93,7 +93,7 @@ async function setupContextMenu(): Promise<void> {
 
       case 'calmweb-open-reader': {
         if (tab?.id) {
-          browser.tabs.sendMessage(tab.id, { type: 'TOGGLE_READER' });
+          browser.tabs.sendMessage(tab.id, { type: MESSAGE_TYPES.TOGGLE_READER });
         }
         break;
       }

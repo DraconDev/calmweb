@@ -528,4 +528,60 @@ export function getLayout(id: string): ReaderLayout {
   return allLayouts.find(l => l.id === id) || readerLayout;
 }
 
+/**
+ * Auto-detect the best layout for a given article by analyzing its content.
+ * - Code-heavy → terminal
+ * - Image-heavy → visual
+ * - Short articles → compact
+ * - Academic/research → academic
+ * - Default → reader
+ */
+export function autoDetectLayout(article: ExtractedArticle): ReaderLayout {
+  const html = article.contentHtml;
+  const text = article.content || '';
+
+  // Count code blocks
+  const codeBlocks = html.querySelectorAll('pre, code').length;
+
+  // Count paragraphs
+  const paragraphs = html.querySelectorAll('p').length;
+
+  // Image density
+  const imageCount = article.images.length;
+  const textLength = text.length;
+  const imageDensity = textLength > 0 ? imageCount / (textLength / 500) : 0;
+
+  // Academic markers
+  const headings = html.querySelectorAll('h2, h3').length;
+  const blockquotes = html.querySelectorAll('blockquote').length;
+
+  // Code-heavy: multiple code blocks (technical docs/tutorials)
+  if (codeBlocks >= 3) {
+    return terminalLayout;
+  }
+
+  // Image-heavy: photo essays, travel, visual stories
+  if (imageDensity > 0.5 || (imageCount >= 4 && textLength < 3000)) {
+    return visualLayout;
+  }
+
+  // Short article: news, briefs, quick reads
+  if (article.readingTime <= 3 && paragraphs <= 6) {
+    return compactLayout;
+  }
+
+  // Academic: formal structure with multiple sections and citations
+  if (article.readingTime >= 8 && headings >= 3 && blockquotes >= 2) {
+    return academicLayout;
+  }
+
+  // Long focused reading
+  if (article.readingTime >= 12) {
+    return focusLayout;
+  }
+
+  // Default: standard reader layout
+  return readerLayout;
+}
+
 export { readerLayout as newspaperLayout };
