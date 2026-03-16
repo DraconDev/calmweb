@@ -500,6 +500,36 @@ function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
 // ============================================================================
 
 function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }: AdvancedTabProps) {
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
+  const [customModel, setCustomModel] = useState('');
+
+  const testConnection = async () => {
+    if (!byokKey) {
+      setTestResult({ success: false, error: 'No API key configured' });
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const result = await sendToBackground<{ success: boolean; model?: string; error?: string }>({
+        type: MESSAGE_TYPES.TEST_CONNECTION,
+        apiKey: byokKey,
+        model: aiModel || DEFAULT_OPENROUTER_MODEL,
+      });
+      setTestResult(result || { success: false, error: 'No response' });
+    } catch (error) {
+      setTestResult({
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const isPresetModel = AI_MODELS.some(m => m.id === aiModel);
+
   return (
     <div className="space-y-8 max-w-2xl">
       <div className="space-y-6">
