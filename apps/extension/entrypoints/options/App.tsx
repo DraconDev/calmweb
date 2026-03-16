@@ -304,6 +304,7 @@ export default function OptionsApp() {
                   processingMode={settings.processingMode}
                   strictness={settings.strictness}
                   byokKey={settings.byokKey || ''}
+                  aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL}
                   onChange={(updates) => saveSettings(updates)}
                 />
               </div>
