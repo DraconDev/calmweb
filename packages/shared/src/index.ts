@@ -140,6 +140,8 @@ export const UserSettingsSchema = z.object({
     presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
   }),
   byokKey: z.string().optional(),
+  aiModel: z.string().default(DEFAULT_OPENROUTER_MODEL),
+  customEndpoint: z.string().optional(),
   neutralization: NeutralizationSettingsSchema.default(defaultNeutralizationSettings),
   reader: ReaderSettingsSchema.default(defaultReaderSettings),
 });
