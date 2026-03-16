@@ -35,7 +35,9 @@ const REMOVE_SELECTORS = [
   '.breadcrumb', '.breadcrumbs',
   '.pagination', '.pager',
   '.cookie-notice', '.gdpr',
-  // Media (reading-focused, not visual browsing)
+];
+
+const MEDIA_SELECTORS = [
   'img', 'video', 'audio', 'picture', 'svg', 'canvas',
   'figure', 'figcaption',
 ];
