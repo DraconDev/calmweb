@@ -402,15 +402,28 @@ export default function Popup() {
         {/* Super Reader */}
         <button
           onClick={toggleReader}
-          className="w-full p-2.5 rounded-xl border border-[#1a1a1a] bg-gradient-to-r from-[#1a1a2e]/80 to-[#111] hover:from-[#1f1f3a] hover:to-[#151515] transition-all flex items-center gap-2.5"
+          className={clsx(
+            "w-full p-2.5 rounded-xl border transition-all flex items-center gap-2.5",
+            isReadable
+              ? "border-[#a78bfa]/30 bg-gradient-to-r from-[#1a1a2e]/80 to-[#111] hover:from-[#1f1f3a] hover:to-[#151515]"
+              : "border-[#1a1a1a] bg-[#111] hover:bg-[#151515]"
+          )}
         >
-          <div className="p-1.5 rounded-lg bg-[#a78bfa] text-white shrink-0">
+          <div className={clsx(
+            "p-1.5 rounded-lg shrink-0",
+            isReadable ? "bg-[#a78bfa] text-white" : "bg-[#1a1a1a] text-[#444]"
+          )}>
             <BookOpen size={13} />
           </div>
-          <div className="flex-1 text-left">
+          <div className="flex-1 text-left min-w-0">
             <div className="text-xs font-semibold text-white">Super Reader</div>
-            <div className="text-[10px] text-[#555]">Distraction-free reading</div>
+            <div className="text-[10px] text-[#555] truncate">
+              {isReadable ? 'Article detected — ready' : 'Press Alt+R on any page'}
+            </div>
           </div>
+          {isReadable && (
+            <span className="text-[8px] font-bold uppercase text-[#a78bfa] shrink-0">Ready</span>
+          )}
           <ExternalLink size={12} className="text-[#333] shrink-0" />
         </button>
       </div>
