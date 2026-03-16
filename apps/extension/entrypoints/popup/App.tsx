@@ -117,6 +117,17 @@ export default function Popup() {
     chrome.tabs.create({ url: chrome.runtime.getURL(url) });
   };
 
+  const toggleReader = async () => {
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: MESSAGE_TYPES.TOGGLE_READER });
+      }
+    } catch (error) {
+      console.error('[Popup] Failed to toggle reader:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Container className="w-[380px] h-[520px] flex items-center justify-center">

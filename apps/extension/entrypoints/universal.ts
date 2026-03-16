@@ -76,5 +76,8 @@ export default defineContentScript({
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // Backup ad filter
+    observeAndHideAds(document);
   },
 });
