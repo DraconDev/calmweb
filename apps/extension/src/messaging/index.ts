@@ -168,6 +168,13 @@ const IncrementStatMessageSchema = z.object({
   amount: z.number().optional(),
 });
 
+const TestConnectionMessageSchema = z.object({
+  type: z.literal(MESSAGE_TYPES.TEST_CONNECTION),
+  apiKey: z.string(),
+  model: z.string().optional(),
+  endpoint: z.string().optional(),
+});
+
 export const MessageSchema = z.discriminatedUnion('type', [
   ClassifyUnitMessageSchema,
   GetSettingsMessageSchema,
@@ -175,6 +182,7 @@ export const MessageSchema = z.discriminatedUnion('type', [
   ClearCacheMessageSchema,
   GetStatsMessageSchema,
   IncrementStatMessageSchema,
+  TestConnectionMessageSchema,
 ]);
 
 /**
