@@ -41,6 +41,7 @@ interface AdvancedTabProps {
   processingMode: 'local_rules' | 'byok_llm' | 'hosted_llm';
   strictness: number;
   byokKey: string;
+  aiModel: string;
   onChange: (updates: Partial<UserSettings>) => void;
 }
 
