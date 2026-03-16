@@ -46,10 +46,22 @@ export default function Popup() {
   const loadData = async () => {
     try {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const url = tabs[0]?.url || '';
+      const tab = tabs[0];
+      const url = tab?.url || '';
       try {
         const hostname = new URL(url).hostname;
         setCurrentSite(hostname);
+        // Simple URL-based article detection
+        const path = new URL(url).pathname;
+        const articlePatterns = [
+          /\/\d{4}\/\d{2}\/\d{2}\//,
+          /\/\d{4}\/\d{2}\//,
+          /\/(article|post|blog|news|story|entry)\//,
+          /\/[a-z0-9-]+\/[a-z0-9-]{20,}/,
+        ];
+        const skipDomains = ['google.com', 'youtube.com', 'reddit.com', 'twitter.com', 'x.com', 'facebook.com', 'instagram.com', 'linkedin.com', 'github.com', 'stackoverflow.com', 'wikipedia.org', 'amazon.com'];
+        const isSkipped = skipDomains.some(d => hostname.includes(d));
+        setIsReadable(!isSkipped && articlePatterns.some(p => p.test(path.toLowerCase())));
       } catch {
         setCurrentSite('unknown');
       }
