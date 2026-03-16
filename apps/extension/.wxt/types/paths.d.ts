@@ -17,7 +17,6 @@ declare module "wxt/browser" {
     | "/icon/generate-icons.html"
     | "/icon/icon.svg"
     | "/options.html"
-    | "/popup.html"
     | "/reader.js"
     | "/reddit.js"
     | "/universal.js"
