@@ -1534,6 +1534,289 @@ createApp({
       maxImages: 2,
     },
   },
+
+  // === MORE NEWS SITES ===
+  {
+    name: 'Guardian Style',
+    category: 'news',
+    url: 'https://theguardian.com/world/article',
+    html: `<!DOCTYPE html><html><head><title>Global Health Initiative Launches | World News</title><meta property="og:title" content="Global Health Initiative Launches"></head><body><header>Guardian</header><main id="maincontent"><article><h1>Global Health Initiative Launches</h1><div class="byline"><span>Health Correspondent</span></div><div class="article-body"><p>An ambitious new global health initiative has been announced, bringing together researchers and healthcare providers from around the world.</p><p>The project aims to address disparities in healthcare access and outcomes, with a particular focus on underserved communities.</p><p>Initial funding has been secured through partnerships with several foundations and governments.</p></div></article></main></body></html>`,
+    expected: { title: 'Global Health Initiative Launches', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 3 },
+  },
+  {
+    name: 'Bloomberg Style',
+    category: 'news',
+    url: 'https://bloomberg.com/news/article',
+    html: `<!DOCTYPE html><html><head><title>Tech Sector Sees Record Investment - Bloomberg</title><meta property="og:title" content="Tech Sector Sees Record Investment"></head><body><main><article><header><h1>Tech Sector Sees Record Investment</h1><div class="article-authors">Technology Reporter</div><time>March 15, 2024</time></header><div class="body-content"><p>Venture capital investment in technology companies reached unprecedented levels in the first quarter of 2024.</p><p>AI-focused startups attracted the largest share of funding, with several deals exceeding $500 million.</p><p>Analysts note that investor confidence remains strong despite market volatility in other sectors.</p></div></article></main></body></html>`,
+    expected: { title: 'Tech Sector Sees Record Investment', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'TechCrunch Style',
+    category: 'news',
+    url: 'https://techcrunch.com/article',
+    html: `<!DOCTYPE html><html><head><title>Startup Raises $50M Series B | TechCrunch</title></head><body><main><article class="article-content"><h1>Startup Raises $50M Series B</h1><div class="article-author">TechCrunch Staff</div><time datetime="2024-03-08">March 8, 2024</time><div class="article-entry"><p>Cloud-native startup announced today it has closed a $50 million Series B funding round led by prominent investors.</p><p>The company plans to use the funding to expand its engineering team and accelerate product development.</p><p>Founded in 2022, the startup has seen rapid growth in the enterprise market.</p></div></article></main></body></html>`,
+    expected: { title: 'Startup Raises $50M Series B', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 3 },
+  },
+  {
+    name: 'Ars Technica Style',
+    category: 'news',
+    url: 'https://arstechnica.com/science/article',
+    html: `<!DOCTYPE html><html><head><title>New Research Sheds Light on Climate Patterns</title><meta name="author" content="Science Editor"></head><body><main><article><h1 class="heading">New Research Sheds Light on Climate Patterns</h1><p class="byline">By Science Editor</p><div class="article-content"><p>Researchers have published findings that significantly advance our understanding of global climate dynamics.</p><p>The study, which analyzed decades of atmospheric data, identifies previously unknown feedback mechanisms.</p><p>These discoveries could improve climate prediction models and inform future policy decisions.</p></div></article></main></body></html>`,
+    expected: { title: 'New Research Sheds Light on Climate Patterns', author: /Science Editor/i, hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Associated Press Style',
+    category: 'news',
+    url: 'https://apnews.com/article',
+    html: `<!DOCTYPE html><html><head><title>Housing Market Shows Signs of Stabilization</title></head><body><main><article><h1>Housing Market Shows Signs of Stabilization</h1><div class="Page-authors">AP Real Estate Writer</div><div class="RichTextStoryBody"><p>The housing market is showing early signs of stabilizing after months of fluctuation, according to new data released today.</p><p>Median home prices remained steady in most major metropolitan areas, while inventory levels improved modestly.</p><p>Economists suggest the data points to a gradual normalization in the market.</p></div></article></main></body></html>`,
+    expected: { title: 'Housing Market Shows Signs of Stabilization', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+
+  // === MORE BLOGS ===
+  {
+    name: 'Tumblr Style Post',
+    category: 'blog',
+    url: 'https://user.tumblr.com/post/123',
+    html: `<!DOCTYPE html><html><head><title>My Thoughts on Design - Tumblr</title></head><body><main><article class="post"><h2 class="post-title">My Thoughts on Design</h2><div class="post-content"><p>Design is about more than aesthetics. It's about solving problems and communicating ideas effectively.</p><p>Good design is invisible. You don't notice it because it just works.</p><p>Bad design, on the other hand, is painfully obvious. It frustrates and confuses users.</p></div></article></main></body></html>`,
+    expected: { title: /Design/i, hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Hashnode Blog',
+    category: 'blog',
+    url: 'https://hashnode.com/post/tech-article',
+    html: `<!DOCTYPE html><html><head><title>Building Scalable APIs - Hashnode</title></head><body><main><article><h1>Building Scalable APIs</h1><div class="article-meta"><span class="author">Dev Writer</span><span class="date">Feb 2024</span></div><div class="article-content"><p>API scalability is a critical consideration for any growing application. Here are my lessons learned from building APIs that handle millions of requests.</p><h2>Design for Growth</h2><p>From the start, design your API with growth in mind. Consider pagination, rate limiting, and caching from day one.</p><h2>Monitor Everything</h2><p>You can't improve what you don't measure. Set up comprehensive monitoring for all your endpoints.</p></div></article></main></body></html>`,
+    expected: { title: 'Building Scalable APIs', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Squarespace Blog',
+    category: 'blog',
+    url: 'https://squarespace-site.com/blog',
+    html: `<!DOCTYPE html><html><head><title>Travel Guide: Japan - My Blog</title></head><body><main><article class="blog-item"><h1 class="blog-title">Travel Guide: Japan</h1><div class="meta"><span>By Travel Writer</span><time>2024-02-15</time></div><div class="blog-body"><p>Japan offers a fascinating blend of ancient traditions and cutting-edge modernity. Here's my guide to experiencing the best of both.</p><p>From the serene temples of Kyoto to the bustling streets of Tokyo, every destination offers something unique.</p><img src="https://example.com/japan.jpg" alt="Cherry blossoms in Japan"><p>The food alone is worth the trip, with regional specialties that vary dramatically from city to city.</p></div></article></main></body></html>`,
+    expected: { title: 'Travel Guide: Japan', author: /Travel Writer/i, hasContent: true, minContentLength: 200, minImages: 0, maxImages: 3 },
+  },
+  {
+    name: 'Wix Blog',
+    category: 'blog',
+    url: 'https://wixsite.com/blog',
+    html: `<!DOCTYPE html><html><head><title>10 Tips for Better Photography</title></head><body><main><article class="blog-post"><h1>10 Tips for Better Photography</h1><div class="post-info"><span class="author">Photo Blog</span></div><div class="post-body"><p>Whether you're a beginner or experienced photographer, these tips will help improve your craft.</p><ol><li>Understand lighting</li><li>Use the rule of thirds</li><li>Focus on composition</li><li>Experiment with angles</li><li>Practice regularly</li></ol><p>Photography is a journey, not a destination. Keep shooting and learning.</p></div></article></main></body></html>`,
+    expected: { title: '10 Tips for Better Photography', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+
+  // === MORE DOCUMENTATION ===
+  {
+    name: 'Confluence Wiki',
+    category: 'documentation',
+    url: 'https://confluence.atlassian.com/page',
+    html: `<!DOCTYPE html><html><head><title>API Reference - Confluence</title></head><body><main id="main-content"><article><h1 id="title-text">API Reference</h1><div id="page-content"><p>This page documents all available API endpoints for the platform.</p><h2>Authentication</h2><p>All requests require a valid API key passed in the Authorization header.</p><pre><code>curl -H "Authorization: Bearer TOKEN" https://api.example.com/v1/users</code></pre><h2>Endpoints</h2><h3>GET /users</h3><p>Returns a list of all users in the organization.</p><h3>POST /users</h3><p>Creates a new user account.</p></div></article></main></body></html>`,
+    expected: { title: 'API Reference', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Notion Page',
+    category: 'documentation',
+    url: 'https://notion.so/page',
+    html: `<!DOCTYPE html><html><head><title>Meeting Notes - March 2024 - Notion</title></head><body><main><article class="notion-page"><h1 class="notion-title">Meeting Notes - March 2024</h1><div class="notion-content"><p>Team meeting to discuss Q1 goals and plan for Q2 initiatives.</p><h2>Attendees</h2><p>Engineering, Product, Design teams represented.</h2><h2>Key Decisions</h2><ul><li>Approve new feature roadmap</li><li>Allocate resources to platform migration</li><li>Schedule follow-up in two weeks</li></ul><h2>Action Items</h2><ul><li>Prepare technical specifications</li><li>Review budget proposals</li></ul></div></article></main></body></html>`,
+    expected: { title: /Meeting Notes/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'GitBook Style',
+    category: 'documentation',
+    url: 'https://docs.gitbook.com/guide',
+    html: `<!DOCTYPE html><html><head><title>User Guide - Documentation</title></head><body><main><article><h1>User Guide</h1><div class="page-content"><p>Welcome to the comprehensive user guide. This documentation covers all features and functionality.</p><h2>Getting Started</h2><p>Follow these steps to set up your account and begin using the platform.</p><h3>Step 1: Create Account</h3><p>Visit the registration page and fill out the required information.</p><h3>Step 2: Configure Settings</h3><p>Customize your workspace settings to match your workflow.</p></div></article></main></body></html>`,
+    expected: { title: 'User Guide', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+
+  // === MORE FORUMS ===
+  {
+    name: 'Quora Answer',
+    category: 'forum',
+    url: 'https://quora.com/question',
+    html: `<!DOCTYPE html><html><head><title>What are the best programming languages to learn? - Quora</title></head><body><main><article><h1>What are the best programming languages to learn?</h1><div class="answer"><p>The answer depends on your goals. Here's my breakdown:</p><p><b>For web development:</b> JavaScript and TypeScript are essential. They run everywhere and have enormous ecosystems.</p><p><b>For data science:</b> Python is the clear winner with libraries like NumPy, Pandas, and scikit-learn.</p><p><b>For systems programming:</b> Rust is gaining popularity for its safety guarantees and performance.</p><p>Ultimately, the best language is the one that solves your specific problem effectively.</p></div></article></main></body></html>`,
+    expected: { title: /programming languages/i, hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Discourse Forum',
+    category: 'forum',
+    url: 'https://forum.discourse.org/topic',
+    html: `<!DOCTYPE html><html><head><title>How to optimize database queries - Forum</title></head><body><main><article class="topic-post"><h1>How to optimize database queries</h1><div class="post"><p>I'm experiencing slow queries on my production database. Here are the details of my setup and what I've tried so far.</p><pre><code>SELECT * FROM users WHERE created_at > '2024-01-01' ORDER BY last_name;</code></pre><p>The table has about 2 million rows and the query takes 5+ seconds. I've added indexes but the performance is still poor.</p></div></article></main></body></html>`,
+    expected: { title: /optimize database/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+
+  // === ENCYCLOPEDIA / REFERENCE ===
+  {
+    name: 'Britannica Style',
+    category: 'encyclopedia',
+    url: 'https://britannica.com/science/topic',
+    html: `<!DOCTYPE html><html><head><title>Photosynthesis - Encyclopedia Britannica</title></head><body><main><article><h1>Photosynthesis</h1><div class="topic-content"><p>Photosynthesis is the process by which green plants and certain other organisms transform light energy into chemical energy.</p><p>During photosynthesis in green plants, light energy is captured and used to convert water, carbon dioxide, and minerals into oxygen and energy-rich organic compounds.</p><h2>Process</h2><p>The process occurs primarily in the leaves of plants, where specialized structures called chloroplasts contain the pigment chlorophyll.</p><h2>Significance</h2><p>Photosynthesis is the primary source of organic matter for nearly all organisms on Earth.</p></div></article></main></body></html>`,
+    expected: { title: 'Photosynthesis', hasContent: true, minContentLength: 300, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Scholarpedia',
+    category: 'encyclopedia',
+    url: 'https://scholarpedia.org/article',
+    html: `<!DOCTYPE html><html><head><title>Neural Networks - Scholarpedia</title></head><body><main><article><h1>Neural Networks</h1><div class="articleText"><p>Neural networks are computing systems inspired by biological neural networks. They consist of interconnected nodes that process information using connectionist approaches.</p><p>The concept dates back to the 1940s, but practical applications have exploded in recent years due to advances in computing power and algorithm design.</p><h2>Architecture</h2><p>Modern neural networks consist of multiple layers of interconnected nodes, with each layer transforming the input data in increasingly abstract representations.</p></div></article></main></body></html>`,
+    expected: { title: 'Neural Networks', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+
+  // === CHALLENGING EDGE CASES ===
+  {
+    name: 'Table-Based Layout',
+    category: 'challenging',
+    url: 'https://legacy-site.com/page',
+    html: `<!DOCTYPE html><html><head><title>Legacy Table Layout</title></head><body><table><tr><td><h1>Legacy Table Layout</h1></td></tr><tr><td><p>This page uses table-based layout, a technique common in the early 2000s. Despite the outdated structure, there is real content here.</p><p>The extractor should still be able to identify the main content area even without semantic HTML elements.</p><p>Some legacy websites still rely on this approach for layout.</p></td></tr></table></body></html>`,
+    expected: { title: 'Legacy Table Layout', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Frameset Page',
+    category: 'challenging',
+    url: 'https://old-site.com/frames',
+    html: `<!DOCTYPE html><html><head><title>Framed Content</title></head><body><frameset><frame src="content.html"><frame src="nav.html"></frameset><noframes><p>This page uses frames which are not supported.</p></noframes></body></html>`,
+    expected: { title: 'Framed Content', hasContent: false, minContentLength: 0, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Print Version Article',
+    category: 'challenging',
+    url: 'https://news.com/article?print=true',
+    html: `<!DOCTYPE html><html><head><title>Print: City Council Approves New Park</title></head><body><div class="print-article"><h1>City Council Approves New Park</h1><p class="print-meta">Staff Reporter | March 10, 2024</p><p>The city council voted unanimously to approve the construction of a new community park in the downtown area.</p><p>The park will feature walking trails, a playground, and community gathering spaces.</p><p>Construction is expected to begin in the spring and be completed by late summer.</p><p class="print-footer">Reproduced for personal use only.</p></div></body></html>`,
+    expected: { title: /Park/i, hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Paywall Preview',
+    category: 'challenging',
+    url: 'https://premium-news.com/article',
+    html: `<!DOCTYPE html><html><head><title>The Future of Renewable Energy - Premium News</title><meta property="og:title" content="The Future of Renewable Energy"></head><body><main><article><h1>The Future of Renewable Energy</h1><div class="article-content"><p>Renewable energy sources are transforming the global energy landscape. Solar and wind power have become increasingly cost-competitive.</p><p class="preview-end">Subscribe to continue reading...</p><div class="paywall-overlay">This article is available to subscribers only.</div></div></article></main></body></html>`,
+    expected: { title: 'The Future of Renewable Energy', hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Multiple Articles on Page',
+    category: 'challenging',
+    url: 'https://magazine.com/issue/42',
+    html: `<!DOCTYPE html><html><head><title>Magazine Issue 42</title></head><body><main><article class="featured"><h1>Featured: The Art of Slow Living</h1><div class="content"><p>In our busy world, the slow living movement offers a different approach to life. Practitioners emphasize mindfulness, quality over quantity, and intentional choices.</p><p>This philosophy extends beyond personal habits to include consumption, work, and relationships.</p></div></article><article class="secondary"><h2>Side Story: Local Art Scene Thrives</h2><div class="content"><p>The local art community has seen remarkable growth this year, with new galleries opening monthly.</p></div></article></main></body></html>`,
+    expected: { title: 'Magazine Issue 42', hasContent: true, minContentLength: 100, minImages: 0, maxImages: 3 },
+  },
+
+  // === E-COMMERCE VARIATIONS ===
+  {
+    name: 'Amazon Style Product',
+    category: 'ecommerce',
+    url: 'https://amazon.com/dp/product',
+    html: `<!DOCTYPE html><html><head><title>Wireless Headphones Pro - Amazon.com</title></head><body><main><div class="product"><h1 class="product-title">Wireless Headphones Pro</h1><div class="product-price">$79.99</div><div class="product-description"><p>Experience premium audio quality with our Wireless Headphones Pro. Featuring active noise cancellation, 30-hour battery life, and comfortable over-ear design.</p><h3>About this item</h3><ul><li>Active Noise Cancellation</li><li>30-hour battery life</li><li>Bluetooth 5.0 connectivity</li><li>Built-in microphone for calls</li></ul><p>Perfect for commuting, working from home, or enjoying your favorite music.</p></div></div></main></body></html>`,
+    expected: { title: /Wireless Headphones/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 5 },
+  },
+  {
+    name: 'Etsy Listing',
+    category: 'ecommerce',
+    url: 'https://etsy.com/listing/handmade',
+    html: `<!DOCTYPE html><html><head><title>Handmade Ceramic Mug - Etsy</title></head><body><main><article class="listing"><h1>Handmade Ceramic Mug</h1><div class="listing-details"><p>This unique ceramic mug is handcrafted with care. Each piece is one-of-a-kind, featuring organic shapes and earth-tone glazes.</p><img src="https://example.com/mug.jpg" alt="Ceramic mug"><p>Made from locally-sourced clay and fired at high temperatures for durability.</p><h3>Specifications</h3><p>Height: 4 inches. Capacity: 12 oz. Dishwasher safe.</p></div></article></main></body></html>`,
+    expected: { title: 'Handmade Ceramic Mug', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 3 },
+  },
+
+  // === VIDEO / MULTIMEDIA SITES ===
+  {
+    name: 'YouTube Video Page',
+    category: 'multimedia',
+    url: 'https://youtube.com/watch?v=abc',
+    html: `<!DOCTYPE html><html><head><title>How to Build a Web App - YouTube</title></head><body><main><div class="video"><h1 class="video-title">How to Build a Web App from Scratch</h1><div class="video-description"><p>In this tutorial, I walk through building a complete web application using modern tools and frameworks.</p><p>Topics covered: project setup, component architecture, state management, and deployment.</p><p>Timestamps:</p><p>0:00 Introduction</p><p>2:15 Project Setup</p><p>10:30 Building Components</p><p>25:00 State Management</p><p>35:00 Deployment</p></div></div></main></body></html>`,
+    expected: { title: /Web App/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Vimeo Video Page',
+    category: 'multimedia',
+    url: 'https://vimeo.com/123456',
+    html: `<!DOCTYPE html><html><head><title>Short Film: The Journey - Vimeo</title></head><body><main><article class="video"><h1>Short Film: The Journey</h1><div class="description"><p>A short film exploring the theme of personal growth through a visual narrative.</p><p>Directed by independent filmmaker. Shot on location in various natural settings.</p><p>Runtime: 12 minutes. Released 2024.</p></div></article></main></body></html>`,
+    expected: { title: /Short Film/i, hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Podcast Show Notes',
+    category: 'multimedia',
+    url: 'https://podcast.fm/episode/42',
+    html: `<!DOCTYPE html><html><head><title>Episode 42: AI in Healthcare - Tech Podcast</title></head><body><main><article class="episode"><h1>Episode 42: AI in Healthcare</h1><div class="show-notes"><p>In this episode, we discuss the latest applications of artificial intelligence in healthcare.</p><h3>Topics</h3><ul><li>AI-powered diagnostics</li><li>Drug discovery acceleration</li><li>Patient care optimization</li></ul><p>Guest: Dr. Sarah Chen, AI Research Lead at HealthTech Inc.</p><p>Duration: 45 minutes</p></div></article></main></body></html>`,
+    expected: { title: /AI in Healthcare/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+
+  // === CMS OUTPUT VARIATIONS ===
+  {
+    name: 'Drupal Article',
+    category: 'news',
+    url: 'https://drupal-site.org/news',
+    html: `<!DOCTYPE html><html><head><title>Community Event Announced</title></head><body><main><article class="node"><h1 class="node-title">Community Event Announced</h1><div class="field field-name-body"><p>The annual community event has been announced for this summer. Local organizations are coming together to celebrate the neighborhood.</p><p>Activities will include live music, food vendors, and family-friendly entertainment.</p><p>The event is free and open to all residents.</p></div></article></main></body></html>`,
+    expected: { title: 'Community Event Announced', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Joomla Article',
+    category: 'news',
+    url: 'https://joomla-site.com/article',
+    html: `<!DOCTYPE html><html><head><title>Local Business Expansion Plans</title></head><body><main><article class="com-content-article"><h1 class="item-title">Local Business Expansion Plans</h1><div class="item-body"><p>A local tech company has announced plans to expand its operations, adding 200 new positions over the next year.</p><p>The expansion will focus on research and development, with a new facility planned for the downtown area.</p><p>State officials have praised the move as a positive sign for the local economy.</p></div></article></main></body></html>`,
+    expected: { title: 'Local Business Expansion Plans', hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Strapi/Headless CMS',
+    category: 'blog',
+    url: 'https://headless-cms.com/blog',
+    html: `<!DOCTYPE html><html><head><title>React Server Components Explained</title></head><body><main><article><h1>React Server Components Explained</h1><div class="content"><p>React Server Components represent a paradigm shift in how we build React applications. They allow components to run on the server, reducing bundle size and improving performance.</p><h2>How They Work</h2><p>Server Components run exclusively on the server and can access backend resources directly. They render to a special format that the client can hydrate.</p><h2>Benefits</h2><ul><li>Smaller JavaScript bundles</li><li>Direct backend access</li><li>Automatic code splitting</li></ul></div></article></main></body></html>`,
+    expected: { title: 'React Server Components Explained', hasContent: true, minContentLength: 200, minImages: 0, maxImages: 2 },
+  },
+
+  // === INTERNATIONAL SITES ===
+  {
+    name: 'Japanese Blog',
+    category: 'blog',
+    url: 'https://blog.jp/post',
+    html: `<!DOCTYPE html><html lang="ja"><head><title>技術ブログ：プログラミングのヒント</title></head><body><main><article><h1>プログラミングのヒント</h1><div class="content"><p>効率的なコードを書くための基本的なヒントを紹介します。良いコードは読みやすく、保守しやすいものです。</p><p>まず、変数名は意味のある名前をつけましょう。次に、関数は一つの責任を持つようにしてください。</p><p>これらの基本を守ることで、長期的にメンテナンスしやすいコードを書けるようになります。</p></div></article></main></body></html>`,
+    expected: { title: /プログラミング/i, hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'German News Article',
+    category: 'news',
+    url: 'https://nachrichten.de/article',
+    html: `<!DOCTYPE html><html lang="de"><head><title>Neue Umweltmaßnahmen angekündigt</title><meta property="og:title" content="Neue Umweltmaßnahmen angekündigt"></head><body><main><article><h1>Neue Umweltmaßnahmen angekündigt</h1><div class="text"><p>Die Regierung hat heute neue Umweltmaßnahmen angekündigt, die darauf abzielen, die CO2-Emissionen bis 2030 zu halbieren.</p><p>Die Maßnahmen umfassen Investitionen in erneuerbare Energien und strengere Vorschriften für Industriebetriebe.</p><p>Umweltschützer begrüßen die Pläne, fordern aber noch ambitioniertere Ziele.</p></div></article></main></body></html>`,
+    expected: { title: /Umweltmaßnahmen/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Spanish Tutorial',
+    category: 'documentation',
+    url: 'https://docs.es/tutorial',
+    html: `<!DOCTYPE html><html lang="es"><head><title>Tutorial: Introducción a JavaScript</title></head><body><main><article><h1>Introducción a JavaScript</h1><div class="content"><p>JavaScript es un lenguaje de programación versátil que se utiliza para crear páginas web interactivas.</p><h2>Variables</h2><p>Las variables se declaran usando let, const o var. Se recomienda usar const para valores que no cambian.</p><h2>Funciones</h2><p>Las funciones son bloques de código reutilizables que realizan tareas específicas.</p></div></article></main></body></html>`,
+    expected: { title: /JavaScript/i, hasContent: true, minContentLength: 150, minImages: 0, maxImages: 2 },
+  },
+
+  // === LAYOUT VARIATIONS ===
+  {
+    name: 'Single Page Article (Long Form)',
+    category: 'news',
+    url: 'https://longreads.com/feature',
+    html: `<!DOCTYPE html><html><head><title>The Hidden World of Deep Sea Exploration</title><meta name="author" content="Feature Writer"></head><body><main><article class="longform"><h1>The Hidden World of Deep Sea Exploration</h1><p class="lead">Miles beneath the ocean surface lies a world that remains largely unknown to humanity.</p><div class="article-body"><p>For decades, scientists have been pushing the boundaries of underwater exploration, developing new technologies to venture into the deepest parts of the ocean.</p><p>The challenges are immense: crushing pressure, total darkness, and extreme cold make deep-sea exploration one of the most difficult scientific endeavors.</p><p>Despite these obstacles, recent expeditions have revealed incredible biodiversity and geological formations that challenge our understanding of life on Earth.</p><p>The creatures found at these depths have evolved remarkable adaptations, including bioluminescence and extreme pressure tolerance.</p><p>As technology continues to advance, we can expect even more discoveries from this hidden frontier.</p></div></article></main></body></html>`,
+    expected: { title: 'The Hidden World of Deep Sea Exploration', author: /Feature Writer/i, hasContent: true, minContentLength: 300, minImages: 0, maxImages: 3 },
+  },
+  {
+    name: 'Sidebar-Heavy Layout',
+    category: 'challenging',
+    url: 'https://sidebar-site.com/post',
+    html: `<!DOCTYPE html><html><head><title>Main Article Content</title></head><body><div class="layout"><header>Site Header</header><nav>Sidebar Navigation</nav><aside class="left-sidebar"><div class="widget">Widget Content</div><div class="ad">Advertisement</div></aside><main><article><h1>Main Article Content</h1><div class="entry"><p>This is the actual content of the article. It's surrounded by multiple sidebars and widgets that should be filtered out by the extractor.</p><p>The main content area contains the information the user actually wants to read.</p></div></article></main><aside class="right-sidebar"><div class="related">Related Articles</div><div class="popular">Popular Posts</div></aside><footer>Site Footer</footer></div></body></html>`,
+    expected: { title: 'Main Article Content', hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+
+  // === MINIMAL / EDGE CASES ===
+  {
+    name: 'RSS Feed View',
+    category: 'challenging',
+    url: 'https://blog.com/feed',
+    html: `<!DOCTYPE html><html><head><title>Blog Feed</title></head><body><div class="feed"><div class="entry"><h2>First Post Title</h2><p>Published: March 1, 2024</p><p>This is the excerpt from the first post in the feed. It provides a summary of the full article.</p></div><div class="entry"><h2>Second Post Title</h2><p>Published: February 28, 2024</p><p>Another excerpt from a different post in the feed.</p></div></div></body></html>`,
+    expected: { title: 'Blog Feed', hasContent: true, minContentLength: 100, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Error Page',
+    category: 'challenging',
+    url: 'https://site.com/missing',
+    html: `<!DOCTYPE html><html><head><title>404 - Page Not Found</title></head><body><div class="error"><h1>404 - Page Not Found</h1><p>The page you requested could not be found.</p><p>Please check the URL or return to the homepage.</p></div></body></html>`,
+    expected: { title: '404 - Page Not Found', hasContent: true, minContentLength: 50, minImages: 0, maxImages: 2 },
+  },
+  {
+    name: 'Maintenance Page',
+    category: 'challenging',
+    url: 'https://site.com/maintenance',
+    html: `<!DOCTYPE html><html><head><title>Under Maintenance</title></head><body><div class="maintenance"><h1>Under Maintenance</h1><p>We are currently performing scheduled maintenance. Please check back later.</p><p>Expected completion: March 15, 2024 at 6:00 AM EST.</p></div></body></html>`,
+    expected: { title: 'Under Maintenance', hasContent: true, minContentLength: 50, minImages: 0, maxImages: 2 },
+  },
 ];
 
 const LINE = '='.repeat(80);
