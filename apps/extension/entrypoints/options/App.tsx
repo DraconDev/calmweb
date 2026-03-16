@@ -412,7 +412,7 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                         <h3 className="font-bold">Super Reader</h3>
                         <p className="text-sm text-muted-foreground">
                           Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+Shift+R</kbd> on any page
-                          {settings.reader?.autoOpen && ' (auto-opens on articles)'}
+                          {settings.reader?.autoOpen !== false && ' (auto-opens on pages)'}
                         </p>
                       </div>
                     </div>
