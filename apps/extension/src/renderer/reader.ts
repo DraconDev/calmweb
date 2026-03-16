@@ -264,6 +264,13 @@ export function openReader(options: ReaderOptions = {}): void {
           </div>
         </div>
 
+        <button class="calmweb-reader-btn" data-action="raw">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+          </svg>
+          Raw
+        </button>
         <button class="calmweb-reader-btn calmweb-reader-btn-close" data-action="close">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 6L6 18M6 6l12 12"/>
