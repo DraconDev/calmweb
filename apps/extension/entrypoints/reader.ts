@@ -6,14 +6,13 @@
  */
 
 import { defineContentScript } from 'wxt/utils/define-content-script';
-import { toggleReader } from '../src/renderer/reader';
+import { openReader, closeReader, isReaderOpen } from '../src/renderer/reader';
 import { MESSAGE_TYPES } from '../src/messaging';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import browser from 'webextension-polyfill';
 import type { UserSettings } from '@calmweb/shared';
 
 function isArticlePage(): boolean {
-  // Skip common non-article sites
   const hostname = window.location.hostname.toLowerCase();
   const skipDomains = [
     'google.com', 'youtube.com', 'reddit.com', 'twitter.com', 'x.com',
@@ -22,58 +21,75 @@ function isArticlePage(): boolean {
   ];
   if (skipDomains.some(d => hostname.includes(d))) return false;
 
-  // Check for <article> element
   if (document.querySelector('article')) return true;
 
-  // Check URL patterns
   const path = window.location.pathname.toLowerCase();
   const articlePatterns = [
-    /\/\d{4}\/\d{2}\/\d{2}\//,    // /2024/03/16/slug
-    /\/\d{4}\/\d{2}\//,             // /2024/03/slug
-    /\/(article|post|blog|news|story|entry)\//,
-    /\/[a-z0-9-]+\/[a-z0-9-]{20,}/, // long slug pattern
+    /\/\d{4}\/\d{2}\/\d{2}\//,
+    /\/\d{4}\/\d{2}\//,
+    /\/(article|articles|post|blog|news|story|entry)\//,
+    /\/[a-z0-9-]+\/[a-z0-9-]{20,}/,
   ];
   if (articlePatterns.some(p => p.test(path))) return true;
 
-  // Check meta tags for article type
   const ogType = document.querySelector('meta[property="og:type"]');
   if (ogType?.getAttribute('content')?.includes('article')) return true;
 
-  // Check for substantial article-like content (long body text)
   const main = document.querySelector('main, [role="main"], #content, .content, .post-content, .article-body, .entry-content');
   if (main && main.textContent && main.textContent.length > 2000) return true;
 
   return false;
 }
 
+function safeToggleReader(): void {
+  try {
+    if (isReaderOpen()) {
+      closeReader();
+    } else {
+      openReader();
+    }
+  } catch (err) {
+    console.error('[CalmWeb] Reader toggle failed:', err);
+  }
+}
+
 export default defineContentScript({
   matches: ['<all_urls>'],
-  runAt: 'document_idle',
+  runAt: 'document_end',
 
   async main() {
-    console.log('[CalmWeb] Reader content script loaded');
+    console.log('[CalmWeb] Reader content script loaded on', window.location.hostname);
 
-    // Keyboard shortcut
+    // Keyboard shortcut - use capture phase to ensure we get it first
     document.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key.toLowerCase() === 'r') {
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
-        toggleReader();
+        e.stopPropagation();
+        safeToggleReader();
       }
-    });
+    }, true); // capture phase
 
     // Message handlers
     browser.runtime.onMessage.addListener((message: any) => {
       if (message.type === MESSAGE_TYPES.TOGGLE_READER) {
         console.log('[CalmWeb] Toggle reader via message');
-        toggleReader();
+        safeToggleReader();
       }
       if (message.type === MESSAGE_TYPES.OPEN_READER) {
         console.log('[CalmWeb] Open reader via message');
-        toggleReader();
+        try {
+          if (!isReaderOpen()) openReader();
+        } catch (err) {
+          console.error('[CalmWeb] Failed to open reader:', err);
+        }
       }
       if (message.type === MESSAGE_TYPES.CLOSE_READER) {
         console.log('[CalmWeb] Close reader via message');
-        toggleReader();
+        try {
+          if (isReaderOpen()) closeReader();
+        } catch (err) {
+          console.error('[CalmWeb] Failed to close reader:', err);
+        }
       }
     });
 
@@ -83,10 +99,9 @@ export default defineContentScript({
         type: MESSAGE_TYPES.GET_SETTINGS,
       });
       if (settings?.reader?.autoOpen && isArticlePage()) {
-        // Small delay to let page settle
         setTimeout(() => {
           console.log('[CalmWeb] Auto-opening reader on article page');
-          toggleReader();
+          safeToggleReader();
         }, 1500);
       }
     } catch {
