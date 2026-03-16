@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor/article';
-import { getLayout, allLayouts, newspaperLayout, terminalLayout, readerLayout, focusLayout } from '../src/renderer/layouts';
+import { getLayout, allLayouts, newspaperLayout, terminalLayout, readerLayout, focusLayout, magazineLayout, minimalLayout } from '../src/renderer/layouts';
 import { getTheme, allThemes, defaultTheme, darkTheme } from '../src/renderer/themes';
 
 describe('Article Extractor', () => {
@@ -135,8 +135,10 @@ describe('Layout Engine', () => {
     });
   });
 
-  it('should export newspaperLayout as alias for readerLayout', () => {
-    expect(newspaperLayout.id).toBe('reader');
+  it('should have a real newspaperLayout', () => {
+    expect(newspaperLayout.id).toBe('newspaper');
+    expect(newspaperLayout.columns).toBe(3);
+    expect(newspaperLayout.name).toBe('Newspaper');
   });
 });
 
