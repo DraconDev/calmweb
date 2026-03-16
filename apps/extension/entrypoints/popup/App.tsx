@@ -404,10 +404,11 @@ export default function Popup() {
 
       {/* Footer Actions - Fixed */}
       <div className="shrink-0 px-3 py-2.5 border-t border-[#1a1a1a] bg-[#080808]">
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-4 gap-1">
           <FooterButton icon={Shield} label="Presets" onClick={() => openOptions('presets')} />
           <FooterButton icon={Settings} label="Rules" onClick={() => openOptions('rules')} />
-          <FooterButton icon={ExternalLink} label="Dashboard" onClick={() => openOptions()} />
+          <FooterButton icon={Zap} label="AI" onClick={() => openOptions('advanced')} />
+          <FooterButton icon={ExternalLink} label="More" onClick={() => openOptions()} />
         </div>
       </div>
     </div>
