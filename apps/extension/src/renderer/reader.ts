@@ -203,7 +203,7 @@ export function openReader(options: ReaderOptions = {}): void {
     const existing = document.getElementById(OVERLAY_ID);
     if (existing) return;
 
-    const article = extractArticle(document, window.location.href);
+    const article = extractArticle(document, window.location.href, options.textOnly ?? true);
     if (!article || !article.title) {
       console.warn('[CalmWeb] Could not extract article content');
       return;
