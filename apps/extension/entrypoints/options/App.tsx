@@ -18,7 +18,6 @@ import {
   Database,
   RefreshCw,
   Info,
-  Activity,
   Wand2,
   BookOpen,
   Palette,
