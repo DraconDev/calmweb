@@ -62,6 +62,13 @@ export default defineContentScript({
 
     // Keyboard shortcut - use capture phase to ensure we get it first
     document.addEventListener('keydown', (e) => {
+      // Ctrl+Shift+R toggles reader (Alt+R conflicts with some browsers)
+      if (e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        e.stopPropagation();
+        safeToggleReader();
+      }
+      // Alt+R as fallback (preventDefault should stop browser action)
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
         e.stopPropagation();
