@@ -178,6 +178,7 @@ export default defineContentScript({
 
     // Check settings
     let shouldFilter = true;
+    let readerSettings: { textOnly?: boolean; defaultLayout?: string } = {};
     try {
       const settings = await sendToBackground<UserSettings>({
         type: MESSAGE_TYPES.GET_SETTINGS,
@@ -185,6 +186,7 @@ export default defineContentScript({
       if (settings?.reader?.autoOpen === false || settings?.enabled === false) {
         shouldFilter = false;
       }
+      readerSettings = settings?.reader || {};
     } catch {
       // Default to filtering
     }
@@ -195,7 +197,10 @@ export default defineContentScript({
       setTimeout(() => {
         hideLoading();
         try {
-          openReader();
+          openReader({
+            textOnly: readerSettings.textOnly !== false,
+            layoutId: readerSettings.defaultLayout,
+          });
         } catch (err) {
           console.error('[CalmWeb] Failed to open reader:', err);
           // If reader fails, restore the page
