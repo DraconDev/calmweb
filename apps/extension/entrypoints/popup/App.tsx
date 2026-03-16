@@ -5,7 +5,6 @@ import { Switch, Spinner } from '@components';
 import {
   Shield,
   Activity,
-  BarChart3,
   Settings,
   Wand2,
   Radio,
