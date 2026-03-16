@@ -38,7 +38,7 @@ const REMOVE_SELECTORS = [
 ];
 
 const MEDIA_SELECTORS = [
-  'img', 'video', 'audio', 'picture', 'svg', 'canvas',
+  'img', 'video', 'audio', 'picture', 'canvas',
   'figure', 'figcaption',
 ];
 
