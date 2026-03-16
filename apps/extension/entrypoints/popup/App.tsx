@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import { Container, Card, Switch, Spinner } from '@components';
+import { Switch, Spinner } from '@components';
 import {
   Shield,
   Activity,
@@ -14,6 +14,7 @@ import {
   EyeOff,
   ExternalLink,
   BookOpen,
+  Zap,
 } from 'lucide-react';
 import clsx from 'clsx';
 import type { UserSettings, Stats } from '@calmweb/shared';
@@ -130,40 +131,40 @@ export default function Popup() {
 
   if (loading) {
     return (
-      <Container className="w-[380px] h-[520px] flex items-center justify-center">
+      <div className="w-[380px] h-[520px] flex items-center justify-center bg-[#0a0a0a]">
         <Spinner size="lg" />
-      </Container>
+      </div>
     );
   }
 
   const presetsEnabled = Object.values(settings?.rules.presets || {}).filter(Boolean).length;
 
   return (
-    <Container className="w-[380px] min-h-[520px] p-0 flex flex-col bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-[#111] border-b border-[#222] p-4">
+    <div className="w-[380px] h-[520px] flex flex-col bg-[#0a0a0a] overflow-hidden">
+      {/* Header - Fixed */}
+      <header className="shrink-0 bg-[#111] border-b border-[#1a1a1a] px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="p-2.5 bg-gradient-to-br from-[#333] to-[#222] rounded-xl text-[#a78bfa] border border-[#333]">
-                <Shield size={22} />
+              <div className="p-2 bg-gradient-to-br from-[#2a2a3e] to-[#1a1a2a] rounded-xl text-[#a78bfa] border border-[#2a2a3e]">
+                <Shield size={18} />
               </div>
               {enabled && (
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#4ade80] rounded-full border-2 border-[#0a0a0a]" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-[#4ade80] rounded-full border-2 border-[#0a0a0a]" />
               )}
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-white">CalmWeb</h1>
-              <div className="flex items-center gap-1.5 text-[11px]">
+              <h1 className="text-base font-bold tracking-tight text-white leading-tight">CalmWeb</h1>
+              <div className="flex items-center gap-1.5 text-[10px]">
                 {enabled ? (
                   <>
-                    <Activity size={10} className="text-[#4ade80]" />
+                    <Activity size={9} className="text-[#4ade80]" />
                     <span className="text-[#4ade80] font-medium">Active</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 bg-[#444] rounded-full" />
-                    <span className="text-[#666]">Paused</span>
+                    <span className="w-1.5 h-1.5 bg-[#444] rounded-full" />
+                    <span className="text-[#555]">Paused</span>
                   </>
                 )}
               </div>
@@ -172,108 +173,91 @@ export default function Popup() {
           <Switch
             checked={enabled}
             onCheckedChange={toggleEnabled}
-            className="scale-110"
           />
         </div>
       </header>
 
-      {/* Stats Card */}
-      <div className="px-4 mt-3">
-        <Card className="p-4 border-[#222] bg-[#111]">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-[#888]" />
-              <span className="text-xs font-semibold text-[#666] uppercase tracking-wider">Statistics</span>
-            </div>
-            <button
-              onClick={() => openOptions()}
-              className="text-[10px] font-bold text-[#a78bfa] hover:text-[#c4b5fd] transition-colors"
-            >
-              View Details
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
-              <div className="text-2xl font-black text-white">{stats.totalFiltered.toLocaleString()}</div>
-              <div className="text-[10px] font-medium text-[#666] mt-0.5">Total Filtered</div>
-            </div>
-            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
-              <div className="text-2xl font-black text-[#4ade80]">{presetsEnabled}</div>
-              <div className="text-[10px] font-medium text-[#666] mt-0.5">Presets On</div>
-            </div>
-            <div className="text-center p-2 rounded-lg bg-[#1a1a1a]">
-              <div className="text-2xl font-black text-[#a78bfa]">{settings?.neutralization?.enabled ? 'On' : 'Off'}</div>
-              <div className="text-[10px] font-medium text-[#666] mt-0.5">Neutralize</div>
-            </div>
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-[#222] flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-[#555]">
-              <Radio size={12} />
-              <span className="truncate max-w-[180px]" title={currentSite}>{currentSite}</span>
-            </div>
-            <div className="text-[10px] font-medium text-[#444]">
-              v1.0.0
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Toggles */}
-      <div className="px-4 mt-3 flex-1">
-        <div className="flex items-center gap-2 mb-2">
-          <EyeOff size={14} className="text-[#555]" />
-          <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Quick Filters</span>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2.5 scrollbar-thin">
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-2">
+          <StatPill
+            label="Filtered"
+            value={stats.totalFiltered.toLocaleString()}
+            color="text-white"
+          />
+          <StatPill
+            label="Presets"
+            value={`${presetsEnabled}/4`}
+            color="text-[#4ade80]"
+          />
+          <StatPill
+            label="Neutralize"
+            value={settings?.neutralization?.enabled ? 'On' : 'Off'}
+            color="text-[#a78bfa]"
+          />
         </div>
-        
-        <div className="grid grid-cols-2 gap-2">
-          <PresetToggle
-            icon={Newspaper}
-            label="Politics"
-            enabled={settings?.rules.presets.politics || false}
-            onClick={() => togglePreset('politics')}
-          />
-          <PresetToggle
-            icon={AlertTriangle}
-            label="Ragebait"
-            enabled={settings?.rules.presets.ragebait || false}
-            onClick={() => togglePreset('ragebait')}
-          />
-          <PresetToggle
-            icon={EyeOff}
-            label="Spoilers"
-            enabled={settings?.rules.presets.spoilers || false}
-            onClick={() => togglePreset('spoilers')}
-          />
-          <PresetToggle
-            icon={Radio}
-            label="Clickbait"
-            enabled={settings?.rules.presets.clickbait || false}
-            onClick={() => togglePreset('clickbait')}
-          />
+
+        {/* Site indicator */}
+        <div className="flex items-center gap-1.5 px-1">
+          <Radio size={10} className="text-[#333]" />
+          <span className="text-[10px] text-[#444] truncate" title={currentSite}>{currentSite}</span>
+        </div>
+
+        {/* Quick Filters */}
+        <div>
+          <div className="flex items-center gap-1.5 mb-1.5 px-0.5">
+            <EyeOff size={11} className="text-[#444]" />
+            <span className="text-[10px] font-semibold text-[#444] uppercase tracking-wider">Quick Filters</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <PresetToggle
+              icon={Newspaper}
+              label="Politics"
+              enabled={settings?.rules.presets.politics || false}
+              onClick={() => togglePreset('politics')}
+            />
+            <PresetToggle
+              icon={AlertTriangle}
+              label="Ragebait"
+              enabled={settings?.rules.presets.ragebait || false}
+              onClick={() => togglePreset('ragebait')}
+            />
+            <PresetToggle
+              icon={EyeOff}
+              label="Spoilers"
+              enabled={settings?.rules.presets.spoilers || false}
+              onClick={() => togglePreset('spoilers')}
+            />
+            <PresetToggle
+              icon={Zap}
+              label="Clickbait"
+              enabled={settings?.rules.presets.clickbait || false}
+              onClick={() => togglePreset('clickbait')}
+            />
+          </div>
         </div>
 
         {/* Neutralization Toggle */}
         <button
           onClick={toggleNeutralization}
           className={clsx(
-            "w-full mt-3 p-3 rounded-xl border transition-all flex items-center gap-3",
+            "w-full p-2.5 rounded-xl border transition-all flex items-center gap-2.5",
             settings?.neutralization?.enabled
-              ? "border-[#333] bg-[#1a1a1a]"
-              : "border-[#222] bg-[#111] hover:bg-[#151515]"
+              ? "border-[#a78bfa]/20 bg-[#a78bfa]/5"
+              : "border-[#1a1a1a] bg-[#111] hover:bg-[#151515]"
           )}
         >
           <div className={clsx(
-            "p-2 rounded-lg",
-            settings?.neutralization?.enabled ? "bg-[#a78bfa] text-white" : "bg-[#222] text-[#666]"
+            "p-1.5 rounded-lg shrink-0",
+            settings?.neutralization?.enabled ? "bg-[#a78bfa] text-white" : "bg-[#1a1a1a] text-[#444]"
           )}>
-            <Wand2 size={16} />
+            <Wand2 size={13} />
           </div>
-          <div className="flex-1 text-left">
-            <div className="text-sm font-semibold text-white">Text Neutralization</div>
-            <div className="text-[11px] text-[#666]">
-              {settings?.neutralization?.enabled ? 'Active - Rewriting inflammatory text' : 'Inactive'}
+          <div className="flex-1 text-left min-w-0">
+            <div className="text-xs font-semibold text-white">Text Neutralization</div>
+            <div className="text-[10px] text-[#555] truncate">
+              {settings?.neutralization?.enabled ? 'Rewriting inflammatory text' : 'Inactive'}
             </div>
           </div>
           <Switch
@@ -281,54 +265,45 @@ export default function Popup() {
             onCheckedChange={toggleNeutralization}
           />
         </button>
-      </div>
 
-      {/* Super Reader Button */}
-      <div className="px-4 mt-3">
+        {/* Super Reader */}
         <button
           onClick={toggleReader}
-          className="w-full p-3 rounded-xl border border-[#333] bg-gradient-to-r from-[#1a1a2e] to-[#1a1a1a] hover:from-[#222244] hover:to-[#222] transition-all flex items-center gap-3"
+          className="w-full p-2.5 rounded-xl border border-[#1a1a1a] bg-gradient-to-r from-[#1a1a2e]/80 to-[#111] hover:from-[#1f1f3a] hover:to-[#151515] transition-all flex items-center gap-2.5"
         >
-          <div className="p-2 rounded-lg bg-[#a78bfa] text-white">
-            <BookOpen size={16} />
+          <div className="p-1.5 rounded-lg bg-[#a78bfa] text-white shrink-0">
+            <BookOpen size={13} />
           </div>
           <div className="flex-1 text-left">
-            <div className="text-sm font-semibold text-white">Super Reader</div>
-            <div className="text-[11px] text-[#888]">Distraction-free reading mode</div>
+            <div className="text-xs font-semibold text-white">Super Reader</div>
+            <div className="text-[10px] text-[#555]">Distraction-free reading</div>
           </div>
-          <ExternalLink size={14} className="text-[#555]" />
+          <ExternalLink size={12} className="text-[#333] shrink-0" />
         </button>
       </div>
 
-      {/* Action Buttons */}
-      <div className="px-4 py-3 mt-3 border-t border-[#222] bg-[#080808]">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => openOptions('presets')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
-          >
-            <Shield size={18} className="text-[#a78bfa]" />
-            <span className="text-[11px] font-semibold text-[#888]">Presets</span>
-          </button>
-
-          <button
-            onClick={() => openOptions('rules')}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
-          >
-            <Settings size={18} className="text-[#666]" />
-            <span className="text-[11px] font-semibold text-[#888]">Rules</span>
-          </button>
-
-          <button
-            onClick={() => openOptions()}
-            className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
-          >
-            <ExternalLink size={18} className="text-[#666]" />
-            <span className="text-[11px] font-semibold text-[#888]">Dashboard</span>
-          </button>
+      {/* Footer Actions - Fixed */}
+      <div className="shrink-0 px-3 py-2.5 border-t border-[#1a1a1a] bg-[#080808]">
+        <div className="grid grid-cols-3 gap-1.5">
+          <FooterButton icon={Shield} label="Presets" onClick={() => openOptions('presets')} />
+          <FooterButton icon={Settings} label="Rules" onClick={() => openOptions('rules')} />
+          <FooterButton icon={ExternalLink} label="Dashboard" onClick={() => openOptions()} />
         </div>
       </div>
-    </Container>
+    </div>
+  );
+}
+
+// ============================================================================
+// Sub-components
+// ============================================================================
+
+function StatPill({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="text-center p-2 rounded-lg bg-[#111] border border-[#1a1a1a]">
+      <div className={clsx("text-lg font-black leading-tight", color)}>{value}</div>
+      <div className="text-[9px] font-medium text-[#444] mt-0.5 uppercase tracking-wide">{label}</div>
+    </div>
   );
 }
 
@@ -344,22 +319,47 @@ function PresetToggle({ icon: Icon, label, enabled, onClick }: PresetToggleProps
     <button
       onClick={onClick}
       className={clsx(
-        "p-3 rounded-xl border transition-all flex flex-col items-center gap-2",
+        "p-2 rounded-lg border transition-all flex items-center gap-2 text-left",
         enabled
-          ? "border-[#333] bg-[#1a1a1a]"
-          : "border-[#222] bg-[#111] hover:bg-[#151515]"
+          ? "border-[#a78bfa]/20 bg-[#a78bfa]/5"
+          : "border-[#1a1a1a] bg-[#111] hover:bg-[#151515] hover:border-[#222]"
       )}
     >
       <div className={clsx(
-        "p-1.5 rounded-lg",
-        enabled ? "bg-[#a78bfa] text-white" : "bg-[#222] text-[#666]"
+        "p-1 rounded-md shrink-0",
+        enabled ? "bg-[#a78bfa] text-white" : "bg-[#1a1a1a] text-[#444]"
       )}>
-        <Icon size={14} />
+        <Icon size={11} />
       </div>
-      <span className="text-[11px] font-semibold text-[#aaa]">{label}</span>
+      <span className={clsx(
+        "text-[11px] font-medium flex-1",
+        enabled ? "text-white" : "text-[#666]"
+      )}>
+        {label}
+      </span>
       {enabled && (
-        <span className="text-[9px] font-bold uppercase text-[#4ade80]">On</span>
+        <span className="text-[8px] font-bold uppercase text-[#4ade80] shrink-0">On</span>
       )}
+    </button>
+  );
+}
+
+function FooterButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[#1a1a1a] transition-colors"
+    >
+      <Icon size={15} className="text-[#555]" />
+      <span className="text-[10px] font-medium text-[#555]">{label}</span>
     </button>
   );
 }
