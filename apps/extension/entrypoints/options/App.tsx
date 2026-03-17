@@ -275,7 +275,7 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                   />
                   <StatCard
                     label="Protection"
-                    value={settings.processingMode === 'local_rules' ? 'Basic' : 'Neural'}
+                    value="Neural"
                     icon={Zap}
                     highlight
                   />
