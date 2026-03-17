@@ -57,33 +57,28 @@ describe('Article Extractor', () => {
 });
 
 describe('Layout Engine', () => {
-  it('should return 10 layouts', () => {
-    expect(allLayouts.length).toBe(10);
+  it('should return 1 adaptive layout', () => {
+    expect(allLayouts.length).toBe(1);
   });
 
-  it('should contain all layout ids', () => {
+  it('should have adaptive layout id', () => {
     const ids = allLayouts.map(l => l.id);
-    expect(ids).toContain('auto');
-    expect(ids).toContain('reader');
-    expect(ids).toContain('focus');
-    expect(ids).toContain('terminal');
-    expect(ids).toContain('compact');
-    expect(ids).toContain('visual');
-    expect(ids).toContain('academic');
-    expect(ids).toContain('magazine');
-    expect(ids).toContain('minimal');
-    expect(ids).toContain('newspaper');
+    expect(ids).toContain('adaptive');
   });
 
-  it('should get layout by id', () => {
-    const layout = getLayout('reader');
-    expect(layout.id).toBe('reader');
-    expect(layout.name).toBe('Reader');
+  it('should always return adaptive layout', () => {
+    const layout = getLayout('anything');
+    expect(layout.id).toBe('adaptive');
   });
 
-  it('should return auto as default for unknown id', () => {
-    const layout = getLayout('unknown');
-    expect(layout.id).toBe('auto');
+  it('autoDetectLayout should return adaptive', () => {
+    // Uses real article data from earlier test
+    const doc = document.implementation.createHTMLDocument();
+    doc.body.innerHTML = '<article><h1>Test</h1><p>Content here for testing layout detection.</p></article>';
+    const { extractArticle } = require('../src/renderer/extractor');
+    const article = extractArticle(doc, 'https://example.com');
+    const layout = autoDetectLayout(article);
+    expect(layout.id).toBe('adaptive');
   });
 
   it('should have correct reader layout properties', () => {
