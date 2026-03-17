@@ -225,32 +225,5 @@ export default defineContentScript({
         showFloatingButton();
       }
     }, 400);
-
-    const { yes: hasArticle } = hasArticleContent();
-
-    if (hasArticle) {
-      // Has article content - auto-open reader
-      showLoading();
-      setTimeout(() => {
-        hideLoading();
-        try {
-          openReader({
-            textOnly: readerSettings.textOnly !== false,
-            layoutId: readerSettings.defaultLayout,
-            font: readerSettings.font,
-            fontSize: readerSettings.fontSize,
-          });
-        } catch (err) {
-          console.error('[CalmWeb] Failed to open reader:', err);
-          document.documentElement.style.removeProperty('overflow');
-          document.documentElement.style.removeProperty('visibility');
-          document.body.style.removeProperty('overflow');
-          document.body.style.removeProperty('visibility');
-        }
-      }, 600);
-    } else {
-      // No article content - show floating button
-      showFloatingButton();
-    }
   },
 });
