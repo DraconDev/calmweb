@@ -474,7 +474,6 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <AdvancedTab
                   processingMode={settings.processingMode}
-                  strictness={settings.strictness}
                   byokKey={settings.byokKey || ''}
                   aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL}
                   onChange={(updates) => saveSettings(updates)}
