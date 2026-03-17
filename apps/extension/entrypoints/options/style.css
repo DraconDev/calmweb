@@ -1,24 +1,24 @@
 @import "@dracon/wxt-shared/styles/globals.css";
 
 :root {
-  --background: #0a0a0f;
-  --foreground: #e4e4e7;
-  --card: #111118;
-  --card-foreground: #e4e4e7;
-  --popover: #111118;
-  --popover-foreground: #e4e4e7;
+  --background: #12121a;
+  --foreground: #d4d4d8;
+  --card: #1a1a26;
+  --card-foreground: #d4d4d8;
+  --popover: #1a1a26;
+  --popover-foreground: #d4d4d8;
   --primary: #a78bfa;
-  --primary-foreground: #0a0a0f;
-  --secondary: #1a1a24;
-  --secondary-foreground: #e4e4e7;
-  --muted: #1a1a24;
-  --muted-foreground: #71717a;
+  --primary-foreground: #12121a;
+  --secondary: #1e1e2e;
+  --secondary-foreground: #d4d4d8;
+  --muted: #1e1e2e;
+  --muted-foreground: #6b6b80;
   --accent: #a78bfa;
-  --accent-foreground: #0a0a0f;
+  --accent-foreground: #12121a;
   --destructive: #ef4444;
   --destructive-foreground: #fafafa;
-  --border: #1f1f2e;
-  --input: #1f1f2e;
+  --border: #252538;
+  --input: #252538;
   --ring: #a78bfa;
   --radius: 0.75rem;
 }
@@ -45,17 +45,17 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3a;
+  background: #2a2a3e;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a4a;
+  background: #3a3a50;
 }
 
 /* Kbd tags */
 kbd {
-  background: #1a1a24;
-  border: 1px solid #2a2a3a;
+  background: #1e1e2e;
+  border: 1px solid #2a2a3e;
   border-radius: 4px;
   padding: 2px 6px;
   font-family: monospace;
@@ -73,6 +73,6 @@ a:hover {
 
 /* Selection */
 ::selection {
-  background: rgba(167, 139, 250, 0.3);
+  background: rgba(167, 139, 250, 0.25);
   color: #fff;
 }
