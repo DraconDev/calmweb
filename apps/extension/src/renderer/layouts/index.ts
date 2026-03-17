@@ -37,7 +37,6 @@ interface ContentProfile {
 
 function analyzeContent(article: ExtractedArticle): ContentProfile {
   const html = article.contentHtml;
-  const text = article.content || '';
   const codeBlocks = html.querySelectorAll('pre, code').length;
   const paragraphs = html.querySelectorAll('p').length;
   const headings = html.querySelectorAll('h1,h2,h3').length;
@@ -346,10 +345,10 @@ export const allLayouts: ReaderLayout[] = [
   adaptiveLayout,
 ];
 
-export function getLayout(id: string): ReaderLayout {
+export function getLayout(_id: string): ReaderLayout {
   return adaptiveLayout;
 }
 
-export function autoDetectLayout(article: ExtractedArticle): ReaderLayout {
+export function autoDetectLayout(_article: ExtractedArticle): ReaderLayout {
   return adaptiveLayout;
 }
