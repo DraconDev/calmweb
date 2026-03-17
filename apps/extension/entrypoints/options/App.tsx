@@ -304,15 +304,12 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                           const newPresets = { ...settings.rules.presets, [preset.id]: !settings.rules.presets[preset.id as keyof typeof settings.rules.presets] };
                           saveSettings({ rules: { ...settings.rules, presets: newPresets } });
                         }}
-                        className={`relative flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-sm ${
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-sm ${
                           settings.rules.presets[preset.id as keyof typeof settings.rules.presets]
                             ? 'bg-primary/10 text-foreground'
                             : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'
                         }`}
                       >
-                        {settings.rules.presets[preset.id as keyof typeof settings.rules.presets] && (
-                          <span className="absolute top-0 left-3 right-3 h-[2px] bg-primary rounded-full" />
-                        )}
                         <span>{preset.icon}</span>
                         <span className="font-medium">{preset.label}</span>
                       </button>
