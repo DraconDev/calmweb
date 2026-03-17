@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor';
 import { matchPresetKeywords, matchPresetChannel, getPreset } from '../src/presets';
-import { classifyWithRules } from '../utils/classifier';
+import { applyLocalRules } from '../utils/classifier';
 import type { ContentUnit, UserRules } from '@calmweb/shared';
 
 // ============================================================================
@@ -398,7 +398,7 @@ describe('Site Integration - Preset Filtering', () => {
 
   it('should match clickbait in news title', () => {
     const unit = makeUnit("You WON'T BELIEVE What Happened Next!");
-    const result = classifyWithRules(unit, allRules);
+    const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
     expect(result?.decision).toBe('collapse');
     expect(result?.reason).toContain('clickbait');
@@ -406,14 +406,14 @@ describe('Site Integration - Preset Filtering', () => {
 
   it('should match ragebait content', () => {
     const unit = makeUnit('This OUTRAGEOUS policy is DESTROYING our country');
-    const result = classifyWithRules(unit, allRules);
+    const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
     expect(result?.decision).toBe('collapse');
   });
 
   it('should match political content when politics preset is on', () => {
     const unit = makeUnit('Senate votes on new immigration bill amid controversy');
-    const result = classifyWithRules(unit, allRules);
+    const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
     expect(result?.decision).toBe('collapse');
   });
@@ -424,20 +424,20 @@ describe('Site Integration - Preset Filtering', () => {
       presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
     };
     const unit = makeUnit('Normal news article about technology');
-    const result = classifyWithRules(unit, rulesNoPreset);
+    const result = applyLocalRules(unit, rulesNoPreset);
     expect(result).toBeNull(); // No rule matched
   });
 
   it('should match spoilers', () => {
     const unit = makeUnit('SPOILER: Character dies in finale');
-    const result = classifyWithRules(unit, allRules);
+    const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
     expect(result?.decision).toBe('collapse');
   });
 
   it('should not flag neutral news content', () => {
     const unit = makeUnit('Researchers discover new treatment for common disease');
-    const result = classifyWithRules(unit, allRules);
+    const result = applyLocalRules(unit, allRules);
     // Should not match any preset keywords
     expect(result).toBeNull();
   });
