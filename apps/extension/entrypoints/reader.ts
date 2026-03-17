@@ -22,7 +22,7 @@ const LOADING_STYLES = `
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100vw; height: 100vh;
     z-index: 2147483647;
-    background: #0a0a0a;
+    background: #12121a;
     display: flex;
     flex-direction: column;
     align-items: center;
