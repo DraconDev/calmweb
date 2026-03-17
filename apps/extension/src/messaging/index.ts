@@ -136,7 +136,7 @@ const UpdateSettingsMessageSchema = z.object({
   type: z.literal(MESSAGE_TYPES.UPDATE_SETTINGS),
   settings: z.object({
     enabled: z.boolean().optional(),
-    processingMode: z.enum(['local_rules', 'byok_llm', 'hosted_llm']).optional(),
+    processingMode: z.enum(['byok_llm', 'hosted_llm']).optional(),
     strictness: z.number().min(0).max(100).optional(),
     rules: z.object({
       blocklistChannels: z.array(z.string()).optional(),
