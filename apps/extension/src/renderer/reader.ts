@@ -87,18 +87,19 @@ const OVERLAY_STYLES = `
     gap: 6px;
     padding: 8px 12px;
     background: transparent;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(167, 139, 250, 0.2);
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
-    color: #374151;
+    color: #a1a1aa;
     cursor: pointer;
     transition: all 0.15s ease;
   }
 
   .calmweb-reader-btn:hover {
-    background: rgba(0,0,0,0.05);
-    border-color: rgba(0,0,0,0.2);
+    background: rgba(167, 139, 250, 0.1);
+    border-color: rgba(167, 139, 250, 0.3);
+    color: #d4d4d8;
   }
 
   .calmweb-reader-btn:active {
