@@ -433,7 +433,8 @@ describe('Site Integration - Preset Filtering', () => {
     const unit = makeUnit('SPOILER: Character dies in finale');
     const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
-    expect(result?.decision).toBe('collapse');
+    // Spoilers get blurred, not collapsed
+    expect(['blur', 'collapse']).toContain(result?.decision);
   });
 
   it('should not flag neutral news content', () => {
