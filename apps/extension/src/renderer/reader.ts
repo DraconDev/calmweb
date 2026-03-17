@@ -107,13 +107,13 @@ const OVERLAY_STYLES = `
   }
 
   .calmweb-reader-btn-close {
-    background: #ef4444;
-    border-color: #ef4444;
-    color: white;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
   }
 
   .calmweb-reader-btn-close:hover {
-    background: #dc2626;
+    background: rgba(239, 68, 68, 0.25);
   }
 
   .calmweb-reader-dropdown {
