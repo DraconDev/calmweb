@@ -730,8 +730,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
       </FormField>
 
       {processingMode === 'byok_llm' && (
-          <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
-            {/* API Key + Test */}
+        <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
             <FormField
               label="OpenRouter API Key"
               description="Your OpenRouter API key. Free tier available at openrouter.ai. Stored only on your device."
