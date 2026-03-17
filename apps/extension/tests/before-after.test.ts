@@ -101,7 +101,7 @@ describe('Before/After - Site Analysis', () => {
 
   for (const fixture of FIXTURES) {
     describe(`${fixture.name} (${fixture.category})`, () => {
-      const { html, url } = loadFixture(fixture.file);
+      const { html, url } = loadFixture(fixture.file, fixture.url);
       const doc = createDoc(html);
       const beforeStats = htmlStats(html);
 
