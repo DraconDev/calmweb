@@ -125,10 +125,10 @@ const OVERLAY_STYLES = `
     top: 100%;
     right: 0;
     margin-top: 8px;
-    background: white;
-    border: 1px solid rgba(0,0,0,0.1);
+    background: #1a1a26;
+    border: 1px solid #252538;
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     min-width: 160px;
     padding: 8px;
     display: none;
@@ -145,18 +145,19 @@ const OVERLAY_STYLES = `
     padding: 10px 12px;
     border-radius: 8px;
     font-size: 13px;
-    color: #374151;
+    color: #a1a1aa;
     cursor: pointer;
     transition: background 0.15s ease;
   }
 
   .calmweb-reader-dropdown-item:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(167, 139, 250, 0.1);
+    color: #d4d4d8;
   }
 
   .calmweb-reader-dropdown-item.active {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    background: rgba(167, 139, 250, 0.15);
+    color: #a78bfa;
   }
 
   .calmweb-reader-content {
