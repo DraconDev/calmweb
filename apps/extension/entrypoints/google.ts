@@ -241,7 +241,7 @@ const OVERLAY_STYLES = `
 
   .reader-query {
     font-size: 13px;
-    color: #9ca3af;
+    color: #71717a;
     max-width: 280px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -250,7 +250,7 @@ const OVERLAY_STYLES = `
 
   .reader-count {
     font-size: 11px;
-    color: #6b7280;
+    color: #3f3f46;
     background: rgba(255,255,255,0.06);
     padding: 2px 8px;
     border-radius: 10px;
@@ -274,7 +274,7 @@ const OVERLAY_STYLES = `
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
-    color: #9ca3af;
+    color: #71717a;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
@@ -372,7 +372,7 @@ const OVERLAY_STYLES = `
   .result-snippet {
     font-size: 14px;
     line-height: 1.6;
-    color: #9ca3af;
+    color: #71717a;
     margin: 8px 0 12px 40px;
   }
 
@@ -385,7 +385,7 @@ const OVERLAY_STYLES = `
   }
 
   .result-source {
-    color: #6b7280;
+    color: #3f3f46;
     font-weight: 600;
     background: rgba(255,255,255,0.06);
     padding: 2px 8px;
@@ -401,7 +401,7 @@ const OVERLAY_STYLES = `
   }
 
   .result-url:hover {
-    color: #6b7280;
+    color: #3f3f46;
   }
 
   /* List View */
@@ -433,13 +433,13 @@ const OVERLAY_STYLES = `
 
   .list-view .list-source {
     font-size: 11px;
-    color: #6b7280;
+    color: #3f3f46;
     margin-left: 8px;
   }
 
   .list-view .list-snippet {
     font-size: 13px;
-    color: #6b7280;
+    color: #3f3f46;
     margin: 4px 0 0;
     line-height: 1.5;
   }
