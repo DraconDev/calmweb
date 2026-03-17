@@ -27,8 +27,8 @@ const OVERLAY_STYLES = `
     width: 100vw;
     height: 100vh;
     z-index: 2147483647;
-    background: var(--reader-bg, #ffffff);
-    color: var(--reader-text, #1f2937);
+    background: var(--reader-bg, #09090b);
+    color: var(--reader-text, #e4e4e7);
     overflow-y: auto;
     overflow-x: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
