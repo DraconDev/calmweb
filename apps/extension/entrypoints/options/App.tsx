@@ -20,6 +20,7 @@ import {
   Info,
   Wand2,
   BookOpen,
+  EyeOff,
   Palette,
   Columns,
   Sun,
