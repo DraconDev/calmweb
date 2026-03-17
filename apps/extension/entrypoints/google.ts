@@ -321,7 +321,7 @@ const OVERLAY_STYLES = `
 
   .result-card:hover {
     background: rgba(255,255,255,0.06);
-    border-color: rgba(167, 139, 250, 0.2);
+    border-color: rgba(139, 92, 246, 0.2);
     transform: translateY(-1px);
   }
 
