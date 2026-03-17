@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Zap,
+  Database,
   RefreshCw,
   Info,
   Wand2,
@@ -39,7 +40,7 @@ interface PresetsTabProps {
 }
 
 interface AdvancedTabProps {
-  processingMode: 'local_rules' | 'byok_llm' | 'hosted_llm';
+  processingMode: 'byok_llm' | 'hosted_llm';
   strictness: number;
   byokKey: string;
   aiModel: string;
