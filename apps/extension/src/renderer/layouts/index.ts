@@ -1,13 +1,8 @@
 /**
- * Layout Engine for CalmWeb Super Reader
- * 
- * 6 layouts covering all major reading use cases:
- * - Reader: Long-form articles
- * - Focus: Distraction-free deep reading  
- * - Terminal: Code and technical content
- * - Compact: News and quick reads
- * - Visual: Photo essays and image-rich content
- * - Academic: Papers and research
+ * Adaptive Layout Engine for CalmWeb
+ *
+ * ONE layout that adapts its presentation based on page content.
+ * Analyzes the article and adjusts columns, spacing, typography accordingly.
  */
 
 import type { ExtractedArticle } from '../extractor';
@@ -16,12 +11,6 @@ export interface ReaderLayout {
   id: string;
   name: string;
   description: string;
-  bestFor: string[];
-  columns: number;
-  maxWidth: string;
-  fontFamily: string;
-  fontSize: string;
-  lineHeight: string;
   render: (article: ExtractedArticle, container: HTMLElement) => void;
 }
 
@@ -31,782 +20,336 @@ function escapeHtml(text: string): string {
   return span.innerHTML;
 }
 
-const renderMeta = (article: ExtractedArticle): string => `
-  <div class="reader-meta">
-    ${article.author ? `<span class="reader-meta-item author">${escapeHtml(article.author)}</span>` : ''}
-    ${article.date ? `<span class="reader-meta-item date">${article.date}</span>` : ''}
-    <span class="reader-meta-item time">${article.readingTime} min read</span>
-  </div>
-`;
+// ============================================================================
+// Content Analysis
+// ============================================================================
 
-const renderFooter = (article: ExtractedArticle): string => `
-  <footer class="reader-footer">
-    <div class="reader-source">
-      ${article.favicon ? `<img class="reader-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
-      <span>${escapeHtml(article.source)}</span>
-    </div>
-  </footer>
-`;
+interface ContentProfile {
+  type: 'article' | 'code' | 'news' | 'docs' | 'essay';
+  columns: number;
+  maxWidth: string;
+  fontFamily: string;
+  fontSize: string;
+  lineHeight: string;
+  dropcap: boolean;
+  centered: boolean;
+}
 
-const baseTypography = `
-  .reader-content p { margin: 0 0 1.5em; }
-  .reader-content h2 { margin: 2em 0 0.75em; font-size: 1.5em; }
-  .reader-content h3 { margin: 1.5em 0 0.5em; font-size: 1.25em; }
-  .reader-content ul, .reader-content ol { margin: 0 0 1.5em; padding-left: 1.5em; }
-  .reader-content li { margin: 0.25em 0; }
-  .reader-content blockquote { 
-    border-left: 3px solid #a78bfa; 
-    padding-left: 1em; 
-    margin: 1.5em 0; 
-    font-style: italic; 
-    color: #6b7280;
+function analyzeContent(article: ExtractedArticle): ContentProfile {
+  const html = article.contentHtml;
+  const text = article.content || '';
+  const codeBlocks = html.querySelectorAll('pre, code').length;
+  const paragraphs = html.querySelectorAll('p').length;
+  const headings = html.querySelectorAll('h1,h2,h3').length;
+
+  // Code-heavy → monospace, wider
+  if (codeBlocks >= 3) {
+    return {
+      type: 'code',
+      columns: 1,
+      maxWidth: '900px',
+      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+      fontSize: '14px',
+      lineHeight: '1.7',
+      dropcap: false,
+      centered: false,
+    };
   }
-  .reader-content img { 
-    max-width: 100%; 
-    height: auto; 
-    border-radius: 8px; 
-    margin: 1.5em 0; 
+
+  // Short news → compact, maybe 2 columns
+  if (article.readingTime <= 3 && paragraphs <= 6) {
+    return {
+      type: 'news',
+      columns: 2,
+      maxWidth: '800px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '15px',
+      lineHeight: '1.6',
+      dropcap: false,
+      centered: false,
+    };
   }
-  .reader-content a { color: #a78bfa; text-decoration: none; }
-  .reader-content a:hover { text-decoration: underline; }
-  .reader-content pre { 
-    background: #1f2937; 
-    color: #e5e7eb; 
-    padding: 1em; 
-    border-radius: 8px; 
-    overflow-x: auto; 
+
+  // Long academic → 2 columns, formal
+  if (article.readingTime >= 8 && headings >= 3) {
+    return {
+      type: 'docs',
+      columns: 2,
+      maxWidth: '900px',
+      fontFamily: 'Georgia, "Times New Roman", serif',
+      fontSize: '15px',
+      lineHeight: '1.65',
+      dropcap: false,
+      centered: false,
+    };
+  }
+
+  // Very long → focused, centered
+  if (article.readingTime >= 12) {
+    return {
+      type: 'essay',
+      columns: 1,
+      maxWidth: '600px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '17px',
+      lineHeight: '1.85',
+      dropcap: false,
+      centered: true,
+    };
+  }
+
+  // Default article → elegant serif with dropcap
+  return {
+    type: 'article',
+    columns: 1,
+    maxWidth: '680px',
+    fontFamily: 'Georgia, Charter, "Times New Roman", serif',
+    fontSize: '18px',
+    lineHeight: '1.75',
+    dropcap: true,
+    centered: false,
+  };
+}
+
+// ============================================================================
+// Dark Theme CSS (shared across all presentations)
+// ============================================================================
+
+const DARK_CSS = `
+  .calm-layout {
+    max-width: var(--lw);
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    font-family: var(--lf);
+    font-size: var(--ls);
+    line-height: var(--lh);
+    color: #d4d4d8;
+  }
+
+  .calm-header {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.12);
+  }
+
+  .calm-header.centered { text-align: center; }
+
+  .calm-title {
+    font-size: 2.25em;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 16px;
+    color: #f4f4f5;
+    letter-spacing: -0.02em;
+  }
+
+  .calm-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 0.85em;
+    color: #52525b;
+  }
+
+  .calm-header.centered .calm-meta { justify-content: center; }
+
+  .calm-meta-item::before { content: '·'; margin-right: 8px; }
+  .calm-meta-item:first-child::before { display: none; }
+
+  .calm-content {
+    color: #a1a1aa;
+  }
+
+  .calm-content.columns-2 {
+    column-count: 2;
+    column-gap: 32px;
+    column-rule: 1px solid rgba(139, 92, 246, 0.08);
+  }
+
+  .calm-content p { margin: 0 0 1.5em; }
+  .calm-content p.centered { text-align: center; }
+
+  .calm-content h2 {
+    margin: 2em 0 0.75em;
+    font-size: 1.5em;
+    color: #e4e4e7;
+    font-weight: 700;
+  }
+
+  .calm-content h3 {
+    margin: 1.5em 0 0.5em;
+    font-size: 1.25em;
+    color: #e4e4e7;
+    font-weight: 600;
+  }
+
+  .calm-content.columns-2 h2,
+  .calm-content.columns-2 h3,
+  .calm-content.columns-2 blockquote,
+  .calm-content.columns-2 pre,
+  .calm-content.columns-2 figure {
+    column-span: all;
+  }
+
+  .calm-content ul, .calm-content ol {
+    margin: 0 0 1.5em;
+    padding-left: 1.5em;
+  }
+
+  .calm-content li { margin: 0.25em 0; }
+
+  .calm-content blockquote {
+    border-left: 3px solid #8b5cf6;
+    padding-left: 1em;
+    margin: 1.5em 0;
+    font-style: italic;
+    color: #71717a;
+  }
+
+  .calm-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5em 0;
+    opacity: 0.9;
+  }
+
+  .calm-content a { color: #a78bfa; text-decoration: none; }
+  .calm-content a:hover { text-decoration: underline; color: #c4b5fd; }
+
+  .calm-content pre {
+    background: #0f0f14;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    color: #e4e4e7;
+    padding: 1em;
+    border-radius: 8px;
+    overflow-x: auto;
     font-size: 0.9em;
     margin: 1.5em 0;
   }
-  .reader-content code { 
-    font-family: 'JetBrains Mono', 'Fira Code', monospace; 
-    background: #f3f4f6; 
-    padding: 2px 6px; 
-    border-radius: 4px; 
+
+  .calm-content code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(139, 92, 246, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
     font-size: 0.9em;
+    color: #a78bfa;
   }
-  .reader-content pre code { background: none; padding: 0; }
-  
-  .reader-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 0.9em; color: #6b7280; }
-  .reader-meta-item { display: flex; align-items: center; gap: 4px; }
-  .reader-meta-item::before { content: '·'; margin-right: 8px; }
-  .reader-meta-item:first-child::before { display: none; }
-  
-  .reader-footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 0.85em; color: #9ca3af; }
-  .reader-source { display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .reader-favicon { width: 16px; height: 16px; border-radius: 2px; }
-  
-  @media (prefers-color-scheme: dark) {
-    .reader-content blockquote { color: #9ca3af; }
-    .reader-content code { background: #374151; }
-    .reader-footer { border-top-color: #374151; }
+
+  .calm-content pre code { background: none; padding: 0; color: inherit; }
+
+  .calm-dropcap::first-letter {
+    float: left;
+    font-size: 4em;
+    line-height: 0.8;
+    margin-right: 12px;
+    margin-top: 6px;
+    font-weight: 700;
+    color: #8b5cf6;
   }
+
+  .calm-caption {
+    font-size: 0.85em;
+    color: #52525b;
+    font-style: italic;
+    margin: 0.5em 0 1.5em;
+  }
+
+  .calm-footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+    font-size: 0.85em;
+    color: #3f3f46;
+    text-align: center;
+  }
+
+  .calm-footer.centered { text-align: center; }
+
+  .calm-source {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .calm-favicon { width: 16px; height: 16px; border-radius: 2px; }
 `;
 
-export const readerLayout: ReaderLayout = {
-  id: 'reader',
-  name: 'Reader',
-  description: 'Optimized for long-form articles with elegant typography',
-  bestFor: ['articles', 'essays', 'blog posts', 'newsletter'],
-  columns: 1,
-  maxWidth: '680px',
-  fontFamily: 'Georgia, Charter, "Times New Roman", serif',
-  fontSize: '19px',
-  lineHeight: '1.75',
-  render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 48px 24px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #1f2937;
-        }
-        .reader-header { margin-bottom: 40px; }
-        .reader-title { 
-          font-size: 2.25em; 
-          font-weight: 700; 
-          line-height: 1.2; 
-          margin: 0 0 16px; 
-          color: #111827; 
-          letter-spacing: -0.02em;
-        }
-        .reader-content p:first-child::first-letter { 
-          float: left; 
-          font-size: 4em; 
-          line-height: 0.8; 
-          margin-right: 12px; 
-          margin-top: 6px; 
-          font-weight: 700; 
-          color: #111827;
-        }
-        ${baseTypography}
-        @media (prefers-color-scheme: dark) {
-          .reader-container { color: #e5e7eb; }
-          .reader-title { color: #f9fafb; }
-          .reader-content p:first-child::first-letter { color: #f9fafb; }
-        }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
+// ============================================================================
+// The One Layout
+// ============================================================================
 
-export const focusLayout: ReaderLayout = {
-  id: 'focus',
-  name: 'Focus',
-  description: 'Distraction-free reading with maximum concentration',
-  bestFor: ['deep reading', 'learning', 'study material'],
-  columns: 1,
-  maxWidth: '600px',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  fontSize: '18px',
-  lineHeight: '1.8',
+export const adaptiveLayout: ReaderLayout = {
+  id: 'adaptive',
+  name: 'Adaptive',
+  description: 'Automatically adjusts to page content',
   render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 80px 24px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #374151;
-          background: #fafafa;
-        }
-        .reader-header { margin-bottom: 48px; text-align: center; }
-        .reader-title { 
-          font-size: 1.75em; 
-          font-weight: 600; 
-          line-height: 1.3; 
-          margin: 0 0 20px; 
-          color: #111827; 
-        }
-        .reader-meta { justify-content: center; font-size: 0.85em; color: #9ca3af; }
-        .reader-content { color: #374151; }
-        .reader-content p { margin-bottom: 1.75em; }
-        ${baseTypography}
-        .reader-footer { text-align: center; border: none; margin-top: 80px; }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { background: #0a0a0a; color: #d1d5db; }
-          .reader-title { color: #f3f4f6; }
-          .reader-content { color: #d1d5db; }
-        }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
+    const profile = analyzeContent(article);
+    const heroImage = article.images?.[0];
 
-export const terminalLayout: ReaderLayout = {
-  id: 'terminal',
-  name: 'Terminal',
-  description: 'Hacker-style for code and technical content',
-  bestFor: ['code', 'documentation', 'tutorials', 'technical blogs'],
-  columns: 1,
-  maxWidth: '900px',
-  fontFamily: '"JetBrains Mono", "Fira Code", "SF Mono", monospace',
-  fontSize: '14px',
-  lineHeight: '1.7',
-  render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 32px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #c9d1d9;
-          background: #0d1117;
-          border: 1px solid #30363d;
-          border-radius: 12px;
-        }
-        .reader-container::before { 
-          content: '$ calmweb-reader'; 
-          display: block; 
-          color: #7ee787; 
-          margin-bottom: 24px; 
-          font-size: 12px;
-          opacity: 0.8;
-        }
-        .reader-header { margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid #30363d; }
-        .reader-title { 
-          font-size: 1.5em; 
-          font-weight: 600; 
-          line-height: 1.3; 
-          margin: 0 0 12px; 
-          color: #58a6ff; 
-        }
-        .reader-meta { font-size: 0.85em; color: #8b949e; }
-        .reader-meta-item::before { color: #58a6ff; }
-        .reader-content { color: #c9d1d9; }
-        .reader-content a { color: #58a6ff; }
-        .reader-content code { background: #161b22; color: #7ee787; }
-        .reader-content pre { background: #161b22; border: 1px solid #30363d; }
-        .reader-content blockquote { border-left-color: #58a6ff; color: #8b949e; }
-        ${baseTypography}
-        .reader-footer { border-top-color: #30363d; color: #6e7681; }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
+    // Build content HTML
+    let contentHtml = article.contentHtml.innerHTML;
 
-export const compactLayout: ReaderLayout = {
-  id: 'compact',
-  name: 'Compact',
-  description: 'Dense layout for news and quick scanning',
-  bestFor: ['news', 'updates', 'briefs', 'quick reads'],
-  columns: 2,
-  maxWidth: '800px',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  fontSize: '15px',
-  lineHeight: '1.6',
-  render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 32px 24px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #1f2937;
-        }
-        .reader-header { margin-bottom: 24px; }
-        .reader-title { 
-          font-size: 1.5em; 
-          font-weight: 700; 
-          line-height: 1.25; 
-          margin: 0 0 8px; 
-          color: #111827; 
-        }
-        .reader-meta { font-size: 0.8em; margin-bottom: 16px; }
-        .reader-content { 
-          column-count: 2; 
-          column-gap: 32px; 
-          column-rule: 1px solid #e5e7eb;
-        }
-        .reader-content p { margin-bottom: 1em; text-align: justify; }
-        .reader-content h2, .reader-content h3, .reader-content blockquote, .reader-content pre { 
-          column-span: all; 
-        }
-        ${baseTypography}
-        .reader-footer { margin-top: 40px; }
-        @media (max-width: 600px) {
-          .reader-content { column-count: 1; }
-        }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { color: #e5e7eb; }
-          .reader-title { color: #f9fafb; }
-          .reader-content { column-rule-color: #374151; }
-        }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
+    // Wrap first <p> with dropcap class if appropriate
+    if (profile.dropcap) {
+      contentHtml = contentHtml.replace(/<p>/, '<p class="calm-dropcap">');
+    }
 
-export const visualLayout: ReaderLayout = {
-  id: 'visual',
-  name: 'Visual',
-  description: 'Image-forward layout for photo essays and visual stories',
-  bestFor: ['photo essays', 'travel', 'lifestyle', 'portfolio'],
-  columns: 1,
-  maxWidth: '840px',
-  fontFamily: 'Georgia, Charter, serif',
-  fontSize: '18px',
-  lineHeight: '1.75',
-  render(article, container) {
-    const heroImage = article.images[0];
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #1f2937;
-        }
-        .reader-hero { 
-          width: 100%; 
-          height: 400px; 
-          object-fit: cover; 
-          margin-bottom: 40px;
-        }
-        .reader-hero-placeholder {
-          width: 100%;
-          height: 300px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          margin-bottom: 40px;
-        }
-        .reader-inner { padding: 0 32px 48px; }
-        .reader-header { margin-bottom: 32px; text-align: center; }
-        .reader-title { 
-          font-size: 2.5em; 
-          font-weight: 400; 
-          line-height: 1.2; 
-          margin: 0 0 16px; 
-          color: #111827; 
-          letter-spacing: -0.02em;
-        }
-        .reader-meta { justify-content: center; }
-        .reader-content { max-width: 640px; margin: 0 auto; }
-        .reader-content img { 
-          width: calc(100% + 100px); 
-          max-width: none; 
-          margin-left: -50px; 
-          margin-right: -50px;
-          border-radius: 12px;
-        }
-        ${baseTypography}
-        .reader-footer { max-width: 640px; margin: 60px auto 0; }
-        @media (max-width: 768px) {
-          .reader-content img { width: 100%; margin-left: 0; margin-right: 0; }
-        }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { color: #e5e7eb; }
-          .reader-title { color: #f9fafb; }
-        }
-      </style>
-      <div class="reader-container">
-        ${heroImage 
-          ? `<img class="reader-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` 
-          : '<div class="reader-hero-placeholder"></div>'
-        }
-        <div class="reader-inner">
-          <header class="reader-header">
-            <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-            ${renderMeta(article)}
-          </header>
-          <article class="reader-content">${article.contentHtml.innerHTML}</article>
-          ${renderFooter(article)}
-        </div>
-      </div>
-    `;
-  },
-};
+    // Center paragraphs for essay mode
+    if (profile.centered) {
+      contentHtml = contentHtml.replace(/<p>/g, '<p class="centered">');
+    }
 
-export const academicLayout: ReaderLayout = {
-  id: 'academic',
-  name: 'Academic',
-  description: 'Formal two-column layout for papers and research',
-  bestFor: ['papers', 'research', 'reports', 'documentation'],
-  columns: 2,
-  maxWidth: '900px',
-  fontFamily: '"Source Serif Pro", Georgia, "Times New Roman", serif',
-  fontSize: '15px',
-  lineHeight: '1.65',
-  render(article, container) {
     container.innerHTML = `
       <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 40px 48px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #1a1a1a;
-          background: #fff;
+        .calm-layout {
+          --lw: ${profile.maxWidth};
+          --lf: ${profile.fontFamily};
+          --ls: ${profile.fontSize};
+          --lh: ${profile.lineHeight};
         }
-        .reader-header { 
-          text-align: center; 
-          margin-bottom: 40px; 
-          padding-bottom: 24px; 
-          border-bottom: 2px solid #1a1a1a;
-        }
-        .reader-title { 
-          font-size: 1.75em; 
-          font-weight: 700; 
-          line-height: 1.3; 
-          margin: 0 0 16px; 
-          color: #000;
-          text-transform: none;
-          letter-spacing: 0;
-        }
-        .reader-meta { justify-content: center; font-size: 0.85em; color: #666; }
-        .reader-meta-item.author { font-weight: 600; }
-        .reader-content { 
-          column-count: 2; 
-          column-gap: 40px; 
-          column-rule: 1px solid #ccc;
-          text-align: justify;
-          hyphens: auto;
-        }
-        .reader-content p { margin-bottom: 1em; text-indent: 1.5em; }
-        .reader-content p:first-of-type { text-indent: 0; }
-        .reader-content h2 { 
-          column-span: all; 
-          font-size: 1.25em; 
-          margin: 1.5em 0 0.75em;
-          padding-top: 0.5em;
-          border-top: 1px solid #e5e5e5;
-        }
-        .reader-content h3 { column-span: all; font-size: 1.1em; margin: 1.25em 0 0.5em; }
-        .reader-content blockquote { column-span: all; margin: 1em 0; font-size: 0.95em; }
-        .reader-content pre { column-span: all; font-size: 0.85em; }
-        .reader-content figure { column-span: all; margin: 1.5em 0; text-align: center; }
-        .reader-content figcaption { font-size: 0.85em; color: #666; margin-top: 0.5em; }
-        ${baseTypography}
-        .reader-footer { 
-          margin-top: 48px; 
-          padding-top: 16px; 
-          border-top: 1px solid #e5e5e5;
-          column-span: all;
-        }
+        ${DARK_CSS}
         @media (max-width: 700px) {
-          .reader-content { column-count: 1; }
-        }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { background: #0a0a0a; color: #d4d4d4; }
-          .reader-header { border-bottom-color: #404040; }
-          .reader-title { color: #f5f5f5; }
-          .reader-content h2 { border-top-color: #333; }
-          .reader-content { column-rule-color: #333; }
-          .reader-footer { border-top-color: #333; }
+          .calm-content.columns-2 { column-count: 1; }
         }
       </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
+      <div class="calm-layout">
+        ${heroImage ? `<img class="calm-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}" style="width:100%;height:auto;border-radius:12px;margin-bottom:32px;opacity:0.9;">` : ''}
+        <header class="calm-header ${profile.centered ? 'centered' : ''}">
+          <h1 class="calm-title">${escapeHtml(article.title)}</h1>
+          <div class="calm-meta">
+            ${article.author ? `<span class="calm-meta-item">${escapeHtml(article.author)}</span>` : ''}
+            ${article.date ? `<span class="calm-meta-item">${article.date}</span>` : ''}
+            <span class="calm-meta-item">${article.readingTime} min read</span>
+          </div>
         </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
+        <article class="calm-content ${profile.columns > 1 ? 'columns-2' : ''}">${contentHtml}</article>
+        <footer class="calm-footer ${profile.centered ? 'centered' : ''}">
+          <div class="calm-source">
+            ${article.favicon ? `<img class="calm-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
+            <span>${escapeHtml(article.source)}</span>
+          </div>
+        </footer>
       </div>
     `;
   },
 };
 
 // ============================================================================
-// Additional Layouts
+// Layout list (kept for compatibility, but only one real layout)
 // ============================================================================
-
-export const magazineLayout: ReaderLayout = {
-  id: 'magazine',
-  name: 'Magazine',
-  description: 'Editorial magazine style with large headers and pull quotes',
-  bestFor: ['magazines', 'features', 'long reads', 'editorials'],
-  columns: 1,
-  maxWidth: '720px',
-  fontFamily: 'Georgia, "Times New Roman", serif',
-  fontSize: '18px',
-  lineHeight: '1.8',
-  render(article, container) {
-    const heroImage = article.images[0];
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 0 24px 48px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #2d2d2d;
-        }
-        .reader-hero-wrap { margin: 0 -100px 40px; }
-        .reader-hero { width: 100%; height: auto; display: block; }
-        .reader-header { margin-bottom: 40px; border-bottom: 3px double #333; padding-bottom: 24px; }
-        .reader-title { 
-          font-size: 2.75em; 
-          font-weight: 900; 
-          line-height: 1.1; 
-          margin: 0 0 16px; 
-          letter-spacing: -0.03em;
-        }
-        .reader-meta { font-size: 0.85em; color: #888; text-transform: uppercase; letter-spacing: 0.1em; }
-        .reader-content { font-variant-numeric: oldstyle-nums; }
-        .reader-content p:first-child::first-letter { 
-          float: left; font-size: 4.5em; line-height: 0.75; margin: 8px 12px 0 0; font-weight: 700;
-        }
-        .reader-content blockquote { 
-          font-size: 1.35em; font-style: italic; border: none; padding: 1em 0; 
-          margin: 2em 0; text-align: center; color: #555;
-        }
-        ${baseTypography}
-        .reader-footer { margin-top: 48px; text-align: center; border-top: 1px solid #ddd; }
-        @media (max-width: 800px) { .reader-hero-wrap { margin: 0 0 24px; } }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { color: #d4d4d4; }
-          .reader-title { color: #f5f5f5; }
-          .reader-header { border-bottom-color: #555; }
-          .reader-content blockquote { color: #aaa; }
-        }
-      </style>
-      <div class="reader-container">
-        ${heroImage ? `<div class="reader-hero-wrap"><img class="reader-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}"></div>` : ''}
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
-
-export const minimalLayout: ReaderLayout = {
-  id: 'minimal',
-  name: 'Minimal',
-  description: 'Clean minimal design with maximum whitespace',
-  bestFor: ['essays', 'philosophy', 'personal writing', 'letters'],
-  columns: 1,
-  maxWidth: '560px',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  fontSize: '17px',
-  lineHeight: '1.85',
-  render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 80px 24px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #333;
-        }
-        .reader-header { margin-bottom: 48px; }
-        .reader-title { 
-          font-size: 1.5em; 
-          font-weight: 400; 
-          line-height: 1.4; 
-          margin: 0 0 12px; 
-          color: #000;
-        }
-        .reader-meta { font-size: 0.8em; color: #bbb; }
-        .reader-content p { margin-bottom: 1.5em; }
-        ${baseTypography}
-        .reader-footer { margin-top: 60px; border: none; text-align: center; color: #ccc; font-size: 0.75em; }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { color: #ccc; }
-          .reader-title { color: #eee; }
-          .reader-meta { color: #666; }
-          .reader-footer { color: #444; }
-        }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
-
-export const newspaperLayout: ReaderLayout = {
-  id: 'newspaper',
-  name: 'Newspaper',
-  description: 'Classic newspaper column layout',
-  bestFor: ['news', 'columns', 'opinion', 'journalism'],
-  columns: 3,
-  maxWidth: '960px',
-  fontFamily: '"Times New Roman", Times, Georgia, serif',
-  fontSize: '15px',
-  lineHeight: '1.55',
-  render(article, container) {
-    container.innerHTML = `
-      <style>
-        .reader-container { 
-          max-width: ${this.maxWidth}; 
-          margin: 0 auto; 
-          padding: 32px 24px; 
-          font-family: ${this.fontFamily}; 
-          font-size: ${this.fontSize}; 
-          line-height: ${this.lineHeight}; 
-          color: #1a1a1a;
-          background: #fdfcf8;
-        }
-        .reader-header { 
-          text-align: center; 
-          border-bottom: 2px solid #1a1a1a; 
-          border-top: 4px double #1a1a1a;
-          padding: 16px 0; 
-          margin-bottom: 24px; 
-        }
-        .reader-title { 
-          font-size: 2em; 
-          font-weight: 900; 
-          line-height: 1.15; 
-          margin: 0 0 8px; 
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-        }
-        .reader-meta { justify-content: center; font-size: 0.8em; }
-        .reader-content { 
-          column-count: 3; 
-          column-gap: 24px; 
-          column-rule: 1px solid #ccc;
-          text-align: justify;
-          hyphens: auto;
-        }
-        .reader-content p { margin-bottom: 0.75em; text-indent: 1.5em; }
-        .reader-content p:first-of-type { text-indent: 0; }
-        .reader-content h2, .reader-content h3, .reader-content blockquote, .reader-content pre, .reader-content figure { 
-          column-span: all; text-indent: 0;
-        }
-        ${baseTypography}
-        .reader-footer { 
-          margin-top: 32px; padding-top: 12px; 
-          border-top: 2px solid #1a1a1a; column-span: all; text-align: center;
-        }
-        @media (max-width: 800px) { .reader-content { column-count: 2; } }
-        @media (max-width: 500px) { .reader-content { column-count: 1; } }
-        @media (prefers-color-scheme: dark) {
-          .reader-container { background: #1a1a18; color: #ccc; }
-          .reader-header { border-bottom-color: #555; border-top-color: #555; }
-          .reader-title { color: #f0f0f0; }
-          .reader-content { column-rule-color: #444; }
-          .reader-footer { border-top-color: #555; }
-        }
-      </style>
-      <div class="reader-container">
-        <header class="reader-header">
-          <h1 class="reader-title">${escapeHtml(article.title)}</h1>
-          ${renderMeta(article)}
-        </header>
-        <article class="reader-content">${article.contentHtml.innerHTML}</article>
-        ${renderFooter(article)}
-      </div>
-    `;
-  },
-};
 
 export const allLayouts: ReaderLayout[] = [
-  readerLayout,
-  focusLayout,
-  terminalLayout,
-  compactLayout,
-  visualLayout,
-  academicLayout,
-  magazineLayout,
-  minimalLayout,
-  newspaperLayout,
+  adaptiveLayout,
 ];
 
-/**
- * Auto layout - detects the best layout for each page dynamically.
- * Uses autoDetectLayout when rendering.
- */
-export const autoLayout: ReaderLayout = {
-  id: 'auto',
-  name: 'Auto',
-  description: 'Automatically picks the best layout based on page content',
-  bestFor: ['everything'],
-  columns: 1,
-  maxWidth: '680px',
-  fontFamily: 'Georgia, Charter, "Times New Roman", serif',
-  fontSize: '18px',
-  lineHeight: '1.7',
-  render(article, container) {
-    const detected = autoDetectLayout(article);
-    console.log('[CalmWeb] Auto-detected layout:', detected.name);
-    detected.render(article, container);
-  },
-};
-
-// Insert auto at the start
-allLayouts.unshift(autoLayout);
-
 export function getLayout(id: string): ReaderLayout {
-  return allLayouts.find(l => l.id === id) || autoLayout;
+  return adaptiveLayout;
 }
 
-/**
- * Auto-detect the best layout for a given article by analyzing its content.
- * - Code-heavy → terminal
- * - Image-heavy → visual
- * - Short articles → compact
- * - Academic/research → academic
- * - Default → reader
- */
 export function autoDetectLayout(article: ExtractedArticle): ReaderLayout {
-  const html = article.contentHtml;
-  const text = article.content || '';
-
-  // Count code blocks
-  const codeBlocks = html.querySelectorAll('pre, code').length;
-
-  // Count paragraphs
-  const paragraphs = html.querySelectorAll('p').length;
-
-  // Image density
-  const imageCount = article.images.length;
-  const textLength = text.length;
-  const imageDensity = textLength > 0 ? imageCount / (textLength / 500) : 0;
-
-  // Academic markers
-  const headings = html.querySelectorAll('h2, h3').length;
-  const blockquotes = html.querySelectorAll('blockquote').length;
-
-  // Code-heavy: multiple code blocks (technical docs/tutorials)
-  if (codeBlocks >= 3) {
-    return terminalLayout;
-  }
-
-  // Image-heavy: photo essays, travel, visual stories
-  if (imageDensity > 0.5 || (imageCount >= 4 && textLength < 3000)) {
-    return visualLayout;
-  }
-
-  // Short article: news, briefs, quick reads
-  if (article.readingTime <= 3 && paragraphs <= 6) {
-    return compactLayout;
-  }
-
-  // Academic: formal structure with multiple sections and citations
-  if (article.readingTime >= 8 && headings >= 3 && blockquotes >= 2) {
-    return academicLayout;
-  }
-
-  // Long focused reading
-  if (article.readingTime >= 12) {
-    return focusLayout;
-  }
-
-  // Default: standard reader layout
-  return readerLayout;
+  return adaptiveLayout;
 }
