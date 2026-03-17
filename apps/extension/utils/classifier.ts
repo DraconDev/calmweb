@@ -26,8 +26,8 @@ export function applyLocalRules(unit: ContentUnit, rules: UserRules): Classifica
   const titleLower = unit.title.toLowerCase();
   const presets = rules.presets;
 
-  // 1. Check active presets (politics, ragebait, spoilers, clickbait)
-  const presetIds = ['politics', 'ragebait', 'spoilers', 'clickbait'] as const;
+  // 1. Check active presets - most specific first
+  const presetIds = ['spoilers', 'clickbait', 'politics', 'ragebait'] as const;
   
   for (const presetId of presetIds) {
     if (presets[presetId]) {
