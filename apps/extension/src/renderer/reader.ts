@@ -125,10 +125,9 @@ const OVERLAY_STYLES = `
     top: 100%;
     right: 0;
     margin-top: 8px;
-    background: #1a1a26;
-    border: 1px solid #252538;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    background: #0f0f14;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 1px rgba(139, 92, 246, 0.1);
     min-width: 160px;
     padding: 8px;
     display: none;
