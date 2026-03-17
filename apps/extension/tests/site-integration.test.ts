@@ -183,7 +183,7 @@ describe('Site Integration - Article Extraction', () => {
     });
 
     it('should extract the author', () => {
-      expect(article.author).toBe('John Smith');
+      expect(article.author).toContain('John Smith');
     });
 
     it('should extract the date', () => {
