@@ -43,8 +43,8 @@ export async function rewriteText(
     return local;
   }
 
-  if (settings.processingMode !== 'local_rules') {
-    try {
+  // Always try AI rewrite (we no longer support local-only mode)
+  try {
       const llm = await rewriteWithLLM(original, { mode: options.mode }, settings);
       if (llm.confidence > local.confidence) {
         return llm;
