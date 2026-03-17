@@ -59,81 +59,34 @@ describe('Article Extractor', () => {
 describe('Layout Engine', () => {
   it('should return 1 adaptive layout', () => {
     expect(allLayouts.length).toBe(1);
-  });
-
-  it('should have adaptive layout id', () => {
-    const ids = allLayouts.map(l => l.id);
-    expect(ids).toContain('adaptive');
+    expect(allLayouts[0].id).toBe('adaptive');
   });
 
   it('should always return adaptive layout', () => {
-    const layout = getLayout('anything');
-    expect(layout.id).toBe('adaptive');
+    expect(getLayout('anything').id).toBe('adaptive');
+    expect(getLayout('reader').id).toBe('adaptive');
+    expect(getLayout('').id).toBe('adaptive');
   });
 
   it('autoDetectLayout should return adaptive', () => {
-    // Uses real article data from earlier test
     const doc = document.implementation.createHTMLDocument();
-    doc.body.innerHTML = '<article><h1>Test</h1><p>Content here for testing layout detection.</p></article>';
-    const { extractArticle } = require('../src/renderer/extractor');
+    doc.body.innerHTML = '<article><h1>Test</h1><p>Content here for testing layout detection with enough text.</p></article>';
     const article = extractArticle(doc, 'https://example.com');
     const layout = autoDetectLayout(article);
     expect(layout.id).toBe('adaptive');
   });
 
-  it('should have correct reader layout properties', () => {
-    expect(readerLayout.columns).toBe(1);
-    expect(readerLayout.fontFamily).toContain('Georgia');
-    expect(readerLayout.bestFor).toContain('articles');
+  it('should have render method', () => {
+    expect(typeof adaptiveLayout.render).toBe('function');
   });
 
-  it('should have correct terminal layout properties', () => {
-    expect(terminalLayout.id).toBe('terminal');
-    expect(terminalLayout.columns).toBe(1);
-    expect(terminalLayout.fontFamily).toContain('Mono');
-    expect(terminalLayout.bestFor).toContain('code');
-  });
-
-  it('should have correct focus layout properties', () => {
-    expect(focusLayout.id).toBe('focus');
-    expect(focusLayout.columns).toBe(1);
-    expect(focusLayout.bestFor).toContain('deep reading');
-  });
-
-  it('should have correct compact layout properties', () => {
-    const compact = getLayout('compact');
-    expect(compact.columns).toBe(2);
-    expect(compact.bestFor).toContain('news');
-  });
-
-  it('should have correct visual layout properties', () => {
-    const visual = getLayout('visual');
-    expect(visual.bestFor).toContain('photo essays');
-  });
-
-  it('should have correct academic layout properties', () => {
-    const academic = getLayout('academic');
-    expect(academic.columns).toBe(2);
-    expect(academic.bestFor).toContain('papers');
-  });
-
-  it('should have render method for each layout', () => {
-    allLayouts.forEach(layout => {
-      expect(typeof layout.render).toBe('function');
-    });
-  });
-
-  it('should have bestFor array for each layout', () => {
-    allLayouts.forEach(layout => {
-      expect(Array.isArray(layout.bestFor)).toBe(true);
-      expect(layout.bestFor.length).toBeGreaterThan(0);
-    });
-  });
-
-  it('should have a real newspaperLayout', () => {
-    expect(newspaperLayout.id).toBe('newspaper');
-    expect(newspaperLayout.columns).toBe(3);
-    expect(newspaperLayout.name).toBe('Newspaper');
+  it('should render without errors', () => {
+    const doc = document.implementation.createHTMLDocument();
+    doc.body.innerHTML = '<article><h1>Test Article</h1><p>Some content here that is long enough to be extracted properly by the extractor function.</p></article>';
+    const article = extractArticle(doc, 'https://example.com/test');
+    const container = document.createElement('div');
+    expect(() => adaptiveLayout.render(article, container)).not.toThrow();
+    expect(container.innerHTML.length).toBeGreaterThan(100);
   });
 });
 
