@@ -23,9 +23,9 @@ export interface ExtractedArticle {
 
 const REMOVE_SELECTORS = [
   'nav', 'aside', 'footer', 'header:not(article header)',
-  '.ad', '.advertisement', '.ads', '.ad-container',
+  '.ad', '.advertisement', '.ads', '.ad-container', '.ad-slot', '.ad-wrapper',
   '.sidebar', '.related', '.recommended', '.suggestions',
-  '.social-share', '.share-buttons', '.social-links',
+  '.social-share', '.share-buttons', '.social-links', '.social-bar',
   '.comments', '#comments', '.comment-section',
   'script', 'style', 'noscript', 'iframe',
   '[class*="newsletter"]', '[class*="subscribe"]',
@@ -34,7 +34,21 @@ const REMOVE_SELECTORS = [
   '.tags', '.tag-list', '.categories',
   '.breadcrumb', '.breadcrumbs',
   '.pagination', '.pager',
-  '.cookie-notice', '.gdpr',
+  '.cookie-notice', '.gdpr', '[class*="consent"]', '[class*="cookie-banner"]',
+  // Chat widgets
+  '[class*="intercom"]', '[class*="drift"]', '[class*="zendesk"]', '[class*="crisp"]',
+  '[class*="livechat"]', '[class*="chat-widget"]', '#intercom-container',
+  // Paywalls & overlays
+  '[class*="paywall"]', '[class*="premium"]', '[class*="metered"]',
+  '[class*="overlay"]', '[class*="backdrop"]',
+  // App banners & prompts
+  '[class*="app-banner"]', '[class*="install-prompt"]', '[class*="download-app"]',
+  // Surveys & feedback
+  '[class*="survey"]', '[class*="feedback"]', '[class*="poll"]', '[class*="rating"]',
+  // Sponsored content markers
+  '[class*="sponsored"]', '[class*="promoted"]', '[class*="native-ad"]',
+  // Sticky elements (usually nav/banners)
+  '[style*="position: sticky"]', '[style*="position:fixed"]',
 ];
 
 const CONTENT_SELECTORS = [
