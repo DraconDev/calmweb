@@ -237,9 +237,13 @@ export const adaptiveLayout: ReaderLayout = {
   id: 'adaptive',
   name: 'Adaptive',
   description: 'Automatically adjusts to page content',
-  render(article, container) {
+  render(article, container, options = {}) {
     const profile = analyzeContent(article);
     const heroImage = article.images?.[0];
+
+    const font = options.font || 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+    const fontSize = options.fontSize || '17px';
+    const lineHeight = '1.75';
 
     // Build content HTML
     let contentHtml = article.contentHtml.innerHTML;
@@ -258,9 +262,9 @@ export const adaptiveLayout: ReaderLayout = {
       <style>
         .calm-layout {
           --lw: ${profile.maxWidth};
-          --lf: ${profile.fontFamily};
-          --ls: ${profile.fontSize};
-          --lh: ${profile.lineHeight};
+          --lf: ${font};
+          --ls: ${fontSize};
+          --lh: ${lineHeight};
         }
         ${DARK_CSS}
         @media (max-width: 700px) {
