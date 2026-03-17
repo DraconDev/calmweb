@@ -114,6 +114,8 @@ export const ReaderSettingsSchema = z.object({
   defaultTheme: z.string().default('default'),
   autoOpen: z.boolean().default(true),
   textOnly: z.boolean().default(true),
+  font: z.string().default('Inter'),
+  fontSize: z.string().default('17px'),
   showInContextMenu: z.boolean().default(true),
 });
 export type ReaderSettings = z.infer<typeof ReaderSettingsSchema>;
@@ -124,8 +126,19 @@ export const defaultReaderSettings: ReaderSettings = {
   defaultTheme: 'default',
   autoOpen: true,
   textOnly: true,
+  font: 'Inter',
+  fontSize: '17px',
   showInContextMenu: true,
 };
+
+export const READER_FONTS = [
+  { id: 'Inter', label: 'Inter', family: 'Inter, -apple-system, sans-serif', style: 'Modern' },
+  { id: 'Space Grotesk', label: 'Space Grotesk', family: '"Space Grotesk", sans-serif', style: 'Futuristic' },
+  { id: 'IBM Plex Sans', label: 'IBM Plex', family: '"IBM Plex Sans", sans-serif', style: 'Technical' },
+  { id: 'JetBrains Mono', label: 'JetBrains Mono', family: '"JetBrains Mono", monospace', style: 'Code' },
+  { id: 'Georgia', label: 'Georgia', family: 'Georgia, serif', style: 'Classic' },
+  { id: 'Atkinson Hyperlegible', label: 'Atkinson', family: '"Atkinson Hyperlegible", sans-serif', style: 'Accessible' },
+] as const;
 
 // ============================================================================
 // User Settings
