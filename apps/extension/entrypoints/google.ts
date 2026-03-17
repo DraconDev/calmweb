@@ -202,8 +202,8 @@ const OVERLAY_STYLES = `
     right: 0;
     bottom: 0;
     z-index: 2147483647;
-    background: #0f0f0f;
-    color: #e5e7eb;
+    background: #09090b;
+    color: #d4d4d8;
     overflow-y: auto;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
