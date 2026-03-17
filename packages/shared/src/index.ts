@@ -152,7 +152,7 @@ export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
 export const defaultUserSettings: UserSettings = {
   enabled: true,
-  processingMode: 'local_rules',
+  processingMode: 'byok_llm',
   strictness: 80,
   rules: {
     blocklistChannels: [],
