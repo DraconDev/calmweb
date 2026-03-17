@@ -93,10 +93,10 @@ function printAnalysis(label: string, data: Record<string, any>) {
 
 describe('Before/After - Site Analysis', () => {
   const FIXTURES = [
-    { file: 'bbc-article.html', name: 'BBC News', category: 'news' },
-    { file: 'wikipedia-article.html', name: 'Wikipedia', category: 'reference' },
-    { file: 'blog-post.html', name: 'Tech Blog', category: 'blog' },
-    { file: 'clickbait-news.html', name: 'Clickbait News', category: 'clickbait' },
+    { file: 'bbc-article.html', url: 'https://www.bbc.com/news/articles/c1234567890', name: 'BBC News', category: 'news' },
+    { file: 'wikipedia-article.html', url: 'https://en.wikipedia.org/wiki/Quantum_computing', name: 'Wikipedia', category: 'reference' },
+    { file: 'blog-post.html', url: 'https://devcraft.io/blog/rust-ownership', name: 'Tech Blog', category: 'blog' },
+    { file: 'clickbait-news.html', url: 'https://viralnow.com/politician-climate', name: 'Clickbait News', category: 'clickbait' },
   ];
 
   for (const fixture of FIXTURES) {
