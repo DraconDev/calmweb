@@ -695,72 +695,41 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
     }
   };
 
-  const isPresetModel = AI_MODELS.some(m => m.id === aiModel);
-
   return (
-    <div className="space-y-8 max-w-2xl">
-      <div className="space-y-6">
-        <FormField
-          label="Processing Mode"
-          description="The intelligence level used to analyze content."
-        >
-          <div className="grid grid-cols-1 gap-3 pt-2">
-            {[
-              { id: 'byok_llm', name: 'OpenRouter AI', desc: 'Context-aware filtering. Understands meaning, not just words. Free tier available.', icon: Zap, recommended: true },
-              { id: 'hosted_llm', name: 'CalmWeb Cloud', desc: 'Managed neural engine with premium models (Pro).', icon: ShieldCheck },
-            ].map((mode) => (
-              <div
-                key={mode.id}
-                onClick={() => onChange({ processingMode: mode.id as any })}
-                className={clsx(
-                  "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                  processingMode === mode.id 
-                    ? "border-primary bg-primary/5" 
-                    : mode.recommended
-                      ? "border-primary/20 bg-primary/5 hover:bg-primary/10"
-                      : "border-transparent bg-muted/30 hover:bg-muted/50"
-                )}
-              >
-                <div className={clsx("p-2 rounded-lg", processingMode === mode.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground")}>
-                  <mode.icon size={20} />
-                </div>
-                <div className="flex-1">
-                  <div className="font-bold text-sm flex items-center gap-2">
-                    {mode.name}
-                    {mode.recommended && <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">BEST</span>}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{mode.desc}</div>
-                </div>
-                <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center", processingMode === mode.id ? "border-primary" : "border-muted-foreground/30")}>
-                  {processingMode === mode.id && <div className="w-2 h-2 bg-primary rounded-full" />}
-                </div>
+    <div className="space-y-8">
+      <FormField
+        label="AI Provider"
+        description="All filtering uses AI for context-aware content analysis. OpenRouter free tier is included."
+      >
+        <div className="grid grid-cols-1 gap-3 pt-2">
+          {[
+            { id: 'byok_llm', name: 'OpenRouter (Recommended)', desc: 'Bring your own key. Free tier available. Access to many models.', icon: Zap },
+            { id: 'hosted_llm', name: 'CalmWeb Cloud (Pro)', desc: 'Managed service, no key needed. Premium models included.', icon: ShieldCheck },
+          ].map((mode) => (
+            <div
+              key={mode.id}
+              onClick={() => onChange({ processingMode: mode.id as any })}
+              className={clsx(
+                "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                processingMode === mode.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50"
+              )}
+            >
+              <div className={clsx("p-2 rounded-lg", processingMode === mode.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground")}>
+                <mode.icon size={20} />
               </div>
-            ))}
-          </div>
-        </FormField>
-
-        <FormField
-          label={`Filter Sensitivity: ${strictness}%`}
-          description="Balance between thorough filtering and potential false positives."
-        >
-          <div className="pt-4 px-2">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={strictness}
-              onChange={(e) => onChange({ strictness: parseInt(e.target.value) })}
-              className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <div className="flex justify-between text-[10px] font-bold uppercase tracking-tighter text-muted-foreground mt-3">
-              <span>Allow More</span>
-              <span>Balanced</span>
-              <span>Paranoid</span>
+              <div className="flex-1">
+                <div className="font-bold text-sm">{mode.name}</div>
+                <div className="text-xs text-muted-foreground">{mode.desc}</div>
+              </div>
+              <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center", processingMode === mode.id ? "border-primary" : "border-muted-foreground/30")}>
+                {processingMode === mode.id && <div className="w-2 h-2 bg-primary rounded-full" />}
+              </div>
             </div>
-          </div>
-        </FormField>
+          ))}
+        </div>
+      </FormField>
 
-        {processingMode === 'byok_llm' && (
+      {processingMode === 'byok_llm' && (
           <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
             {/* API Key + Test */}
             <FormField
