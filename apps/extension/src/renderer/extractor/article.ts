@@ -39,7 +39,7 @@ const REMOVE_SELECTORS = [
 
 const MEDIA_SELECTORS = [
   'img', 'video', 'audio', 'picture', 'canvas',
-  'figure', 'figcaption',
+  'figure',  // removes figure wrapper but caption text may be lost
 ];
 
 const CONTENT_SELECTORS = [
@@ -200,11 +200,23 @@ function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
     clone.querySelectorAll(selector).forEach((el) => el.remove());
   });
 
-  // Strip images, videos, and other media in text-only mode
+  // Strip media in text-only mode, but preserve caption text
   if (textOnly) {
-    MEDIA_SELECTORS.forEach((selector) => {
-      clone.querySelectorAll(selector).forEach((el) => el.remove());
+    // Replace <figure> with its <figcaption> text as a <p>
+    clone.querySelectorAll('figure').forEach((figure) => {
+      const caption = figure.querySelector('figcaption');
+      if (caption && caption.textContent?.trim()) {
+        const p = document.createElement('p');
+        p.textContent = caption.textContent.trim();
+        p.classList.add('calmweb-caption');
+        figure.replaceWith(p);
+      } else {
+        figure.remove();
+      }
     });
+
+    // Remove remaining media elements
+    clone.querySelectorAll('img, video, audio, picture, canvas').forEach((el) => el.remove());
   }
 
   clone.querySelectorAll('a').forEach((a) => {
