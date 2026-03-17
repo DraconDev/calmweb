@@ -30,12 +30,8 @@ export { extractArticle, type ExtractedArticle } from './extractor';
 export {
   getLayout,
   allLayouts,
-  readerLayout,
-  focusLayout,
-  terminalLayout,
-  compactLayout,
-  visualLayout,
-  academicLayout,
+  autoDetectLayout,
+  adaptiveLayout,
   type ReaderLayout,
 } from './layouts';
 
