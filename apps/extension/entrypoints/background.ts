@@ -152,6 +152,8 @@ const handlers: Record<string, MessageHandler> = {
         strictness: settings.strictness,
         rules: settings.rules,
         byokKey: settings.byokKey,
+        aiModel: settings.aiModel,
+        customEndpoint: settings.customEndpoint,
       }, {
         apiClient: ext.apiClient,
       });
