@@ -165,35 +165,6 @@ const OVERLAY_STYLES = `
     min-height: calc(100vh - 56px);
   }
 
-  @media (prefers-color-scheme: dark) {
-    .calmweb-reader-toolbar {
-      background: rgba(17, 24, 39, 0.95);
-      border-bottom-color: rgba(255,255,255,0.1);
-    }
-
-    .calmweb-reader-btn {
-      border-color: rgba(255,255,255,0.1);
-      color: #e5e7eb;
-    }
-
-    .calmweb-reader-btn:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.2);
-    }
-
-    .calmweb-reader-dropdown-menu {
-      background: #1f2937;
-      border-color: rgba(255,255,255,0.1);
-    }
-
-    .calmweb-reader-dropdown-item {
-      color: #e5e7eb;
-    }
-
-    .calmweb-reader-dropdown-item:hover {
-      background: rgba(255,255,255,0.05);
-    }
-  }
 `;
 
 let currentLayout: ReaderLayout;
