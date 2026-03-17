@@ -297,6 +297,58 @@ const SITES: SiteFixture[] = [
     expectations: { hasTitle: true, hasContent: true, shouldMatchPreset: 'spoilers' },
   },
 
+  // --- AD-HEAVY / NOISY SITES ---
+  {
+    name: 'News With Chat Widget',
+    category: 'noisy',
+    url: 'https://noisynews.example.com/article',
+    html: `<html><body>
+      <div class="cookie-banner">We use cookies. Accept?</div>
+      <div id="intercom-container"><div class="intercom-launcher">Chat with us!</div></div>
+      <nav class="site-nav">Navigation here</nav>
+      <article>
+        <h1>Scientists Make Breakthrough in Renewable Energy</h1>
+        <p>Researchers have developed a new solar cell with 50% efficiency.</p>
+        <p>The technology could revolutionize the renewable energy industry.</p>
+      </article>
+      <div class="ad-slot-banner">Advertisement</div>
+      <div class="newsletter-signup">Subscribe to our newsletter!</div>
+      <div class="social-share-bar">Share this article</div>
+      <footer>© 2024 NoisyNews</footer>
+      <div class="chat-widget">Need help?</div>
+    </body></html>`,
+    expectations: { hasTitle: true, hasContent: true, minContentLength: 50, shouldMatchPreset: null },
+  },
+  {
+    name: 'Sponsored Content',
+    category: 'noisy',
+    url: 'https://news.example.com/sponsored-article',
+    html: `<html><body>
+      <div class="sponsored-badge">Sponsored Content</div>
+      <article>
+        <h1>How This New Product Is Changing Everything</h1>
+        <p>This amazing product from our sponsor has transformed the way people work.</p>
+        <p>Learn more about this incredible innovation.</p>
+      </article>
+      <div class="related-sponsored">More sponsored content</div>
+    </body></html>`,
+    expectations: { hasTitle: true, hasContent: true, minContentLength: 30, shouldMatchPreset: null },
+  },
+  {
+    name: 'Site With Paywall',
+    category: 'noisy',
+    url: 'https://premium.example.com/premium-article',
+    html: `<html><body>
+      <article>
+        <h1>The Future of Quantum Computing in Enterprise</h1>
+        <p>Quantum computing is poised to transform enterprise operations.</p>
+        <div class="paywall-overlay">Subscribe to continue reading</div>
+        <div class="premium-content" style="display:none">Hidden premium content here...</div>
+      </article>
+    </body></html>`,
+    expectations: { hasTitle: true, hasContent: true, minContentLength: 30, shouldMatchPreset: null },
+  },
+
   // --- PERSONAL BLOG ---
   {
     name: 'Personal Blog Post',
