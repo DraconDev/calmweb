@@ -320,7 +320,7 @@ function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: 
         const contentEl = shadow.getElementById('reader-content') as HTMLElement;
         if (currentArticle) {
           contentEl.innerHTML = '';
-          currentLayout.render(currentArticle, contentEl);
+          currentLayout.render(currentArticle, contentEl, { font: currentFont, fontSize: currentFontSize });
         }
         
         shadow.querySelectorAll('[data-layout]').forEach(i => i.classList.remove('active'));
