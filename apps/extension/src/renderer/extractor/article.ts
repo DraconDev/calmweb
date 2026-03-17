@@ -130,8 +130,10 @@ function extractAuthor(doc: Document): string | undefined {
   for (const selector of AUTHOR_SELECTORS) {
     const el = doc.querySelector(selector);
     if (el) {
-      const author = el.getAttribute('content') || el.textContent?.trim();
+      let author = el.getAttribute('content') || el.textContent?.trim();
       if (author && author.length < 100) {
+        // Strip common prefixes
+        author = author.replace(/^(by|written by|reported by)\s+/i, '');
         return author;
       }
     }
