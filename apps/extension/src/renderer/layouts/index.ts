@@ -11,7 +11,7 @@ export interface ReaderLayout {
   id: string;
   name: string;
   description: string;
-  render: (article: ExtractedArticle, container: HTMLElement) => void;
+  render: (article: ExtractedArticle, container: HTMLElement, options?: { font?: string; fontSize?: string }) => void;
 }
 
 function escapeHtml(text: string): string {
