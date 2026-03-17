@@ -728,7 +728,6 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
                   <div className="font-bold text-sm flex items-center gap-2">
                     {mode.name}
                     {mode.recommended && <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">BEST</span>}
-                    {mode.warn && <span className="text-[9px] font-bold text-yellow-500 bg-yellow-500/10 px-1.5 py-0.5 rounded">LIMITED</span>}
                   </div>
                   <div className="text-xs text-muted-foreground">{mode.desc}</div>
                 </div>
