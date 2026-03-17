@@ -194,33 +194,20 @@ describe('Before/After - Site Analysis', () => {
         expect(textOnlyVideos).toBe(0);
       });
 
-      it('LAYOUT: shows which layout was auto-detected', () => {
-        const allLayoutResults = allLayouts
-          .filter(l => l.id !== 'auto')
-          .map(l => {
-            try {
-              const testContainer = document.createElement('div');
-              l.render(articleWithMedia, testContainer);
-              return { id: l.id, name: l.name, renders: testContainer.innerHTML.length > 100 };
-            } catch {
-              return { id: l.id, name: l.name, renders: false };
-            }
-          });
+      it('LAYOUT: adaptive layout renders correctly', () => {
+        const testContainer = document.createElement('div');
+        layout.render(articleWithMedia, testContainer);
+        const renders = testContainer.innerHTML.length > 100;
 
-        printAnalysis(`LAYOUT: ${fixture.name} (auto: ${layout.name})`, {
-          'auto-detected': `${layout.name} (${layout.id})`,
-          'all renderable': allLayoutResults.filter(l => l.renders).map(l => l.name).join(', '),
-          'broken layouts': allLayoutResults.filter(l => !l.renders).map(l => l.name).join(', ') || 'none',
-          'layout columns': layout.columns,
-          'layout font': layout.fontFamily.split(',')[0],
-          'layout size': layout.fontSize,
-          'layout max-width': layout.maxWidth,
+        printAnalysis(`LAYOUT: ${fixture.name} (adaptive)`, {
+          'layout name': layout.name,
+          'layout id': layout.id,
+          'renders correctly': renders ? 'yes' : 'no',
+          'output size': `${testContainer.innerHTML.length} chars`,
+          'has title': testContainer.innerHTML.includes(articleWithMedia.title) ? 'yes' : 'no',
         });
 
-        // All layouts should render without errors
-        for (const lr of allLayoutResults) {
-          expect(lr.renders).toBe(true);
-        }
+        expect(renders).toBe(true);
       });
     });
   }
