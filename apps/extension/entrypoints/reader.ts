@@ -32,7 +32,7 @@ const LOADING_STYLES = `
   }
   .calmweb-loading-spinner {
     width: 32px; height: 32px;
-    border: 3px solid #222;
+    border: 3px solid #252538;
     border-top-color: #a78bfa;
     border-radius: 50%;
     animation: calmweb-spin 0.8s linear infinite;
