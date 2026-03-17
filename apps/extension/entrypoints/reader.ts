@@ -73,45 +73,6 @@ function isInteractiveSite(): boolean {
   return false;
 }
 
-function hasArticleContent(): { yes: boolean; score: number } {
-  let score = 0;
-
-  // Strong signal: <article> element
-  if (document.querySelector('article')) score += 40;
-
-  // Check for actual article-like paragraphs (not just links)
-  const paragraphs = Array.from(document.querySelectorAll('p'));
-  let realContent = 0;
-  for (const p of paragraphs) {
-    const text = p.textContent?.trim() || '';
-    // Paragraphs with substantial text (not just navigation links)
-    if (text.length > 80) realContent++;
-  }
-  if (realContent >= 3) score += 30;
-  else if (realContent >= 1) score += 15;
-
-  // Check URL patterns for article pages
-  const path = window.location.pathname.toLowerCase();
-  if (/\/\d{4}\/\d{2}\/\d{2}\//.test(path)) score += 20; // date slugs
-  if (/\/(article|articles|post|blog|news|story)\//.test(path)) score += 15;
-  if (/\/wiki\/[A-Z]/.test(path)) score += 15; // Wikipedia article
-  if (/[a-z0-9-]{20,}/.test(path)) score += 10; // long slug
-
-  // OG type = article
-  const ogType = document.querySelector('meta[property="og:type"]');
-  if (ogType?.getAttribute('content')?.includes('article')) score += 15;
-
-  // Negative signals: portal/index pages
-  const links = document.querySelectorAll('a[href]');
-  const bodyText = document.body?.textContent || '';
-  // Lots of links relative to text = index page
-  if (links.length > 100 && bodyText.length / links.length < 50) score -= 30;
-  // Homepage with short path
-  if (path === '/' || path === '') score -= 20;
-
-  return { yes: score >= 40, score };
-}
-
 // ============================================================================
 // UI
 // ============================================================================
@@ -237,12 +198,33 @@ export default defineContentScript({
 
     if (!shouldAutoOpen) return;
 
-    // Smart detection
+    // Skip only truly interactive sites
     if (isInteractiveSite()) {
-      // Interactive site - show floating button only
       showFloatingButton();
       return;
     }
+
+    // Try to open reader - it will fail gracefully if no content
+    showLoading();
+    setTimeout(() => {
+      hideLoading();
+      try {
+        openReader({
+          textOnly: readerSettings.textOnly !== false,
+          layoutId: readerSettings.defaultLayout,
+          font: readerSettings.font,
+          fontSize: readerSettings.fontSize,
+        });
+      } catch (err) {
+        // Reader couldn't extract content - restore page and show floating button
+        console.log('[CalmWeb] No extractable content, showing floating button');
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('visibility');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('visibility');
+        showFloatingButton();
+      }
+    }, 400);
 
     const { yes: hasArticle } = hasArticleContent();
 
