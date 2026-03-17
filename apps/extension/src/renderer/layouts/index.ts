@@ -268,9 +268,11 @@ export const adaptiveLayout: ReaderLayout = {
         <header class="calm-header ${profile.centered ? 'centered' : ''}">
           <h1 class="calm-title">${escapeHtml(article.title)}</h1>
           <div class="calm-meta">
-            ${article.author ? `<span class="calm-meta-item">${escapeHtml(article.author)}</span>` : ''}
-            ${article.date ? `<span class="calm-meta-item">${article.date}</span>` : ''}
-            <span class="calm-meta-item">${article.readingTime} min read</span>
+            ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
+            ${(article.author && article.date) ? '<span class="calm-meta-sep">·</span>' : ''}
+            ${article.date ? `<span>${article.date}</span>` : ''}
+            <span class="calm-meta-sep">·</span>
+            <span>${article.readingTime} min</span>
           </div>
         </header>
         <article class="calm-content ${profile.columns > 1 ? 'columns-2' : ''}">${contentHtml}</article>
