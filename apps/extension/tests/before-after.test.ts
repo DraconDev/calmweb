@@ -21,10 +21,8 @@ import type { ContentUnit, UserRules } from '@calmweb/shared';
 
 const FIXTURES_DIR = resolve(__dirname, 'fixtures');
 
-function loadFixture(name: string): { html: string; url: string } {
+function loadFixture(name: string, url: string): { html: string; url: string } {
   const html = readFileSync(resolve(FIXTURES_DIR, name), 'utf-8');
-  const urlMatch = html.match(/(?:https?:\/\/[^\s"']+)/);
-  const url = urlMatch ? urlMatch[0] : `https://example.com/${name}`;
   return { html, url };
 }
 
