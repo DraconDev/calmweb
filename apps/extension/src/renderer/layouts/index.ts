@@ -28,9 +28,6 @@ interface ContentProfile {
   type: 'article' | 'code' | 'news' | 'docs' | 'essay';
   columns: number;
   maxWidth: string;
-  fontFamily: string;
-  fontSize: string;
-  lineHeight: string;
   dropcap: boolean;
   centered: boolean;
 }
@@ -41,73 +38,28 @@ function analyzeContent(article: ExtractedArticle): ContentProfile {
   const paragraphs = html.querySelectorAll('p').length;
   const headings = html.querySelectorAll('h1,h2,h3').length;
 
-  // Code-heavy → monospace, wider
+  // Code-heavy → wider
   if (codeBlocks >= 3) {
-    return {
-      type: 'code',
-      columns: 1,
-      maxWidth: '900px',
-      fontFamily: '"JetBrains Mono", "Fira Code", monospace',
-      fontSize: '14px',
-      lineHeight: '1.7',
-      dropcap: false,
-      centered: false,
-    };
+    return { type: 'code', columns: 1, maxWidth: '900px', dropcap: false, centered: false };
   }
 
-  // Short news → compact, maybe 2 columns
+  // Short news → compact columns
   if (article.readingTime <= 3 && paragraphs <= 6) {
-    return {
-      type: 'news',
-      columns: 2,
-      maxWidth: '800px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      fontSize: '15px',
-      lineHeight: '1.6',
-      dropcap: false,
-      centered: false,
-    };
+    return { type: 'news', columns: 2, maxWidth: '800px', dropcap: false, centered: false };
   }
 
-  // Long academic → 2 columns, formal
+  // Long academic → 2 columns
   if (article.readingTime >= 8 && headings >= 3) {
-    return {
-      type: 'docs',
-      columns: 2,
-      maxWidth: '900px',
-      fontFamily: 'Georgia, "Times New Roman", serif',
-      fontSize: '15px',
-      lineHeight: '1.65',
-      dropcap: false,
-      centered: false,
-    };
+    return { type: 'docs', columns: 2, maxWidth: '900px', dropcap: false, centered: false };
   }
 
-  // Very long → focused, centered
+  // Very long → centered
   if (article.readingTime >= 12) {
-    return {
-      type: 'essay',
-      columns: 1,
-      maxWidth: '600px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      fontSize: '17px',
-      lineHeight: '1.85',
-      dropcap: false,
-      centered: true,
-    };
+    return { type: 'essay', columns: 1, maxWidth: '640px', dropcap: false, centered: true };
   }
 
-  // Default article → elegant serif with dropcap
-  return {
-    type: 'article',
-    columns: 1,
-    maxWidth: '680px',
-    fontFamily: 'Georgia, Charter, "Times New Roman", serif',
-    fontSize: '18px',
-    lineHeight: '1.75',
-    dropcap: true,
-    centered: false,
-  };
+  // Default article → elegant with dropcap
+  return { type: 'article', columns: 1, maxWidth: '700px', dropcap: true, centered: false };
 }
 
 // ============================================================================
