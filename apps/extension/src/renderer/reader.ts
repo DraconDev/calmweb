@@ -150,13 +150,13 @@ const OVERLAY_STYLES = `
   }
 
   .calmweb-reader-dropdown-item:hover {
-    background: rgba(167, 139, 250, 0.1);
-    color: #d4d4d8;
+    background: rgba(139, 92, 246, 0.08);
+    color: #e4e4e7;
   }
 
   .calmweb-reader-dropdown-item.active {
-    background: rgba(167, 139, 250, 0.15);
-    color: #a78bfa;
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
   }
 
   .calmweb-reader-content {
