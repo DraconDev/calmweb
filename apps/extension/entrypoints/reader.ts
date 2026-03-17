@@ -200,6 +200,8 @@ export default defineContentScript({
           openReader({
             textOnly: readerSettings.textOnly !== false,
             layoutId: readerSettings.defaultLayout,
+            font: readerSettings.font,
+            fontSize: readerSettings.fontSize,
           });
         } catch (err) {
           console.error('[CalmWeb] Failed to open reader:', err);
