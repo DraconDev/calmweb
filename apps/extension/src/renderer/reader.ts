@@ -62,12 +62,12 @@ const OVERLAY_STYLES = `
     gap: 8px;
     font-weight: 700;
     font-size: 14px;
-    color: #a78bfa;
+    color: #8b5cf6;
   }
 
   .calmweb-reader-title {
     font-size: 13px;
-    color: #6b6b80;
+    color: #52525b;
     max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -87,7 +87,7 @@ const OVERLAY_STYLES = `
     gap: 6px;
     padding: 8px 12px;
     background: transparent;
-    border: 1px solid rgba(167, 139, 250, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
@@ -97,9 +97,9 @@ const OVERLAY_STYLES = `
   }
 
   .calmweb-reader-btn:hover {
-    background: rgba(167, 139, 250, 0.1);
-    border-color: rgba(167, 139, 250, 0.3);
-    color: #d4d4d8;
+    background: rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.2);
+    color: #e4e4e7;
   }
 
   .calmweb-reader-btn:active {
