@@ -39,19 +39,12 @@ export async function rewriteText(
 ): Promise<RewriteResult> {
   const local = rewriteWithLocalRules(original, { mode: options.mode });
   
-  if (local.confidence > 0.8 && local.changes.length > 0) {
-    return local;
+  // Always try AI rewrite - local rules alone are too weak
+  // Use whichever has higher confidence
+  const llm = await rewriteWithLLM(original, { mode: options.mode }, settings);
+  if (llm.confidence > local.confidence && llm.changes.length > 0) {
+    return llm;
   }
-
-  // Always try AI rewrite (we no longer support local-only mode)
-  try {
-      const llm = await rewriteWithLLM(original, { mode: options.mode }, settings);
-      if (llm.confidence > local.confidence) {
-        return llm;
-      }
-    } catch (error) {
-      console.warn('[CalmWeb] LLM rewrite failed, using local result:', error);
-    }
 
   return local;
 }
