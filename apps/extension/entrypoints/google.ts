@@ -214,7 +214,7 @@ const OVERLAY_STYLES = `
     height: 56px;
     background: rgba(9, 9, 11, 0.95);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
