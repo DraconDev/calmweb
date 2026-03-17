@@ -133,7 +133,7 @@ export const defaultReaderSettings: ReaderSettings = {
 
 export const UserSettingsSchema = z.object({
   enabled: z.boolean().default(true),
-  processingMode: ProcessingModeSchema.default('local_rules'),
+  processingMode: ProcessingModeSchema.default('byok_llm'),
   strictness: z.number().min(0).max(100).default(80),
   rules: UserRulesSchema.default({
     blocklistChannels: [],
