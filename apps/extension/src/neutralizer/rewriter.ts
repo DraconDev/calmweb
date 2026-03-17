@@ -52,7 +52,6 @@ export async function rewriteText(
     } catch (error) {
       console.warn('[CalmWeb] LLM rewrite failed, using local result:', error);
     }
-  }
 
   return local;
 }
