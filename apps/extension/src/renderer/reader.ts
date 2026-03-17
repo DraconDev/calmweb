@@ -276,7 +276,7 @@ export function openReader(options: ReaderOptions = {}): void {
 
   const contentEl = shadow.getElementById('reader-content') as HTMLElement;
   applyTheme(currentTheme, overlay);
-  currentLayout.render(article, contentEl);
+  currentLayout.render(article, contentEl, { font: currentFont, fontSize: currentFontSize });
 
   setupEventListeners(shadow, overlay, options);
   } catch (err) {
