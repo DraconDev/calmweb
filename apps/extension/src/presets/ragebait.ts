@@ -16,16 +16,14 @@ export const ragebaitPreset: FilterPreset = {
   
   patterns: {
     keywords: [
-      'outrage', 'outraged', 'outraging', 'shocking', 'disgusting', 'horrific', 'terrible',
+      'outrage', 'outraged', 'outraging', 'disgusting', 'horrific', 'terrible',
       'makes you mad', 'make you angry', 'will make you furious', 'this will enrage',
       'angry', 'furious', 'fume', 'fuming', 'rage', 'enraged', 'infuriating',
-      'cannot believe', "can't believe", "won't believe", 'unbelievable', 'incredible',
       'despicable', 'disgraceful', 'shameful', 'appalling', 'abhorrent',
       'rant', 'destroyed', 'demolished', 'annihilated', 'wrecked',
       'hate', 'hatred', 'hateful', 'loathe', 'despise',
       'scandal', 'scandalous', 'controversy', 'controversial',
       'exposed', 'caught', 'busted', 'blasted', 'slammed',
-      'this is why', 'reason why', 'here\'s why', 'the real reason',
       'everyone is talking about', 'trending', 'viral',
       'backlash', 'uproar', 'firestorm', 'fury',
       'karen', 'entitled', 'bridezilla', 'choosing beggar',
