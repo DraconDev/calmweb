@@ -212,7 +212,7 @@ const OVERLAY_STYLES = `
     position: sticky;
     top: 0;
     height: 56px;
-    background: rgba(15, 15, 15, 0.95);
+    background: rgba(9, 9, 11, 0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     display: flex;
