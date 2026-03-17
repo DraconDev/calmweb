@@ -902,30 +902,19 @@ function ReaderTab({ defaultLayout, defaultTheme, textOnly, onChange }: ReaderTa
 
       <FormField
         label="Default Layout"
-        description="Choose how content is displayed in Super Reader"
+        description="Content is automatically analyzed and displayed optimally"
       >
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-          {allLayouts.map((layout) => (
-            <div
-              key={layout.id}
-              onClick={() => onChange({ defaultLayout: layout.id })}
-              className={clsx(
-                "p-4 rounded-xl border-2 cursor-pointer transition-all",
-                defaultLayout === layout.id
-                  ? "border-primary bg-primary/5"
-                  : "border-transparent bg-muted/30 hover:bg-muted/50"
-              )}
-            >
-              <div className="text-2xl mb-2">{layoutIcons[layout.id] || '📄'}</div>
-              <div className="font-bold text-sm">{layout.name}</div>
-              <div className="text-xs text-muted-foreground mt-1">{layout.description}</div>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {layout.bestFor.slice(0, 2).map((use) => (
-                  <span key={use} className="text-[10px] px-1.5 py-0.5 bg-muted rounded-full">{use}</span>
-                ))}
+        <div className="p-4 rounded-xl border-2 border-primary bg-primary/5">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">⚡</div>
+            <div>
+              <div className="font-bold text-sm">Adaptive Layout</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Automatically adjusts columns, typography, and spacing based on page content.
+                Articles get elegant serif, code gets monospace, news gets compact columns.
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </FormField>
 
