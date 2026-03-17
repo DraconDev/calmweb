@@ -304,7 +304,7 @@ export interface ClassifierOptions {
 export async function classifyContent(
   unit: ContentUnit,
   settings: {
-    processingMode: 'local_rules' | 'byok_llm' | 'hosted_llm';
+    processingMode: 'byok_llm' | 'hosted_llm';
     strictness: number;
     rules: UserRules;
     byokKey?: string;
