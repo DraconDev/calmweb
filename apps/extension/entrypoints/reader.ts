@@ -178,7 +178,7 @@ export default defineContentScript({
 
     // Check settings
     let shouldFilter = true;
-    let readerSettings: { textOnly?: boolean; defaultLayout?: string } = {};
+    let readerSettings: { textOnly?: boolean; defaultLayout?: string; font?: string; fontSize?: string } = {};
     try {
       const settings = await sendToBackground<UserSettings>({
         type: MESSAGE_TYPES.GET_SETTINGS,
