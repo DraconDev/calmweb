@@ -235,7 +235,7 @@ const OVERLAY_STYLES = `
     gap: 8px;
     font-weight: 700;
     font-size: 14px;
-    color: #a78bfa;
+    color: #8b5cf6;
     white-space: nowrap;
   }
 
