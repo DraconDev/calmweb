@@ -41,7 +41,6 @@ interface PresetsTabProps {
 
 interface AdvancedTabProps {
   processingMode: 'byok_llm' | 'hosted_llm';
-  strictness: number;
   byokKey: string;
   aiModel: string;
   onChange: (updates: Partial<UserSettings>) => void;
