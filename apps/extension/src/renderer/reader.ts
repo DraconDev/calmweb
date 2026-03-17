@@ -359,6 +359,19 @@ function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: 
     options.onClose?.();
   });
 
+  // Handle link clicks in shadow DOM - allow normal navigation
+  shadow.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement).closest('a');
+    if (target) {
+      // Let browser handle normal link navigation
+      // Close reader so user sees the destination page
+      const href = target.getAttribute('href');
+      if (href && (href.startsWith('http') || href.startsWith('/'))) {
+        // Let it navigate naturally
+      }
+    }
+  });
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeReader();
