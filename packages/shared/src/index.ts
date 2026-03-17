@@ -10,7 +10,7 @@ import { z } from 'zod';
 // Processing & Action Types
 // ============================================================================
 
-export const ProcessingModeSchema = z.enum(['local_rules', 'byok_llm', 'hosted_llm']);
+export const ProcessingModeSchema = z.enum(['byok_llm', 'hosted_llm']);
 export type ProcessingMode = z.infer<typeof ProcessingModeSchema>;
 
 export const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
