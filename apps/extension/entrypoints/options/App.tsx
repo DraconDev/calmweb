@@ -859,7 +859,7 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
   );
 }
 
-function ReaderTab({ defaultTheme, textOnly, onChange }: Omit<ReaderTabProps, 'defaultLayout'>) {
+function ReaderTab({ defaultTheme, textOnly, font, onChange }: Omit<ReaderTabProps, 'defaultLayout'> & { font?: string }) {
   const themeIcons: Record<string, any> = {
     default: Sun,
     dark: Moon,
