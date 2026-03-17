@@ -62,12 +62,12 @@ const OVERLAY_STYLES = `
     gap: 8px;
     font-weight: 700;
     font-size: 14px;
-    color: #3b82f6;
+    color: #a78bfa;
   }
 
   .calmweb-reader-title {
     font-size: 13px;
-    color: #6b7280;
+    color: #6b6b80;
     max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
