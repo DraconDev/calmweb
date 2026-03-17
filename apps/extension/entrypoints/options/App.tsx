@@ -860,20 +860,7 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
   );
 }
 
-function ReaderTab({ defaultLayout, defaultTheme, textOnly, onChange }: ReaderTabProps) {
-  const layoutIcons: Record<string, string> = {
-    auto: '⚡',
-    reader: '📖',
-    focus: '🎯',
-    terminal: '💻',
-    compact: '📰',
-    visual: '🖼️',
-    academic: '📄',
-    magazine: '📰',
-    minimal: '○',
-    newspaper: '🗞️',
-  };
-
+function ReaderTab({ defaultTheme, textOnly, onChange }: Omit<ReaderTabProps, 'defaultLayout'>) {
   const themeIcons: Record<string, any> = {
     default: Sun,
     dark: Moon,
