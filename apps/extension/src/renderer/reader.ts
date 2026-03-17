@@ -195,6 +195,8 @@ export function openReader(options: ReaderOptions = {}): void {
   // Auto-detect layout unless explicitly specified
   currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article);
   currentTheme = getTheme(options.themeId || 'default');
+  currentFont = options.font ? `${options.font}, -apple-system, sans-serif` : 'Inter, -apple-system, sans-serif';
+  currentFontSize = options.fontSize || '17px';
 
   const overlay = document.createElement('div');
   overlay.id = OVERLAY_ID;
