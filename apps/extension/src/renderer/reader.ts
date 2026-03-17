@@ -40,9 +40,9 @@ const OVERLAY_STYLES = `
     left: 0;
     right: 0;
     height: 56px;
-    background: rgba(18, 18, 26, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+    background: rgba(9, 9, 11, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
