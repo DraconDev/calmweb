@@ -32,8 +32,8 @@ const LOADING_STYLES = `
   }
   .calmweb-loading-spinner {
     width: 32px; height: 32px;
-    border: 3px solid #252538;
-    border-top-color: #a78bfa;
+    border: 3px solid rgba(255,255,255,0.06);
+    border-top-color: #8b5cf6;
     border-radius: 50%;
     animation: calmweb-spin 0.8s linear infinite;
   }
@@ -44,7 +44,7 @@ const LOADING_STYLES = `
     letter-spacing: 0.05em;
   }
   .calmweb-loading-logo {
-    color: #a78bfa;
+    color: #8b5cf6;
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 8px;
