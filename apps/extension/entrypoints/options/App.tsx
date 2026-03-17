@@ -869,7 +869,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
             Reset All Cached Decisions
           </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
