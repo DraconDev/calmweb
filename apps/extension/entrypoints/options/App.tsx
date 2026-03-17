@@ -317,6 +317,26 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                   </div>
                 </div>
 
+                {/* Content Filtering */}
+                <div className="rounded-xl bg-card border border-border p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-muted text-muted-foreground">
+                        <EyeOff size={16} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-sm">Content Filtering</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Images, videos, and audio stripped. Icons preserved. Text only.
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-1 rounded-full">
+                      Always On
+                    </span>
+                  </div>
+                </div>
+
                 {/* AI Engine */}
                 <div className={`rounded-xl border p-5 ${
                   settings.processingMode === 'byok_llm' && settings.byokKey
