@@ -31,13 +31,19 @@ export default defineContentScript({
       }
     });
 
-    // Keyboard shortcut: Alt+R
+    // Keyboard shortcut: Ctrl+Shift+R (matches main reader)
     document.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key.toLowerCase() === 'r') {
+      if (e.ctrlKey && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'r') {
         e.preventDefault();
+        e.stopPropagation();
         toggleGoogleReader();
       }
-    });
+      if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleGoogleReader();
+      }
+    }, true);
 
     // Auto-open on load after a short delay for results to render
     setTimeout(() => {
