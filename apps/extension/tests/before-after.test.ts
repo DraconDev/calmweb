@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { extractArticle } from '../src/renderer/extractor';
-import { autoDetectLayout, getLayout, allLayouts } from '../src/renderer/layouts';
+import { autoDetectLayout, allLayouts } from '../src/renderer/layouts';
 import { applyLocalRules } from '../utils/classifier';
 import type { ContentUnit, UserRules } from '@calmweb/shared';
 
