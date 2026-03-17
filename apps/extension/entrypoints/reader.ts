@@ -1,9 +1,8 @@
 /**
  * Reader Entry Point for CalmWeb
  *
- * Hides the page IMMEDIATELY and shows a loading screen.
- * Then extracts content and shows filtered layout.
- * No flash of original page.
+ * Smart detection: only opens on actual content pages.
+ * Shows floating button on sites where reader could help but shouldn't auto-open.
  */
 
 import { defineContentScript } from 'wxt/utils/define-content-script';
@@ -28,36 +27,98 @@ const LOADING_STYLES = `
     align-items: center;
     justify-content: center;
     gap: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   .calmweb-loading-spinner {
-    width: 32px; height: 32px;
-    border: 3px solid rgba(255,255,255,0.06);
+    width: 28px; height: 28px;
+    border: 2px solid rgba(255,255,255,0.06);
     border-top-color: #8b5cf6;
     border-radius: 50%;
     animation: calmweb-spin 0.8s linear infinite;
   }
-  .calmweb-loading-text {
-    color: #52525b;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-  }
-  .calmweb-loading-logo {
-    color: #8b5cf6;
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-  @keyframes calmweb-spin {
-    to { transform: rotate(360deg); }
-  }
+  .calmweb-loading-text { color: #3f3f46; font-size: 12px; font-weight: 500; }
+  @keyframes calmweb-spin { to { transform: rotate(360deg); } }
 `;
+
+// ============================================================================
+// Smart Article Detection
+// ============================================================================
+
+function isInteractiveSite(): boolean {
+  const hostname = window.location.hostname.toLowerCase();
+  const path = window.location.pathname.toLowerCase();
+
+  // Web apps that should never auto-filter
+  const skipDomains = [
+    'mail.google', 'calendar.google', 'drive.google', 'docs.google',
+    'sheets.google', 'slides.google', 'meet.google',
+    'github.com', 'gitlab.com', 'bitbucket.org',
+    'slack.com', 'discord.com', 'notion.so', 'figma.com',
+    'linear.app', 'trello.com', 'asana.com', 'airtable.com',
+    'jira.', 'atlassian.net', 'monday.com',
+    'netflix.com', 'spotify.com', 'youtube.com',
+  ];
+  if (skipDomains.some(d => hostname.includes(d))) return true;
+
+  // Login/auth/account pages
+  const skipPaths = ['/login', '/signin', '/signup', '/register', '/auth',
+    '/account', '/settings', '/admin', '/dashboard', '/checkout', '/cart',
+    '/payment', '/oauth', '/callback'];
+  if (skipPaths.some(p => path.startsWith(p))) return true;
+
+  // Pages with many form inputs (interactive)
+  const inputs = document.querySelectorAll('input:not([type="hidden"]):not([type="search"]), textarea, select');
+  if (inputs.length > 4) return true;
+
+  return false;
+}
+
+function hasArticleContent(): { yes: boolean; score: number } {
+  let score = 0;
+
+  // Strong signal: <article> element
+  if (document.querySelector('article')) score += 40;
+
+  // Check for actual article-like paragraphs (not just links)
+  const paragraphs = document.querySelectorAll('p');
+  let realContent = 0;
+  for (const p of paragraphs) {
+    const text = p.textContent?.trim() || '';
+    // Paragraphs with substantial text (not just navigation links)
+    if (text.length > 80) realContent++;
+  }
+  if (realContent >= 3) score += 30;
+  else if (realContent >= 1) score += 15;
+
+  // Check URL patterns for article pages
+  const path = window.location.pathname.toLowerCase();
+  if (/\/\d{4}\/\d{2}\/\d{2}\//.test(path)) score += 20; // date slugs
+  if (/\/(article|articles|post|blog|news|story)\//.test(path)) score += 15;
+  if (/\/wiki\/[A-Z]/.test(path)) score += 15; // Wikipedia article
+  if (/[a-z0-9-]{20,}/.test(path)) score += 10; // long slug
+
+  // OG type = article
+  const ogType = document.querySelector('meta[property="og:type"]');
+  if (ogType?.getAttribute('content')?.includes('article')) score += 15;
+
+  // Negative signals: portal/index pages
+  const links = document.querySelectorAll('a[href]');
+  const bodyText = document.body?.textContent || '';
+  // Lots of links relative to text = index page
+  if (links.length > 100 && bodyText.length / links.length < 50) score -= 30;
+  // Homepage with short path
+  if (path === '/' || path === '') score -= 20;
+
+  return { yes: score >= 40, score };
+}
+
+// ============================================================================
+// UI
+// ============================================================================
 
 function showLoading(): void {
   if (document.getElementById(LOADING_ID)) return;
 
-  // Hide page immediately
   document.documentElement.style.setProperty('overflow', 'hidden', 'important');
   document.documentElement.style.setProperty('visibility', 'hidden', 'important');
   document.body.style.setProperty('overflow', 'hidden', 'important');
@@ -66,16 +127,9 @@ function showLoading(): void {
   const loader = document.createElement('div');
   loader.id = LOADING_ID;
   loader.style.setProperty('visibility', 'visible', 'important');
-  loader.innerHTML = `
-    <style>${LOADING_STYLES}</style>
-    <div class="calmweb-loading-logo">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
-    </div>
+  loader.innerHTML = `<style>${LOADING_STYLES}</style>
     <div class="calmweb-loading-spinner"></div>
-    <div class="calmweb-loading-text">Filtering...</div>
-  `;
+    <div class="calmweb-loading-text">Filtering...</div>`;
   document.body.appendChild(loader);
 }
 
@@ -88,28 +142,18 @@ function showFloatingButton(): void {
 
   const btn = document.createElement('div');
   btn.id = FLOATING_BTN_ID;
-  btn.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    </svg>
-  `;
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+  </svg>`;
   btn.title = 'Filtered View (Ctrl+Shift+R)';
   Object.assign(btn.style, {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    width: '44px',
-    height: '44px',
-    borderRadius: '50%',
-    background: '#8b5cf6',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    zIndex: '2147483646',
-    boxShadow: '0 4px 24px rgba(139, 92, 246, 0.35), 0 0 0 1px rgba(139, 92, 246, 0.1)',
-    transition: 'all 0.2s ease',
+    position: 'fixed', bottom: '20px', right: '20px',
+    width: '40px', height: '40px', borderRadius: '50%',
+    background: '#8b5cf6', color: 'white',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer', zIndex: '2147483646',
+    boxShadow: '0 4px 24px rgba(139, 92, 246, 0.3)',
+    transition: 'transform 0.15s ease',
     border: 'none',
   });
   btn.addEventListener('mouseenter', () => { btn.style.transform = 'scale(1.1)'; });
@@ -143,9 +187,13 @@ function safeToggleReader(): void {
   }
 }
 
+// ============================================================================
+// Main
+// ============================================================================
+
 export default defineContentScript({
   matches: ['<all_urls>'],
-  runAt: 'document_end',
+  runAt: 'document_idle',
 
   async main() {
     console.log('[CalmWeb] Reader loaded on', window.location.hostname);
@@ -153,14 +201,10 @@ export default defineContentScript({
     // Keyboard shortcut
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey && e.key.toLowerCase() === 'r') {
-        e.preventDefault();
-        e.stopPropagation();
-        safeToggleReader();
+        e.preventDefault(); e.stopPropagation(); safeToggleReader();
       }
       if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.key.toLowerCase() === 'r') {
-        e.preventDefault();
-        e.stopPropagation();
-        safeToggleReader();
+        e.preventDefault(); e.stopPropagation(); safeToggleReader();
       }
     }, true);
 
@@ -177,22 +221,33 @@ export default defineContentScript({
     });
 
     // Check settings
-    let shouldFilter = true;
+    let shouldAutoOpen = true;
     let readerSettings: { textOnly?: boolean; defaultLayout?: string; font?: string; fontSize?: string } = {};
     try {
       const settings = await sendToBackground<UserSettings>({
         type: MESSAGE_TYPES.GET_SETTINGS,
       });
       if (settings?.reader?.autoOpen === false || settings?.enabled === false) {
-        shouldFilter = false;
+        shouldAutoOpen = false;
       }
       readerSettings = settings?.reader || {};
     } catch {
-      // Default to filtering
+      // Default to opening
     }
 
-    if (shouldFilter) {
-      // Show loading immediately, then open reader
+    if (!shouldAutoOpen) return;
+
+    // Smart detection
+    if (isInteractiveSite()) {
+      // Interactive site - show floating button only
+      showFloatingButton();
+      return;
+    }
+
+    const { yes: hasArticle } = hasArticleContent();
+
+    if (hasArticle) {
+      // Has article content - auto-open reader
       showLoading();
       setTimeout(() => {
         hideLoading();
@@ -205,13 +260,15 @@ export default defineContentScript({
           });
         } catch (err) {
           console.error('[CalmWeb] Failed to open reader:', err);
-          // If reader fails, restore the page
           document.documentElement.style.removeProperty('overflow');
           document.documentElement.style.removeProperty('visibility');
           document.body.style.removeProperty('overflow');
           document.body.style.removeProperty('visibility');
         }
       }, 600);
+    } else {
+      // No article content - show floating button
+      showFloatingButton();
     }
   },
 });
