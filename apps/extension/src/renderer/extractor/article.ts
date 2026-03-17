@@ -211,7 +211,7 @@ function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
     });
 
     // Remove remaining media elements
-    clone.querySelectorAll('img, video, audio, picture, canvas').forEach((el) => el.remove());
+    clone.querySelectorAll('img, video, audio, source, track, picture, canvas').forEach((el) => el.remove());
   }
 
   clone.querySelectorAll('a').forEach((a) => {
