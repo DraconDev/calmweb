@@ -224,8 +224,17 @@ function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
       }
     });
 
-    // Remove remaining media elements
-    clone.querySelectorAll('img, video, audio, source, track, picture, canvas, embed, object').forEach((el) => el.remove());
+    // Remove media elements but keep small icons (width/height <= 32 or SVG data URIs)
+    clone.querySelectorAll('img').forEach((img) => {
+      const w = parseInt(img.getAttribute('width') || '0');
+      const h = parseInt(img.getAttribute('height') || '0');
+      const src = img.getAttribute('src') || '';
+      // Keep small icons, SVGs, data URIs
+      if ((w > 0 && w <= 32) || (h > 0 && h <= 32)) return;
+      if (src.startsWith('data:image/svg')) return;
+      img.remove();
+    });
+    clone.querySelectorAll('video, audio, source, track, picture, canvas, embed, object').forEach((el) => el.remove());
   }
 
   clone.querySelectorAll('a').forEach((a) => {
