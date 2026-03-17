@@ -667,53 +667,37 @@ function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
 // Advanced Tab Component
 // ============================================================================
 
-function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }: AdvancedTabProps) {
+function AdvancedTab({ processingMode, byokKey, aiModel, onChange }: Omit<AdvancedTabProps, 'strictness'>) {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
+  const isPresetModel = AI_MODELS.some(m => m.id === aiModel);
 
   const testConnection = async () => {
-    if (!byokKey) {
-      setTestResult({ success: false, error: 'No API key configured' });
-      return;
-    }
+    if (!byokKey) { setTestResult({ success: false, error: 'No API key configured' }); return; }
     setTesting(true);
     setTestResult(null);
     try {
       const result = await sendToBackground<{ success: boolean; model?: string; error?: string }>({
-        type: MESSAGE_TYPES.TEST_CONNECTION,
-        apiKey: byokKey,
-        model: aiModel || DEFAULT_OPENROUTER_MODEL,
+        type: MESSAGE_TYPES.TEST_CONNECTION, apiKey: byokKey, model: aiModel || DEFAULT_OPENROUTER_MODEL,
       });
       setTestResult(result || { success: false, error: 'No response' });
     } catch (error) {
-      setTestResult({
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      setTesting(false);
-    }
+      setTestResult({ success: false, error: error instanceof Error ? error.message : String(error) });
+    } finally { setTesting(false); }
   };
 
   return (
     <div className="space-y-8">
-      <FormField
-        label="AI Provider"
-        description="All filtering uses AI for context-aware content analysis. OpenRouter free tier is included."
-      >
+      {/* AI Provider */}
+      <FormField label="AI Provider" description="All filtering uses AI for context-aware analysis. OpenRouter free tier included.">
         <div className="grid grid-cols-1 gap-3 pt-2">
           {[
-            { id: 'byok_llm', name: 'OpenRouter (Recommended)', desc: 'Bring your own key. Free tier available. Access to many models.', icon: Zap },
-            { id: 'hosted_llm', name: 'CalmWeb Cloud (Pro)', desc: 'Managed service, no key needed. Premium models included.', icon: ShieldCheck },
+            { id: 'byok_llm', name: 'OpenRouter (Recommended)', desc: 'Bring your own key. Free tier available.', icon: Zap },
+            { id: 'hosted_llm', name: 'CalmWeb Cloud (Pro)', desc: 'Managed service, premium models included.', icon: ShieldCheck },
           ].map((mode) => (
-            <div
-              key={mode.id}
-              onClick={() => onChange({ processingMode: mode.id as any })}
-              className={clsx(
-                "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                processingMode === mode.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50"
-              )}
-            >
+            <div key={mode.id} onClick={() => onChange({ processingMode: mode.id as any })}
+              className={clsx("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                processingMode === mode.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
               <div className={clsx("p-2 rounded-lg", processingMode === mode.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground")}>
                 <mode.icon size={20} />
               </div>
@@ -729,146 +713,73 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
         </div>
       </FormField>
 
+      {/* OpenRouter Settings */}
       {processingMode === 'byok_llm' && (
-        <div className="animate-in slide-in-from-top-2 duration-300 space-y-6">
-            <FormField
-              label="OpenRouter API Key"
-              description="Your OpenRouter API key. Free tier available at openrouter.ai. Stored only on your device."
-            >
-              <div className="flex gap-3">
-                <div className="relative flex-1">
-                  <input
-                    type="password"
-                    value={byokKey}
-                    onChange={(e) => onChange({ byokKey: e.target.value })}
-                    placeholder="sk-or-..."
-                    className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                  <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
-                </div>
-                <button
-                  onClick={testConnection}
-                  disabled={testing || !byokKey}
-                  className={clsx(
-                    "shrink-0 h-12 px-5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border",
-                    testing
-                      ? "bg-muted text-muted-foreground cursor-wait border-border"
-                      : testResult?.success
-                        ? "bg-green-500/10 text-green-500 border-green-500/20"
-                        : testResult?.error
-                          ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-                          : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-                  )}
-                >
-                  {testing ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Testing...
-                    </>
-                  ) : testResult?.success ? (
-                    <>
-                      <CheckCircle2 size={14} />
-                      Connected
-                    </>
-                  ) : testResult?.error ? (
-                    <>
-                      <TestTube size={14} />
-                      Retry
-                    </>
-                  ) : (
-                    <>
-                      <TestTube size={14} />
-                      Test
-                    </>
-                  )}
-                </button>
+        <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
+          {/* API Key */}
+          <FormField label="OpenRouter API Key" description="Your key from openrouter.ai. Free tier available. Stored only on your device.">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <input type="password" value={byokKey} onChange={(e) => onChange({ byokKey: e.target.value })}
+                  placeholder="sk-or-..."
+                  className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
               </div>
-              {testResult?.error && !testing && (
-                <p className="mt-2 text-xs text-red-500">{testResult.error}</p>
-              )}
-              {testResult?.success && (
-                <p className="mt-2 text-xs text-green-500">
-                  Connected to {testResult.model} successfully
-                </p>
-              )}
-            </FormField>
+              <button onClick={testConnection} disabled={testing || !byokKey}
+                className={clsx("shrink-0 h-12 px-5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border",
+                  testing ? "bg-muted text-muted-foreground cursor-wait border-border"
+                    : testResult?.success ? "bg-green-500/10 text-green-500 border-green-500/20"
+                    : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10")}>
+                {testing ? <><Loader2 size={14} className="animate-spin" /> Testing...</>
+                  : testResult?.success ? <><CheckCircle2 size={14} /> Connected</>
+                  : testResult?.error ? <><TestTube size={14} /> Retry</>
+                  : <><TestTube size={14} /> Test</>}
+              </button>
+            </div>
+            {testResult?.error && !testing && <p className="mt-2 text-xs text-red-500">{testResult.error}</p>}
+            {testResult?.success && <p className="mt-2 text-xs text-green-500">Connected to {testResult.model} successfully</p>}
+          </FormField>
 
-            {/* Preset Models */}
-            <FormField
-              label="AI Model"
-              description="Pick a preset or type any OpenRouter model ID below."
-            >
-              <div className="grid grid-cols-1 gap-2 pt-2">
-                {AI_MODELS.map((model) => (
-                  <div
-                    key={model.id}
-                    onClick={() => onChange({ aiModel: model.id })}
-                    className={clsx(
-                      "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
-                      aiModel === model.id
-                        ? "border-primary bg-primary/5"
-                        : "border-transparent bg-muted/30 hover:bg-muted/50"
-                    )}
-                  >
-                    <div className={clsx(
-                      "w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                      aiModel === model.id ? "border-primary" : "border-muted-foreground/30"
-                    )}>
-                      {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">{model.label}</span>
-                      <span className="text-[10px] text-muted-foreground ml-2 font-mono">{model.id}</span>
-                    </div>
-                    {model.free && (
-                      <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">
-                        Free
-                      </span>
-                    )}
+          {/* Model Selection */}
+          <FormField label="AI Model" description="Pick a preset or type any OpenRouter model ID.">
+            <div className="grid grid-cols-1 gap-2 pt-2">
+              {AI_MODELS.map((model) => (
+                <div key={model.id} onClick={() => onChange({ aiModel: model.id })}
+                  className={clsx("flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
+                    aiModel === model.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
+                  <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                    aiModel === model.id ? "border-primary" : "border-muted-foreground/30")}>
+                    {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
                   </div>
-                ))}
-              </div>
-            </FormField>
+                  <div className="flex-1">
+                    <span className="text-sm font-medium">{model.label}</span>
+                    <span className="text-[10px] text-muted-foreground ml-2 font-mono">{model.id}</span>
+                  </div>
+                  {model.free && <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">Free</span>}
+                </div>
+              ))}
+            </div>
+          </FormField>
 
-            {/* Custom Model Input */}
-            <FormField
-              label="Custom Model ID"
-              description="Enter any OpenRouter model ID. Overrides preset selection above."
-            >
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  value={isPresetModel ? '' : aiModel}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    onChange({ aiModel: val || DEFAULT_OPENROUTER_MODEL });
-                  }}
-                  placeholder="e.g. openai/gpt-4o, anthropic/claude-3-opus"
-                  className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
-              {!isPresetModel && aiModel && (
-                <p className="mt-2 text-xs text-primary font-mono">
-                  Using custom model: {aiModel}
-                </p>
-              )}
-            </FormField>
-          </div>
-        )}
-
-        <div className="pt-6 border-t">
-          <h4 className="text-sm font-bold mb-4">Maintenance</h4>
-          <button
-            onClick={async () => {
-              await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE });
-              alert('Classification cache cleared.');
-            }}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold border border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all"
-          >
-            Reset All Cached Decisions
-          </button>
+          {/* Custom Model */}
+          <FormField label="Custom Model ID" description="Type any OpenRouter model ID. Overrides preset above.">
+            <input type="text" value={isPresetModel ? '' : aiModel}
+              onChange={(e) => onChange({ aiModel: e.target.value || DEFAULT_OPENROUTER_MODEL })}
+              placeholder="e.g. openai/gpt-4o, anthropic/claude-3-opus"
+              className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+            {!isPresetModel && aiModel && <p className="mt-2 text-xs text-primary font-mono">Using custom model: {aiModel}</p>}
+          </FormField>
         </div>
       )}
+
+      {/* Maintenance */}
+      <div className="pt-6 border-t">
+        <h4 className="text-sm font-bold mb-4">Maintenance</h4>
+        <button onClick={async () => { await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE }); alert('Cache cleared.'); }}
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold border border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all">
+          Reset All Cached Decisions
+        </button>
+      </div>
     </div>
   );
 }
