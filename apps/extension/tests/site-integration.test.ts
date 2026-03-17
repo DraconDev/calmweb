@@ -7,7 +7,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor';
-import { matchPresetKeywords, matchPresetChannel, getPreset } from '../src/presets';
 import { applyLocalRules } from '../utils/classifier';
 import type { ContentUnit, UserRules } from '@calmweb/shared';
 
