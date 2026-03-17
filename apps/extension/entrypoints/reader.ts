@@ -38,7 +38,7 @@ const LOADING_STYLES = `
     animation: calmweb-spin 0.8s linear infinite;
   }
   .calmweb-loading-text {
-    color: #666;
+    color: #52525b;
     font-size: 13px;
     font-weight: 500;
     letter-spacing: 0.05em;
