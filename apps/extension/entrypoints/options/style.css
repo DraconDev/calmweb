@@ -3,6 +3,10 @@
    Tailwind expects HSL values for CSS vars
    ============================================ */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Backgrounds */
   --background: 240 10% 4%;
