@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import type { UserSettings, UserRules, Stats, NeutralizationSettings } from '@calmweb/shared';
-import { defaultUserSettings, defaultNeutralizationSettings, AI_MODELS, DEFAULT_OPENROUTER_MODEL } from '@calmweb/shared';
+import { defaultUserSettings, defaultNeutralizationSettings, AI_MODELS, DEFAULT_OPENROUTER_MODEL, READER_FONTS } from '@calmweb/shared';
 import {
   Container,
   Card,
@@ -59,7 +59,7 @@ interface ReaderTabProps {
   defaultLayout: string;
   defaultTheme: string;
   textOnly: boolean;
-  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean; textOnly?: boolean }) => void;
+  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean; textOnly?: boolean; font?: string }) => void;
 }
 
 export default function OptionsApp() {
