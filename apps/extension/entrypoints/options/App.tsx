@@ -29,7 +29,6 @@ import {
   TestTube,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { allLayouts } from '@/src/renderer/layouts';
 import { allThemes } from '@/src/renderer/themes';
 
 type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'reader' | 'advanced';
@@ -999,21 +998,16 @@ function ReaderTab({ defaultLayout, defaultTheme, textOnly, onChange }: ReaderTa
       <Card padding="lg" className="bg-muted/50">
         <h4 className="font-bold mb-3 flex items-center gap-2">
           <Columns size={16} className="text-primary" />
-          Layout Details
+          How It Works
         </h4>
-        <div className="space-y-3 text-sm">
-          {allLayouts.map((layout) => (
-            <div key={layout.id} className="flex items-center justify-between py-2 border-b last:border-0">
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{layoutIcons[layout.id]}</span>
-                <span className="font-medium">{layout.name}</span>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>{layout.columns === 1 ? 'Single column' : `${layout.columns} columns`}</span>
-                <span>{layout.fontSize} font</span>
-              </div>
-            </div>
-          ))}
+        <div className="text-sm text-muted-foreground space-y-2">
+          <p>The adaptive layout analyzes each page and automatically adjusts:</p>
+          <ul className="list-disc list-inside space-y-1 text-xs">
+            <li><span className="text-foreground">Articles</span> — elegant serif typography with drop caps</li>
+            <li><span className="text-foreground">Code/docs</span> — monospace font, wider layout</li>
+            <li><span className="text-foreground">News</span> — compact 2-column for quick scanning</li>
+            <li><span className="text-foreground">Long reads</span> — focused centered layout</li>
+          </ul>
         </div>
       </Card>
     </div>
