@@ -338,18 +338,19 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                 </Card>
 
                 {/* AI Engine */}
-                <Card padding="lg">
+                <Card padding="lg" className={settings.processingMode === 'byok_llm' && settings.byokKey ? '' : 'border-primary/30 bg-primary/5'}>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold flex items-center gap-2">
                       <Zap size={18} className="text-primary" />
                       AI Engine
+                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
                     </h3>
                     <span className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${
                       settings.processingMode === 'byok_llm' && settings.byokKey
                         ? 'bg-green-500/10 text-green-500'
-                        : 'bg-muted text-muted-foreground'
+                        : 'bg-primary/10 text-primary animate-pulse'
                     }`}>
-                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Off'}
+                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Setup Needed'}
                     </span>
                   </div>
                   {settings.processingMode === 'byok_llm' && settings.byokKey ? (
@@ -363,13 +364,16 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                       />
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-muted-foreground">Enable AI for smarter content analysis</p>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Local keyword rules are basic. Connect <span className="text-primary font-semibold">OpenRouter</span> (free tier available) for context-aware filtering that understands meaning, not just words.
+                      </p>
                       <button
                         onClick={() => setActiveTab('advanced')}
-                        className="text-xs font-bold text-primary hover:underline"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                       >
-                        Configure →
+                        <Zap size={14} />
+                        Connect AI — Free
                       </button>
                     </div>
                   )}
