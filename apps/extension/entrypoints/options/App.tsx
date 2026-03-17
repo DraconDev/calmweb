@@ -258,55 +258,40 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-4xl mx-auto space-y-8">
             {activeTab === 'overview' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
                 {/* Stats Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <StatCard
-                    label="Items Filtered"
-                    value={stats.totalFiltered.toLocaleString()}
-                    icon={ShieldAlert}
-                  />
-                  <StatCard
-                    label="Active Rules"
-                    value={(settings.rules.blocklistChannels.length + settings.rules.blocklistKeywords.length).toString()}
-                    icon={Database}
-                  />
-                  <StatCard
-                    label="Protection"
-                    value="Neural"
-                    icon={Zap}
-                    highlight
-                  />
+                  <StatCard label="Items Filtered" value={stats.totalFiltered.toLocaleString()} icon={ShieldAlert} />
+                  <StatCard label="Active Rules" value={(settings.rules.blocklistChannels.length + settings.rules.blocklistKeywords.length).toString()} icon={Database} />
+                  <StatCard label="Protection" value="Neural" icon={Zap} highlight />
                 </div>
 
                 {/* Master Toggle */}
-                <Card padding="lg">
+                <div className="rounded-xl bg-card border border-border p-5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg ${settings.enabled ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
                         <ShieldCheck size={20} />
                       </div>
                       <div>
-                        <h3 className="font-bold">Protection {settings.enabled ? 'Active' : 'Paused'}</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="font-semibold text-sm">Protection {settings.enabled ? 'Active' : 'Paused'}</h3>
+                        <p className="text-xs text-muted-foreground">
                           {settings.enabled ? 'Filtering content on all pages' : 'All content is shown unfiltered'}
                         </p>
                       </div>
                     </div>
-                    <Switch
-                      checked={settings.enabled}
-                      onCheckedChange={(enabled) => saveSettings({ enabled })}
-                    />
+                    <Switch checked={settings.enabled} onCheckedChange={(enabled) => saveSettings({ enabled })} />
                   </div>
-                </Card>
+                </div>
 
-                {/* Quick Preset Toggles */}
-                <Card padding="lg">
-                  <h3 className="font-bold mb-4 flex items-center gap-2">
-                    <ShieldAlert size={18} className="text-primary" />
+                {/* Quick Filters */}
+                <div className="rounded-xl bg-card border border-border p-5">
+                  <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-muted-foreground">
+                    <ShieldAlert size={14} />
                     Quick Filters
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {[
                       { id: 'politics', label: 'Politics', icon: '🏛️' },
                       { id: 'ragebait', label: 'Ragebait', icon: '😤' },
@@ -319,114 +304,106 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                           const newPresets = { ...settings.rules.presets, [preset.id]: !settings.rules.presets[preset.id as keyof typeof settings.rules.presets] };
                           saveSettings({ rules: { ...settings.rules, presets: newPresets } });
                         }}
-                        className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                        className={`relative flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all text-sm ${
                           settings.rules.presets[preset.id as keyof typeof settings.rules.presets]
-                            ? 'border-primary bg-primary/5'
-                            : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                            ? 'bg-primary/10 text-foreground'
+                            : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'
                         }`}
                       >
-                        <span className="text-lg">{preset.icon}</span>
-                        <span className="text-sm font-medium">{preset.label}</span>
                         {settings.rules.presets[preset.id as keyof typeof settings.rules.presets] && (
-                          <span className="ml-auto text-[10px] font-bold uppercase text-green-500">On</span>
+                          <span className="absolute top-0 left-3 right-3 h-[2px] bg-primary rounded-full" />
                         )}
+                        <span>{preset.icon}</span>
+                        <span className="font-medium">{preset.label}</span>
                       </button>
                     ))}
                   </div>
-                </Card>
+                </div>
 
                 {/* AI Engine */}
-                <Card padding="lg" className={settings.processingMode === 'byok_llm' && settings.byokKey ? '' : 'border-primary/30 bg-primary/5'}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold flex items-center gap-2">
-                      <Zap size={18} className="text-primary" />
-                      AI Engine
-                      <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
-                    </h3>
-                    <span className={`text-xs font-bold uppercase px-2 py-1 rounded-full ${
+                <div className={`rounded-xl border p-5 ${
+                  settings.processingMode === 'byok_llm' && settings.byokKey
+                    ? 'bg-card border-border'
+                    : 'bg-primary/[0.03] border-primary/10'
+                }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Zap size={16} className="text-primary" />
+                      <h3 className="font-semibold text-sm">AI Engine</h3>
+                      {(!settings.byokKey) && (
+                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Setup</span>
+                      )}
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
                       settings.processingMode === 'byok_llm' && settings.byokKey
                         ? 'bg-green-500/10 text-green-500'
-                        : 'bg-primary/10 text-primary animate-pulse'
+                        : 'bg-primary/10 text-primary'
                     }`}>
-                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Setup Needed'}
+                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Needed'}
                     </span>
                   </div>
                   {settings.processingMode === 'byok_llm' && settings.byokKey ? (
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">
                         Model: <span className="font-mono text-foreground">{settings.aiModel || DEFAULT_OPENROUTER_MODEL}</span>
                       </p>
-                      <TestConnectionButton
-                        byokKey={settings.byokKey}
-                        aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL}
-                      />
+                      <TestConnectionButton byokKey={settings.byokKey} aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL} />
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">
-                        Local keyword rules are basic. Connect <span className="text-primary font-semibold">OpenRouter</span> (free tier available) for context-aware filtering that understands meaning, not just words.
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">
+                        Connect <span className="text-foreground font-medium">OpenRouter</span> for context-aware filtering. Free tier available.
                       </p>
                       <button
                         onClick={() => setActiveTab('advanced')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                       >
-                        <Zap size={14} />
-                        Connect AI — Free
+                        <Zap size={12} />
+                        Connect — Free
                       </button>
                     </div>
                   )}
-                </Card>
+                </div>
 
-                {/* Neutralization */}
-                <Card padding="lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${settings.neutralization?.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                        <Wand2 size={20} />
+                {/* Bottom Row: Neutralization + Reader */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="rounded-xl bg-card border border-border p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${settings.neutralization?.enabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                          <Wand2 size={18} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">Neutralization</h3>
+                          <p className="text-xs text-muted-foreground">
+                            {settings.neutralization?.enabled ? `${settings.neutralization.mode} mode` : 'Inactive'}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold">Text Neutralization</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {settings.neutralization?.enabled
-                            ? `Mode: ${settings.neutralization.mode} — rewriting inflammatory headlines`
-                            : 'Rewrite inflammatory headlines automatically'}
-                        </p>
-                      </div>
+                      <Switch
+                        checked={settings.neutralization?.enabled || false}
+                        onCheckedChange={(enabled) => saveSettings({ neutralization: { ...settings.neutralization, enabled } })}
+                      />
                     </div>
-                    <Switch
-                      checked={settings.neutralization?.enabled || false}
-                      onCheckedChange={(enabled) =>
-                        saveSettings({
-                          neutralization: { ...settings.neutralization, enabled },
-                        })
-                      }
-                    />
                   </div>
-                </Card>
 
-                {/* Super Reader */}
-                <Card padding="lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                        <BookOpen size={20} />
+                  <div className="rounded-xl bg-card border border-border p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                          <BookOpen size={18} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">Super Reader</h3>
+                          <p className="text-xs text-muted-foreground">Auto-opens on pages</p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-bold">Super Reader</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+Shift+R</kbd> on any page
-                          {settings.reader?.autoOpen !== false && ' (auto-opens on pages)'}
-                        </p>
-                      </div>
+                      <button onClick={() => setActiveTab('reader')} className="text-xs text-primary hover:underline font-medium">
+                        Settings
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setActiveTab('reader')}
-                      className="text-xs font-bold text-primary hover:underline"
-                    >
-                      Configure →
-                    </button>
                   </div>
-                </Card>
+                </div>
               </div>
             )}
 
