@@ -15,7 +15,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   Zap,
-  Database,
   RefreshCw,
   Info,
   Wand2,
