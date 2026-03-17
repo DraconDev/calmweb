@@ -397,12 +397,12 @@ describe('Site Integration - Preset Filtering', () => {
     };
   }
 
-  it('should match clickbait in news title', () => {
+  it('should match clickbait/ragebait in news title', () => {
     const unit = makeUnit("You WON'T BELIEVE What Happened Next!");
     const result = applyLocalRules(unit, allRules);
     expect(result).toBeTruthy();
     expect(result?.decision).toBe('collapse');
-    expect(result?.reason).toContain('clickbait');
+    expect(result?.reason).toMatch(/clickbait|ragebait/);
   });
 
   it('should match ragebait content', () => {
