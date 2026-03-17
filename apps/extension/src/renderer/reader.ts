@@ -13,6 +13,8 @@ export interface ReaderOptions {
   layoutId?: string;
   themeId?: string;
   textOnly?: boolean;
+  font?: string;
+  fontSize?: string;
   onClose?: () => void;
 }
 
