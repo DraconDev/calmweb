@@ -37,11 +37,6 @@ const REMOVE_SELECTORS = [
   '.cookie-notice', '.gdpr',
 ];
 
-const MEDIA_SELECTORS = [
-  'img', 'video', 'audio', 'picture', 'canvas',
-  'figure',  // removes figure wrapper but caption text may be lost
-];
-
 const CONTENT_SELECTORS = [
   'article',
   '[role="article"]',
