@@ -706,8 +706,7 @@ function AdvancedTab({ processingMode, strictness, byokKey, aiModel, onChange }:
         >
           <div className="grid grid-cols-1 gap-3 pt-2">
             {[
-              { id: 'local_rules', name: 'Local Rules', desc: 'Keyword matching only. Misses nuanced content. Fast, no external calls.', icon: Database, warn: true },
-              { id: 'byok_llm', name: 'OpenRouter AI (BYOK)', desc: 'Context-aware filtering using AI. Understands meaning, not just words. Free tier available.', icon: Zap, recommended: true },
+              { id: 'byok_llm', name: 'OpenRouter AI', desc: 'Context-aware filtering. Understands meaning, not just words. Free tier available.', icon: Zap, recommended: true },
               { id: 'hosted_llm', name: 'CalmWeb Cloud', desc: 'Managed neural engine with premium models (Pro).', icon: ShieldCheck },
             ].map((mode) => (
               <div
