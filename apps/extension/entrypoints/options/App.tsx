@@ -462,6 +462,7 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                 <ReaderTab
                   defaultTheme={settings.reader?.defaultTheme || 'default'}
                   textOnly={settings.reader?.textOnly !== false}
+                  font={settings.reader?.font || 'Inter'}
                   onChange={(reader) => saveSettings({ reader: { ...settings.reader, ...reader } })}
                 />
               </div>
@@ -895,11 +896,33 @@ function ReaderTab({ defaultTheme, textOnly, font, onChange }: Omit<ReaderTabPro
             <div>
               <div className="font-bold text-sm">Adaptive Layout</div>
               <div className="text-xs text-muted-foreground mt-1">
-                Automatically adjusts columns, typography, and spacing based on page content.
-                Articles get elegant serif, code gets monospace, news gets compact columns.
+                Automatically adjusts columns and spacing. One clean look everywhere.
               </div>
             </div>
           </div>
+        </div>
+      </FormField>
+
+      <FormField
+        label="Reading Font"
+        description="Choose your preferred typeface for all content"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+          {READER_FONTS.map((f) => (
+            <div
+              key={f.id}
+              onClick={() => onChange({ font: f.id })}
+              className={clsx(
+                "p-3 rounded-xl border-2 cursor-pointer transition-all",
+                (font || 'Inter') === f.id
+                  ? "border-primary bg-primary/5"
+                  : "border-transparent bg-muted/30 hover:bg-muted/50"
+              )}
+            >
+              <div className="font-bold text-sm" style={{ fontFamily: f.family }}>{f.label}</div>
+              <div className="text-[10px] text-muted-foreground mt-1">{f.style}</div>
+            </div>
+          ))}
         </div>
       </FormField>
 
