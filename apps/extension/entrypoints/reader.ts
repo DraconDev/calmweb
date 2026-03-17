@@ -96,6 +96,12 @@ function showLoading(): void {
 
 function hideLoading(): void {
   document.getElementById(LOADING_ID)?.remove();
+  // Always restore page visibility when hiding loader
+  // (openReader will re-hide if it succeeds)
+  document.documentElement.style.removeProperty('overflow');
+  document.documentElement.style.removeProperty('visibility');
+  document.body.style.removeProperty('overflow');
+  document.body.style.removeProperty('visibility');
 }
 
 function showFloatingButton(): void {
