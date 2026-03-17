@@ -224,10 +224,6 @@ export default defineContentScript({
       } catch (err) {
         // Reader couldn't extract content - restore page and show floating button
         console.log('[CalmWeb] No extractable content, showing floating button');
-        document.documentElement.style.removeProperty('overflow');
-        document.documentElement.style.removeProperty('visibility');
-        document.body.style.removeProperty('overflow');
-        document.body.style.removeProperty('visibility');
         showFloatingButton();
       }
     }, 400);
