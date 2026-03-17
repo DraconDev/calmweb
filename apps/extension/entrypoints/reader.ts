@@ -80,7 +80,7 @@ function hasArticleContent(): { yes: boolean; score: number } {
   if (document.querySelector('article')) score += 40;
 
   // Check for actual article-like paragraphs (not just links)
-  const paragraphs = document.querySelectorAll('p');
+  const paragraphs = Array.from(document.querySelectorAll('p'));
   let realContent = 0;
   for (const p of paragraphs) {
     const text = p.textContent?.trim() || '';
