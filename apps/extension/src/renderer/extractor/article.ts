@@ -52,15 +52,21 @@ const REMOVE_SELECTORS = [
 ];
 
 const CONTENT_SELECTORS = [
+  // Wikipedia-specific (before generic #content)
+  '#mw-content-text',
+  '.mw-parser-output',
+  // Semantic HTML
   'article',
   '[role="article"]',
   'main article',
+  // Common CMS patterns
   '.post-content',
   '.article-content',
   '.entry-content',
   '.post-body',
   '.article-body',
   '.content-body',
+  // Main containers (last resort)
   'main',
   '[role="main"]',
   '#content',
