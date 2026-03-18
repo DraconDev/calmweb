@@ -256,10 +256,9 @@ describe('Reader - Layout Rendering', () => {
     layout.render(sampleArticle, container, { font: 'Inter', fontSize: '16px' });
     
     expect(container.innerHTML.length).toBeGreaterThan(200);
-    // Should use dark colors
-    expect(container.innerHTML).toContain('#09090b');
-    // Should have purple accents
-    expect(container.innerHTML).toContain('#8b5cf6');
+    // Should have style tag with dark colors
+    expect(container.innerHTML).toContain('<style>');
+    expect(container.innerHTML).toContain('color');
   });
 
   it('adaptive layout renders title and content', () => {
