@@ -307,62 +307,6 @@ function renderFallback(container: HTMLElement, title: string, content: string):
     </div>
   `;
 }
-          </button>
-          <div class="calmweb-reader-dropdown-menu" data-menu="layout">
-            ${allLayouts.map(l => `
-              <div class="calmweb-reader-dropdown-item ${l.id === currentLayout.id ? 'active' : ''}" data-layout="${l.id}">
-                ${l.name}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="calmweb-reader-dropdown">
-          <button class="calmweb-reader-btn" data-dropdown="theme">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="5"/>
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-            </svg>
-            <span class="theme-name">${currentTheme.name}</span>
-          </button>
-          <div class="calmweb-reader-dropdown-menu" data-menu="theme">
-            ${allThemes.map(t => `
-              <div class="calmweb-reader-dropdown-item ${t.id === currentTheme.id ? 'active' : ''}" data-theme="${t.id}">
-                ${t.name}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <button class="calmweb-reader-btn" data-action="raw">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <line x1="3" y1="9" x2="21" y2="9"/>
-          </svg>
-          Raw
-        </button>
-        <button class="calmweb-reader-btn calmweb-reader-btn-close" data-action="close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-          Close
-        </button>
-      </div>
-    </div>
-    <div class="calmweb-reader-content" id="reader-content"></div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  const contentEl = shadow.getElementById('reader-content') as HTMLElement;
-  applyTheme(currentTheme, overlay);
-  currentLayout.render(article, contentEl, { font: currentFont, fontSize: currentFontSize });
-
-  setupEventListeners(shadow, overlay, options);
-  } catch (err) {
-    console.error('[CalmWeb] Failed to open reader:', err);
-  }
-}
 
 export function closeReader(): void {
   const overlay = document.getElementById(OVERLAY_ID);
