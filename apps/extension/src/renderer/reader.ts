@@ -162,6 +162,7 @@ const OVERLAY_STYLES = `
   .calmweb-reader-content {
     margin-top: 56px;
     min-height: calc(100vh - 56px);
+    background: #09090b;
   }
 
 `;
