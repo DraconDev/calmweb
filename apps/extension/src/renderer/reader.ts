@@ -191,76 +191,99 @@ export function openReader(options: ReaderOptions = {}): void {
   currentFont = options.font ? `${options.font}, -apple-system, sans-serif` : 'Inter, -apple-system, sans-serif';
   currentFontSize = options.fontSize || '17px';
 
-  // Build toolbar (always present)
   const titleText = article?.title || document.title || 'Current Page';
 
-  // Create overlay - opaque fixed div that covers everything
+  // Create overlay with INLINE STYLES (no shadow DOM, no CSS files)
   const overlay = document.createElement('div');
   overlay.id = OVERLAY_ID;
-  const shadow = overlay.attachShadow({ mode: 'open' });
-
-  shadow.innerHTML = `
-    <style>${OVERLAY_STYLES}</style>
-    <div class="calmweb-reader-toolbar">
-      <div class="calmweb-reader-toolbar-left">
-        <div class="calmweb-reader-logo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          Filtered
-        </div>
-        <div class="calmweb-reader-title">${escapeHtml(titleText)}</div>
-      </div>
-      <div class="calmweb-reader-toolbar-right">
-        <button class="calmweb-reader-btn" data-action="raw">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          </svg>
-          Raw
-        </button>
-        <button class="calmweb-reader-btn calmweb-reader-btn-close" data-action="close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-          Close
-        </button>
-      </div>
-    </div>
-    <div class="calmweb-reader-content" id="calmweb-reader-content">
-      <div class="calmweb-reader-loading" style="display:flex;align-items:center;justify-content:center;padding:80px 20px;color:#3f3f46;font-size:14px;">
-        Rendering content...
-      </div>
-    </div>
+  overlay.style.cssText = `
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100vw !important; height: 100vh !important;
+    z-index: 2147483647 !important;
+    background: #09090b !important;
+    color: #d4d4d8 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    font-family: ${currentFont} !important;
   `;
 
-  // Append to page immediately
+  // Toolbar
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = `
+    position: sticky !important; top: 0 !important; z-index: 10 !important;
+    height: 56px !important; display: flex !important; align-items: center !important;
+    justify-content: space-between !important; padding: 0 20px !important;
+    background: rgba(9,9,11,0.95) !important; backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(139,92,246,0.1) !important;
+  `;
+
+  // Logo
+  const logo = document.createElement('div');
+  logo.style.cssText = 'display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:#8b5cf6;';
+  logo.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Filtered`;
+
+  // Title
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:13px;color:#52525b;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+  title.textContent = titleText;
+
+  const left = document.createElement('div');
+  left.style.cssText = 'display:flex;align-items:center;gap:12px;min-width:0;';
+  left.appendChild(logo);
+  left.appendChild(title);
+
+  // Buttons
+  const rawBtn = document.createElement('button');
+  rawBtn.style.cssText = 'display:flex;align-items:center;gap:6px;padding:8px 14px;background:transparent;border:1px solid rgba(255,255,255,0.06);border-radius:8px;font-size:13px;color:#a1a1aa;cursor:pointer;font-family:inherit;';
+  rawBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg> Raw`;
+  rawBtn.onclick = () => { closeReader(); options.onClose?.(); };
+
+  const closeBtn = document.createElement('button');
+  closeBtn.style.cssText = 'display:flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-size:13px;color:#f87171;cursor:pointer;font-family:inherit;';
+  closeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Close`;
+  closeBtn.onclick = () => { closeReader(); options.onClose?.(); };
+
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:8px;';
+  right.appendChild(rawBtn);
+  right.appendChild(closeBtn);
+
+  toolbar.appendChild(left);
+  toolbar.appendChild(right);
+
+  // Content area
+  const content = document.createElement('div');
+  content.id = 'calmweb-reader-content';
+  content.style.cssText = 'padding: 0 0 80px; min-height: calc(100vh - 56px);';
+
+  // Assemble
+  overlay.appendChild(toolbar);
+  overlay.appendChild(content);
   document.body.appendChild(overlay);
 
-  // Render content in next frame (so user sees toolbar immediately)
-  requestAnimationFrame(() => {
-    const contentEl = shadow.getElementById('calmweb-reader-content');
-    if (!contentEl) return;
-
-    if (article && article.title) {
-      try {
-        currentLayout.render(article, contentEl, { font: currentFont, fontSize: currentFontSize });
-      } catch (err) {
-        console.error('[CalmWeb] Layout render failed:', err);
-        renderFallback(contentEl, article.title, article.content);
-      }
-    } else {
-      // No extraction - render page title and body text as fallback
-      const fallback = fallbackArticle();
-      try {
-        currentLayout.render(fallback, contentEl, { font: currentFont, fontSize: currentFontSize });
-      } catch (err) {
-        renderFallback(contentEl, document.title, document.body?.textContent?.slice(0, 2000) || '');
-      }
+  // Render content
+  if (article && article.title) {
+    try {
+      currentLayout.render(article, content, { font: currentFont, fontSize: currentFontSize });
+    } catch (err) {
+      console.error('[CalmWeb] Layout render failed:', err);
+      renderFallback(content, article.title, article.content);
     }
-  });
+  } else {
+    const fallback = fallbackArticle();
+    try {
+      currentLayout.render(fallback, content, { font: currentFont, fontSize: currentFontSize });
+    } catch (err) {
+      renderFallback(content, document.title, document.body?.textContent?.slice(0, 2000) || '');
+    }
+  }
 
-  // Set up event listeners
-  setupEventListeners(shadow, overlay, options);
+  // Escape key
+  const handleEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { closeReader(); document.removeEventListener('keydown', handleEsc); }
+  };
+  document.addEventListener('keydown', handleEsc);
 }
 
 function fallbackArticle(): ExtractedArticle {
