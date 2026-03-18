@@ -127,7 +127,7 @@ Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': 'https://calmweb.app',
-        'X-Title': 'CalmWeb',
+        'X-OpenRouter-Title': 'CalmWeb',
       },
       body: JSON.stringify({
         model: model || DEFAULT_OPENROUTER_MODEL,
