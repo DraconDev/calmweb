@@ -194,7 +194,7 @@ function findMainContent(doc: Document): HTMLElement {
   let best: HTMLElement | null = null;
   let bestScore = 0;
 
-  for (const candidate of candidates) {
+  for (const candidate of Array.from(candidates)) {
     const el = candidate as HTMLElement;
     const text = el.textContent?.trim() || '';
     const paragraphs = el.querySelectorAll('p').length;
