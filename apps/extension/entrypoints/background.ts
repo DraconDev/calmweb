@@ -235,7 +235,7 @@ const handlers: Record<string, MessageHandler> = {
     sender; // unused
     const { apiKey, model, endpoint } = message;
     const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
-    const testModel = model || 'openrouter/free';
+    const testModel = model || 'meta-llama/llama-3.1-8b-instruct:free';
 
     async function tryConnect(): Promise<{ success: boolean; model?: string; error?: string }> {
       try {
