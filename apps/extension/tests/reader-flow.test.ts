@@ -147,7 +147,8 @@ describe('Reader Flow Debug', () => {
 
     // Check for dark theme colors in the CSS
     const html = container.innerHTML;
-    expect(html).toContain('#09090b'); // background
-    expect(html).toContain('#8b5cf6'); // purple accent
+    expect(html).toContain('.calm-layout');
+    expect(html).toContain('color: #d4d4d8');
+    expect(html).toContain('#7c6aed'); // purple links
   });
 });
