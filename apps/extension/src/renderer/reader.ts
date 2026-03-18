@@ -17,7 +17,8 @@ export interface ReaderOptions {
 }
 
 const OVERLAY_ID = 'calmweb-reader-overlay';
-const OVERLAY_STYLES = `
+
+export interface ReaderOptions {
   #${OVERLAY_ID} {
     position: fixed;
     top: 0;
