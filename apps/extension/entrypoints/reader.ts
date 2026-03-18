@@ -164,37 +164,43 @@ export default defineContentScript({
       if (message.type === MESSAGE_TYPES.CLOSE_READER) { try { if (isReaderOpen()) { closeReader(); showFloatingButton(); } } catch (e) { console.error(e); } }
     });
 
-    // Load settings
+    // Load settings with timeout - default to filtering if settings unavailable
     let shouldFilter = true;
     let readerSettings: any = {};
     try {
-      const settings = await sendToBackground<UserSettings>({ type: MESSAGE_TYPES.GET_SETTINGS });
+      const settingsPromise = sendToBackground<UserSettings>({ type: MESSAGE_TYPES.GET_SETTINGS });
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Settings timeout')), 2000));
+      const settings = await Promise.race([settingsPromise, timeout]) as UserSettings;
       if (settings?.reader?.autoOpen === false || settings?.enabled === false) shouldFilter = false;
       readerSettings = settings?.reader || {};
+      console.log('[CalmWeb] Settings loaded, filtering:', shouldFilter);
     } catch (err) {
-      console.error('[CalmWeb] Settings load failed:', err);
+      console.warn('[CalmWeb] Settings load failed, defaulting to filter:', err);
+      // Default to filtering anyway
     }
 
     if (!shouldFilter) { showFloatingButton(); return; }
     if (isInteractiveSite()) { showFloatingButton(); return; }
 
-    // Open filtered view
+    // Open filtered view immediately
+    console.log('[CalmWeb] Opening reader...');
     showLoading();
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        hideLoading();
-        try {
-          openReader({
-            textOnly: readerSettings.textOnly !== false,
-            layoutId: readerSettings.defaultLayout,
-            font: readerSettings.font,
-            fontSize: readerSettings.fontSize,
-          });
-        } catch (err) {
-          console.error('[CalmWeb] Reader failed:', err);
-          showFloatingButton();
-        }
-      }, 300);
-    });
+
+    // Don't wait for requestAnimationFrame - open ASAP
+    setTimeout(() => {
+      hideLoading();
+      try {
+        openReader({
+          textOnly: readerSettings.textOnly !== false,
+          layoutId: readerSettings.defaultLayout,
+          font: readerSettings.font,
+          fontSize: readerSettings.fontSize,
+        });
+        console.log('[CalmWeb] Reader opened OK');
+      } catch (err) {
+        console.error('[CalmWeb] Reader failed:', err);
+        showFloatingButton();
+      }
+    }, 250);
   },
 });
