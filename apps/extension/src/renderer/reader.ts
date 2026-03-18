@@ -197,7 +197,6 @@ export function openReader(options: ReaderOptions = {}): void {
 
   // Set up layout/fonts
   currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article || fallbackArticle());
-  currentTheme = getTheme(options.themeId || 'default');
   currentFont = options.font ? `${options.font}, -apple-system, sans-serif` : 'Inter, -apple-system, sans-serif';
   currentFontSize = options.fontSize || '17px';
 
