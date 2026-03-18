@@ -6,7 +6,6 @@ import type { ExtractedArticle } from './extractor';
 import type { ReaderLayout } from './layouts';
 import { extractArticle } from './extractor';
 import { getLayout, autoDetectLayout } from './layouts';
-import { getTheme } from './themes';
 
 export interface ReaderOptions {
   layoutId?: string;
