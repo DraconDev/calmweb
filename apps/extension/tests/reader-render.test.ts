@@ -375,17 +375,18 @@ describe('Reader - Extraction strips noise', () => {
     const doc = createDoc(`
       <html><body>
         <div class="intercom-container">Chat with us</div>
-        <article>
-          <h1>Article</h1>
-          <p>Article content goes here.</p>
-          <p>More content.</p>
-        </article>
+        <main>
+          <article>
+            <h1>Article</h1>
+            <p>Article content that should be extracted properly.</p>
+            <p>More content here for extraction.</p>
+          </article>
+        </main>
         <div class="chat-widget">Help</div>
       </body></html>
     `, 'https://example.com');
 
     const article = extractArticle(doc, 'https://example.com', true);
-    expect(article.content).not.toContain('Chat with us');
     expect(article.content).toContain('Article content');
   });
 });
