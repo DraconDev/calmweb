@@ -208,26 +208,6 @@ function findMainContent(doc: Document): HTMLElement {
 
   return best || doc.body;
 }
-  }
-
-  const candidates = doc.querySelectorAll('div, section, main');
-  let best: HTMLElement | null = null;
-  let bestScore = 0;
-
-  candidates.forEach((candidate) => {
-    const html = candidate as HTMLElement;
-    const textLength = html.textContent?.length || 0;
-    const paragraphs = html.querySelectorAll('p').length;
-    const score = textLength + (paragraphs * 100);
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = html;
-    }
-  });
-
-  return best || doc.body;
-}
 
 function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
   const clone = el.cloneNode(true) as HTMLElement;
