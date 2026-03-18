@@ -245,7 +245,6 @@ export function openReader(options: ReaderOptions = {}): void {
     if (!contentEl) return;
 
     if (article && article.title) {
-      currentArticle = article;
       try {
         currentLayout.render(article, contentEl, { font: currentFont, fontSize: currentFontSize });
       } catch (err) {
