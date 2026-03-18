@@ -70,7 +70,7 @@ const DARK_CSS = `
   .calm-layout {
     max-width: var(--lw);
     margin: 0 auto;
-    padding: 56px 32px 100px;
+    padding: 0 32px 100px;
     font-family: var(--lf);
     font-size: var(--ls);
     line-height: var(--lh);
