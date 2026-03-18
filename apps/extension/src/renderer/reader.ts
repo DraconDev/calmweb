@@ -19,21 +19,9 @@ export interface ReaderOptions {
 const OVERLAY_ID = 'calmweb-reader-overlay';
 
 export interface ReaderOptions {
-  #${OVERLAY_ID} {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 2147483647;
-    background: var(--reader-bg, #09090b);
-    color: var(--reader-text, #e4e4e7);
-    overflow-y: auto;
-    overflow-x: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
+  layoutId?: string;
+  themeId?: string;
+  textOnly?: boolean;
 
   .calmweb-reader-toolbar {
     position: fixed;
