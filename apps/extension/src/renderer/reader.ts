@@ -169,8 +169,6 @@ const OVERLAY_STYLES = `
 `;
 
 let currentLayout: ReaderLayout;
-let _currentTheme: ReaderTheme;
-let currentArticle: ExtractedArticle | null = null;
 let currentFont: string = 'Inter, -apple-system, sans-serif';
 let currentFontSize: string = '17px';
 
