@@ -125,7 +125,7 @@ Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey.trim()}`,
         'HTTP-Referer': 'https://calmweb.app',
         'X-OpenRouter-Title': 'CalmWeb',
       },

@@ -237,20 +237,26 @@ const handlers: Record<string, MessageHandler> = {
     const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
     const testModel = model || 'openrouter/free';
 
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      return { success: false, error: 'No API key provided' };
+    }
+
     async function tryConnect(): Promise<{ success: boolean; model?: string; error?: string }> {
       try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey.trim()}`,
+          'HTTP-Referer': 'https://calmweb.app',
+          'X-OpenRouter-Title': 'CalmWeb',
+        };
+
         const response = await fetch(testEndpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
-            'HTTP-Referer': 'https://calmweb.app',
-            'X-OpenRouter-Title': 'CalmWeb',
-          },
+          headers,
           body: JSON.stringify({
             model: testModel,
-            messages: [{ role: 'user', content: 'Reply with exactly: OK' }],
-            max_tokens: 5,
+            messages: [{ role: 'user', content: 'Say OK' }],
+            max_tokens: 10,
           }),
         });
 
