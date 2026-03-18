@@ -175,35 +175,37 @@ let currentFont: string = 'Inter, -apple-system, sans-serif';
 let currentFontSize: string = '17px';
 
 export function openReader(options: ReaderOptions = {}): void {
+  // Always hide the page FIRST - never flash original content
+  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+  document.documentElement.style.setProperty('visibility', 'hidden', 'important');
+  document.body.style.setProperty('overflow', 'hidden', 'important');
+  document.body.style.setProperty('visibility', 'hidden', 'important');
+
+  // Remove any existing overlay
+  document.getElementById(OVERLAY_ID)?.remove();
+
+  // Create overlay immediately - always show our UI
+  const overlay = document.createElement('div');
+  overlay.id = OVERLAY_ID;
+  overlay.style.setProperty('visibility', 'visible', 'important');
+  const shadow = overlay.attachShadow({ mode: 'open' });
+
+  // Try to extract content
+  let article: ExtractedArticle | null = null;
   try {
-    const existing = document.getElementById(OVERLAY_ID);
-    if (existing) return;
+    article = extractArticle(document, window.location.href, options.textOnly ?? true);
+  } catch (err) {
+    console.error('[CalmWeb] Extraction failed:', err);
+  }
 
-    const article = extractArticle(document, window.location.href, options.textOnly ?? true);
-    if (!article || !article.title) {
-      console.warn('[CalmWeb] Could not extract article content');
-      return;
-    }
-    currentArticle = article;
-
-    // Hide all page content and lock scrolling
-    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-    document.body.style.setProperty('overflow', 'hidden', 'important');
-    document.body.style.setProperty('visibility', 'hidden', 'important');
-    document.documentElement.style.setProperty('visibility', 'hidden', 'important');
-
-  // Auto-detect layout unless explicitly specified
-  currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article);
+  // Set up layout/fonts
+  currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article || fallbackArticle());
   currentTheme = getTheme(options.themeId || 'default');
   currentFont = options.font ? `${options.font}, -apple-system, sans-serif` : 'Inter, -apple-system, sans-serif';
   currentFontSize = options.fontSize || '17px';
 
-  const overlay = document.createElement('div');
-  overlay.id = OVERLAY_ID;
-  // Make overlay visible even though body is hidden
-  overlay.style.setProperty('visibility', 'visible', 'important');
-
-  const shadow = overlay.attachShadow({ mode: 'open' });
+  // Build toolbar (always present)
+  const titleText = article?.title || document.title || 'Current Page';
 
   shadow.innerHTML = `
     <style>${OVERLAY_STYLES}</style>
@@ -215,18 +217,96 @@ export function openReader(options: ReaderOptions = {}): void {
           </svg>
           Filtered
         </div>
-        <div class="calmweb-reader-title">${escapeHtml(article.title)}</div>
+        <div class="calmweb-reader-title">${escapeHtml(titleText)}</div>
       </div>
       <div class="calmweb-reader-toolbar-right">
-        <div class="calmweb-reader-dropdown">
-          <button class="calmweb-reader-btn" data-dropdown="layout">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/>
-            </svg>
-            <span class="layout-name">${currentLayout.name}</span>
+        <button class="calmweb-reader-btn" data-action="raw">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          </svg>
+          Raw
+        </button>
+        <button class="calmweb-reader-btn calmweb-reader-btn-close" data-action="close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+          Close
+        </button>
+      </div>
+    </div>
+    <div class="calmweb-reader-content" id="calmweb-reader-content">
+      <div class="calmweb-reader-loading" style="display:flex;align-items:center;justify-content:center;padding:80px 20px;color:#3f3f46;font-size:14px;">
+        Rendering content...
+      </div>
+    </div>
+  `;
+
+  // Append to page immediately
+  document.body.appendChild(overlay);
+
+  // Render content in next frame (so user sees toolbar immediately)
+  requestAnimationFrame(() => {
+    const contentEl = shadow.getElementById('calmweb-reader-content');
+    if (!contentEl) return;
+
+    if (article && article.title) {
+      currentArticle = article;
+      try {
+        currentLayout.render(article, contentEl, { font: currentFont, fontSize: currentFontSize });
+      } catch (err) {
+        console.error('[CalmWeb] Layout render failed:', err);
+        renderFallback(contentEl, article.title, article.content);
+      }
+    } else {
+      // No extraction - render page title and body text as fallback
+      const fallback = fallbackArticle();
+      currentArticle = fallback;
+      try {
+        currentLayout.render(fallback, contentEl, { font: currentFont, fontSize: currentFontSize });
+      } catch (err) {
+        renderFallback(contentEl, document.title, document.body?.textContent?.slice(0, 2000) || '');
+      }
+    }
+  });
+
+  // Set up event listeners
+  setupEventListeners(shadow, overlay, options);
+}
+
+function fallbackArticle(): ExtractedArticle {
+  return {
+    title: document.title || 'Current Page',
+    author: undefined,
+    date: undefined,
+    content: document.body?.textContent?.slice(0, 5000) || '',
+    contentHtml: (() => {
+      const div = document.createElement('div');
+      const text = document.body?.textContent || '';
+      const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 20).slice(0, 20);
+      for (const p of paragraphs) {
+        const el = document.createElement('p');
+        el.textContent = p.trim();
+        div.appendChild(el);
+      }
+      return div;
+    })(),
+    images: [],
+    source: window.location.hostname,
+    favicon: undefined,
+    readingTime: Math.ceil((document.body?.textContent?.split(/\s+/).length || 0) / 200),
+    url: window.location.href,
+  };
+}
+
+function renderFallback(container: HTMLElement, title: string, content: string): void {
+  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 20).slice(0, 15);
+  container.innerHTML = `
+    <div style="max-width:680px;margin:0 auto;padding:48px 24px;font-family:${currentFont};font-size:${currentFontSize};color:#a1a1aa;line-height:1.75;">
+      <h1 style="font-size:1.8em;color:#e4e4e7;margin:0 0 24px;font-weight:600;letter-spacing:-0.02em;">${escapeHtml(title)}</h1>
+      ${paragraphs.map(p => `<p style="margin:0 0 1.5em;">${escapeHtml(p.trim())}</p>`).join('')}
+    </div>
+  `;
+}
           </button>
           <div class="calmweb-reader-dropdown-menu" data-menu="layout">
             ${allLayouts.map(l => `
