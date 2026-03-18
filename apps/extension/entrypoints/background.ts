@@ -235,41 +235,51 @@ const handlers: Record<string, MessageHandler> = {
     sender; // unused
     const { apiKey, model, endpoint } = message;
     const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
-    const testModel = model || 'meta-llama/llama-3.1-8b-instruct:free';
+    const testModel = model || 'openrouter/free';
 
-    try {
-      const response = await fetch(testEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://calmweb.app',
-          'X-Title': 'CalmWeb',
-        },
-        body: JSON.stringify({
-          model: testModel,
-          messages: [{ role: 'user', content: 'Reply with just "OK".' }],
-          max_tokens: 5,
-        }),
-      });
+    async function tryConnect(): Promise<{ success: boolean; model?: string; error?: string }> {
+      try {
+        const response = await fetch(testEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://calmweb.app',
+            'X-Title': 'CalmWeb',
+          },
+          body: JSON.stringify({
+            model: testModel,
+            messages: [{ role: 'user', content: 'Reply with just "OK".' }],
+            max_tokens: 5,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+        if (!response.ok) {
+          const errorText = await response.text();
+          return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+        }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content) {
+          return { success: true, model: testModel };
+        }
+        return { success: false, error: 'No response content' };
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
       }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (content) {
-        return { success: true, model: testModel };
-      }
-      return { success: false, error: 'No response content' };
-    } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : String(error) 
-      };
     }
+
+    // First attempt
+    const result = await tryConnect();
+    if (result.success) return result;
+
+    // Retry once after short delay (handles cold start / DNS)
+    await new Promise(r => setTimeout(r, 1500));
+    return tryConnect();
   },
 };
 
