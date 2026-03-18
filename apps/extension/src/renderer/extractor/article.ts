@@ -184,9 +184,30 @@ function extractDate(doc: Document): string | undefined {
 function findMainContent(doc: Document): HTMLElement {
   for (const selector of CONTENT_SELECTORS) {
     const el = doc.querySelector(selector);
-    if (el && el.textContent && el.textContent.trim().length > 200) {
+    if (el && el.textContent && el.textContent.trim().length > 100) {
       return el as HTMLElement;
     }
+  }
+
+  // Fallback: find the element with most paragraph content
+  const candidates = doc.querySelectorAll('div, section, main');
+  let best: HTMLElement | null = null;
+  let bestScore = 0;
+
+  for (const candidate of candidates) {
+    const el = candidate as HTMLElement;
+    const text = el.textContent?.trim() || '';
+    const paragraphs = el.querySelectorAll('p').length;
+    // Score: prefer elements with many paragraphs (article-like) over raw text
+    const score = text.length + (paragraphs * 500);
+    if (score > bestScore) {
+      bestScore = score;
+      best = el;
+    }
+  }
+
+  return best || doc.body;
+}
   }
 
   const candidates = doc.querySelectorAll('div, section, main');
