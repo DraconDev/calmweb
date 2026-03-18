@@ -132,10 +132,9 @@ Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if 
       body: JSON.stringify({
         model: model || DEFAULT_OPENROUTER_MODEL,
         messages: [
-          { role: 'system', content: systemPrompt },
-          { 
-            role: 'user', 
-            content: `Title: ${unit.title}\nSource: ${unit.sourceName || 'unknown'}\nSite: ${unit.site}\nMetadata: ${unit.metadata.join(', ')}`
+          {
+            role: 'user',
+            content: `${systemPrompt}\n\n---\n\nClassify this content:\nTitle: ${unit.title}\nSource: ${unit.sourceName || 'unknown'}\nSite: ${unit.site}\nMetadata: ${unit.metadata.join(', ')}\n\nRespond with JSON only.`,
           },
         ],
         temperature: 0.2,
