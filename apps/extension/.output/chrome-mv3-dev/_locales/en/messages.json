@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "CalmWeb",
+    "description": "Extension name"
+  },
+  "extNameDev": {
+    "message": "CalmWeb (Dev)",
+    "description": "Extension name in development mode"
+  },
+  "extDescription": {
+    "message": "Content firewall that hides distracting or unwanted content on YouTube, Reddit, and X.",
+    "description": "Extension description"
+  }
+}
