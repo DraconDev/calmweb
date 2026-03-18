@@ -252,18 +252,12 @@ export const adaptiveLayout: ReaderLayout = {
 
     container.innerHTML = `
       <style>
-        .calm-layout {
-          --lw: ${profile.maxWidth};
-          --lf: ${font};
-          --ls: ${fontSize};
-          --lh: ${lineHeight};
-        }
         ${DARK_CSS}
         @media (max-width: 700px) {
           .calm-content.columns-2 { column-count: 1; }
         }
       </style>
-      <div class="calm-layout">
+      <div class="calm-layout" style="max-width:${profile.maxWidth};font-family:${font};font-size:${fontSize};line-height:${lineHeight};">
         ${heroImage ? `<img class="calm-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}" style="width:100%;height:auto;border-radius:12px;margin-bottom:32px;opacity:0.9;">` : ''}
         <header class="calm-header ${profile.centered ? 'centered' : ''}">
           <h1 class="calm-title">${escapeHtml(article.title)}</h1>
