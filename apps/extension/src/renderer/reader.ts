@@ -254,7 +254,6 @@ export function openReader(options: ReaderOptions = {}): void {
     } else {
       // No extraction - render page title and body text as fallback
       const fallback = fallbackArticle();
-      currentArticle = fallback;
       try {
         currentLayout.render(fallback, contentEl, { font: currentFont, fontSize: currentFontSize });
       } catch (err) {
@@ -314,7 +313,7 @@ export function closeReader(): void {
   document.body.style.removeProperty('visibility');
 }
 
-function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: ReaderOptions): void {
+function setupEventListeners(shadow: ShadowRoot, _overlay: HTMLElement, options: ReaderOptions): void {
   const closeBtn = shadow.querySelector('[data-action="close"]');
   closeBtn?.addEventListener('click', () => {
     closeReader();
