@@ -249,7 +249,7 @@ const handlers: Record<string, MessageHandler> = {
           },
           body: JSON.stringify({
             model: testModel,
-            messages: [{ role: 'user', content: 'Reply with just "OK".' }],
+            messages: [{ role: 'user', content: 'Reply with exactly: OK' }],
             max_tokens: 5,
           }),
         });
