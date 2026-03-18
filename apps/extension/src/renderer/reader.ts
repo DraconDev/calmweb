@@ -28,12 +28,10 @@ export interface ReaderOptions {
 }
 
 let currentLayout: ReaderLayout;
+let currentFont: string = 'Inter, -apple-system, sans-serif';
+let currentFontSize: string = '17px';
 
-  .calmweb-reader-toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+export function openReader
 
   .calmweb-reader-logo {
     display: flex;
