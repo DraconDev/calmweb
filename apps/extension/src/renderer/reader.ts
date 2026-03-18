@@ -22,22 +22,12 @@ export interface ReaderOptions {
   layoutId?: string;
   themeId?: string;
   textOnly?: boolean;
+  font?: string;
+  fontSize?: string;
+  onClose?: () => void;
+}
 
-  .calmweb-reader-toolbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: rgba(9, 9, 11, 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    z-index: 10;
-  }
+let currentLayout: ReaderLayout;
 
   .calmweb-reader-toolbar-left {
     display: flex;
