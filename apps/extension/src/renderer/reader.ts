@@ -349,45 +349,6 @@ function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: 
   });
 }
 
-  const closeBtn = shadow.querySelector('[data-action="close"]');
-  closeBtn?.addEventListener('click', () => {
-    closeReader();
-    options.onClose?.();
-  });
-
-  const rawBtn = shadow.querySelector('[data-action="raw"]');
-  rawBtn?.addEventListener('click', () => {
-    closeReader();
-    options.onClose?.();
-  });
-
-  // Handle link clicks in shadow DOM - allow normal navigation
-  shadow.addEventListener('click', (e) => {
-    const target = (e.target as HTMLElement).closest('a');
-    if (target) {
-      // Let browser handle normal link navigation
-      // Close reader so user sees the destination page
-      const href = target.getAttribute('href');
-      if (href && (href.startsWith('http') || href.startsWith('/'))) {
-        // Let it navigate naturally
-      }
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeReader();
-      options.onClose?.();
-    }
-  });
-
-  document.addEventListener('click', () => {
-    shadow.querySelectorAll('.calmweb-reader-dropdown-menu').forEach(m => {
-      m.classList.remove('open');
-    });
-  });
-}
-
 function escapeHtml(text: string): string {
   const span = document.createElement('span');
   span.textContent = text;
