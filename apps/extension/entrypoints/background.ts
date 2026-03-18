@@ -237,41 +237,46 @@ const handlers: Record<string, MessageHandler> = {
     const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
     const testModel = model || 'openrouter/free';
 
+    console.log('[CalmWeb] Test connection:', { hasKey: !!apiKey, keyLength: apiKey?.length, model: testModel });
+
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
       return { success: false, error: 'No API key provided' };
     }
 
     async function tryConnect(): Promise<{ success: boolean; model?: string; error?: string }> {
       try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey.trim()}`,
-          'HTTP-Referer': 'https://calmweb.app',
-          'X-OpenRouter-Title': 'CalmWeb',
-        };
+        const body = JSON.stringify({
+          model: testModel,
+          messages: [{ role: 'user', content: 'Say OK' }],
+          max_tokens: 10,
+        });
 
         const response = await fetch(testEndpoint, {
           method: 'POST',
-          headers,
-          body: JSON.stringify({
-            model: testModel,
-            messages: [{ role: 'user', content: 'Say OK' }],
-            max_tokens: 10,
-          }),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey.trim()}`,
+            'HTTP-Referer': 'https://calmweb.app',
+            'X-OpenRouter-Title': 'CalmWeb',
+          },
+          body,
         });
 
+        const responseText = await response.text();
+
         if (!response.ok) {
-          const errorText = await response.text();
-          return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+          console.error('[CalmWeb] Test connection failed:', response.status, responseText);
+          return { success: false, error: `HTTP ${response.status}: ${responseText}` };
         }
 
-        const data = await response.json();
+        const data = JSON.parse(responseText);
         const content = data.choices?.[0]?.message?.content;
         if (content) {
           return { success: true, model: testModel };
         }
         return { success: false, error: 'No response content' };
       } catch (error) {
+        console.error('[CalmWeb] Test connection error:', error);
         return {
           success: false,
           error: error instanceof Error ? error.message : String(error),
@@ -283,7 +288,7 @@ const handlers: Record<string, MessageHandler> = {
     const result = await tryConnect();
     if (result.success) return result;
 
-    // Retry once after short delay (handles cold start / DNS)
+    // Retry once after short delay
     await new Promise(r => setTimeout(r, 1500));
     return tryConnect();
   },
