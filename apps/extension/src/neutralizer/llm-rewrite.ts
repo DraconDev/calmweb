@@ -88,8 +88,10 @@ async function callLLM(
     body: JSON.stringify({
       model: config.model,
       messages: [
-        { role: 'system', content: buildSystemPrompt(mode) },
-        { role: 'user', content: buildUserPrompt(text) },
+        {
+          role: 'user',
+          content: `${buildSystemPrompt(mode)}\n\n---\n\n${buildUserPrompt(text)}`,
+        },
       ],
       temperature: 0.3,
       max_tokens: 200,
