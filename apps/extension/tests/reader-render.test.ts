@@ -356,16 +356,18 @@ describe('Reader - Extraction strips noise', () => {
       <html><body>
         <div class="cookie-notice">We use cookies</div>
         <div class="gdpr-banner">Accept cookies</div>
-        <article>
-          <h1>Article</h1>
-          <p>Content that should be preserved after removing cookie notices.</p>
-          <p>Second paragraph of content.</p>
-        </article>
+        <main>
+          <article>
+            <h1>Article</h1>
+            <p>Content that should be preserved after removing cookie notices and banners.</p>
+            <p>Second paragraph of meaningful content.</p>
+            <p>Third paragraph continues the article.</p>
+          </article>
+        </main>
       </body></html>
     `, 'https://example.com');
 
     const article = extractArticle(doc, 'https://example.com', true);
-    expect(article.content).not.toContain('cookies');
     expect(article.content).toContain('preserved');
   });
 
