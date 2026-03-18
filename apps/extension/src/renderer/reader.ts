@@ -4,7 +4,6 @@
 
 import type { ExtractedArticle } from './extractor';
 import type { ReaderLayout } from './layouts';
-import type { ReaderTheme } from './themes';
 import { extractArticle } from './extractor';
 import { getLayout, autoDetectLayout } from './layouts';
 import { getTheme } from './themes';
