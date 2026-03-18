@@ -74,13 +74,11 @@ function isInteractiveSite(): boolean {
 function showLoading(): void {
   try {
     if (document.getElementById(LOADING_ID)) return;
-    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-    document.documentElement.style.setProperty('visibility', 'hidden', 'important');
+    // Lock scrolling
     document.body.style.setProperty('overflow', 'hidden', 'important');
-    document.body.style.setProperty('visibility', 'hidden', 'important');
+    // Create loading overlay (covers page with opaque background)
     const loader = document.createElement('div');
     loader.id = LOADING_ID;
-    loader.style.setProperty('visibility', 'visible', 'important');
     loader.innerHTML = `<style>${LOADING_STYLES}</style>
       <div class="calmweb-loading-spinner"></div>
       <div class="calmweb-loading-text">Filtering...</div>`;
@@ -92,10 +90,7 @@ function showLoading(): void {
 
 function hideLoading(): void {
   document.getElementById(LOADING_ID)?.remove();
-  document.documentElement.style.removeProperty('overflow');
-  document.documentElement.style.removeProperty('visibility');
-  document.body.style.removeProperty('overflow');
-  document.body.style.removeProperty('visibility');
+  // Scrolling is restored by the reader renderer when it closes
 }
 
 function showFloatingButton(): void {
