@@ -321,55 +321,33 @@ export function closeReader(): void {
 }
 
 function setupEventListeners(shadow: ShadowRoot, overlay: HTMLElement, options: ReaderOptions): void {
-  shadow.querySelectorAll('[data-dropdown]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const menuId = (btn as HTMLElement).getAttribute('data-dropdown');
-      const menu = shadow.querySelector(`[data-menu="${menuId}"]`);
-      
-      shadow.querySelectorAll('.calmweb-reader-dropdown-menu').forEach(m => {
-        if (m !== menu) m.classList.remove('open');
-      });
-      
-      menu?.classList.toggle('open');
-    });
+  const closeBtn = shadow.querySelector('[data-action="close"]');
+  closeBtn?.addEventListener('click', () => {
+    closeReader();
+    options.onClose?.();
   });
 
-  shadow.querySelectorAll('[data-layout]').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const layoutId = (item as HTMLElement).getAttribute('data-layout');
-      if (layoutId) {
-        currentLayout = getLayout(layoutId);
-        const contentEl = shadow.getElementById('reader-content') as HTMLElement;
-        if (currentArticle) {
-          contentEl.innerHTML = '';
-          currentLayout.render(currentArticle, contentEl, { font: currentFont, fontSize: currentFontSize });
-        }
-        
-        shadow.querySelectorAll('[data-layout]').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        shadow.querySelector('.layout-name')!.textContent = currentLayout.name;
-        shadow.querySelector('[data-menu="layout"]')?.classList.remove('open');
-      }
-    });
+  const rawBtn = shadow.querySelector('[data-action="raw"]');
+  rawBtn?.addEventListener('click', () => {
+    closeReader();
+    options.onClose?.();
   });
 
-  shadow.querySelectorAll('[data-theme]').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const themeId = (item as HTMLElement).getAttribute('data-theme');
-      if (themeId) {
-        currentTheme = getTheme(themeId);
-        applyTheme(currentTheme, overlay);
-        
-        shadow.querySelectorAll('[data-theme]').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        shadow.querySelector('.theme-name')!.textContent = currentTheme.name;
-        shadow.querySelector('[data-menu="theme"]')?.classList.remove('open');
-      }
-    });
+  // Handle link clicks - allow normal navigation
+  shadow.addEventListener('click', (e) => {
+    const target = (e.target as HTMLElement).closest('a');
+    if (target) {
+      // Let browser handle normal link navigation
+    }
   });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeReader();
+      options.onClose?.();
+    }
+  });
+}
 
   const closeBtn = shadow.querySelector('[data-action="close"]');
   closeBtn?.addEventListener('click', () => {
