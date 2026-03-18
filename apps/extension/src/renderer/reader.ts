@@ -172,20 +172,11 @@ let currentFont: string = 'Inter, -apple-system, sans-serif';
 let currentFontSize: string = '17px';
 
 export function openReader(options: ReaderOptions = {}): void {
-  // Always hide the page FIRST - never flash original content
-  document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-  document.documentElement.style.setProperty('visibility', 'hidden', 'important');
+  // Lock page scrolling
   document.body.style.setProperty('overflow', 'hidden', 'important');
-  document.body.style.setProperty('visibility', 'hidden', 'important');
 
   // Remove any existing overlay
   document.getElementById(OVERLAY_ID)?.remove();
-
-  // Create overlay immediately - always show our UI
-  const overlay = document.createElement('div');
-  overlay.id = OVERLAY_ID;
-  overlay.style.setProperty('visibility', 'visible', 'important');
-  const shadow = overlay.attachShadow({ mode: 'open' });
 
   // Try to extract content
   let article: ExtractedArticle | null = null;
@@ -202,6 +193,11 @@ export function openReader(options: ReaderOptions = {}): void {
 
   // Build toolbar (always present)
   const titleText = article?.title || document.title || 'Current Page';
+
+  // Create overlay - opaque fixed div that covers everything
+  const overlay = document.createElement('div');
+  overlay.id = OVERLAY_ID;
+  const shadow = overlay.attachShadow({ mode: 'open' });
 
   shadow.innerHTML = `
     <style>${OVERLAY_STYLES}</style>
@@ -307,11 +303,8 @@ export function closeReader(): void {
   if (overlay) {
     overlay.remove();
   }
-  // Restore page visibility and scrolling
-  document.documentElement.style.removeProperty('overflow');
-  document.documentElement.style.removeProperty('visibility');
+  // Restore page scrolling
   document.body.style.removeProperty('overflow');
-  document.body.style.removeProperty('visibility');
 }
 
 function setupEventListeners(shadow: ShadowRoot, _overlay: HTMLElement, options: ReaderOptions): void {
