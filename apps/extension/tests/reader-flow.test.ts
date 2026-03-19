@@ -148,7 +148,7 @@ describe('Reader Flow Debug', () => {
     // Check for dark theme colors in the CSS
     const html = container.innerHTML;
     expect(html).toContain('.calm-layout');
-    expect(html).toContain('color: #d4d4d8');
-    expect(html).toContain('#7c6aed'); // purple links
+    expect(html).toContain('color: #c9c9d0');
+    expect(html).toContain('#8b7cf6'); // purple links
   });
 });
