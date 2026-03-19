@@ -106,9 +106,9 @@ describe('Before/After - Site Analysis', () => {
       const beforeStats = htmlStats(html);
 
       // Extract with text-only OFF (images allowed)
-      const articleWithMedia = extractArticle(doc, url, false);
+      const articleWithMedia = extractArticle(doc, url, 'full');
       // Extract with text-only ON (no images)
-      const articleTextOnly = extractArticle(doc, url, true);
+      const articleTextOnly = extractArticle(doc, url, 'textOnly');
       // Auto-detect layout
       const layout = autoDetectLayout(articleWithMedia);
       const afterStats = contentStats(articleWithMedia.content, articleWithMedia.contentHtml);

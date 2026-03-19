@@ -424,7 +424,7 @@ function scoreSite(fixture: SiteFixture): ViabilityScore {
   let extractionScore = 0;
   let article;
   try {
-    article = extractArticle(doc, fixture.url, true);
+    article = extractArticle(doc, fixture.url, 'textOnly');
     if (article.title && article.title !== 'Untitled') extractionScore += 25;
     else issues.push('No title extracted');
     if (article.content && article.content.length >= (fixture.expectations.minContentLength || 20)) extractionScore += 25;

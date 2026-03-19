@@ -51,7 +51,7 @@ describe('Article Extractor', () => {
       </article>
     `;
     
-    const article = extractArticle(doc, 'https://example.com/article', false);
+    const article = extractArticle(doc, 'https://example.com/article', 'full');
     expect(article.images.length).toBeGreaterThanOrEqual(1);
   });
 });

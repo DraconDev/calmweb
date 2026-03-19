@@ -175,7 +175,7 @@ describe('Site Integration - Article Extraction', () => {
   describe('BBC News', () => {
     const fixture = SITE_FIXTURES.bbc;
     const doc = createDoc(fixture.html);
-    const article = extractArticle(doc, fixture.url, false);
+    const article = extractArticle(doc, fixture.url, 'full');
 
     it('should extract the headline', () => {
       expect(article.title).toContain('Climate summit');
@@ -219,7 +219,7 @@ describe('Site Integration - Article Extraction', () => {
   describe('Wikipedia', () => {
     const fixture = SITE_FIXTURES.wikipedia;
     const doc = createDoc(fixture.html);
-    const article = extractArticle(doc, fixture.url, false);
+    const article = extractArticle(doc, fixture.url, 'full');
 
     it('should extract the title', () => {
       expect(article.title).toContain('Artificial intelligence');
@@ -245,7 +245,7 @@ describe('Site Integration - Article Extraction', () => {
   describe('Tech Blog', () => {
     const fixture = SITE_FIXTURES.blog;
     const doc = createDoc(fixture.html);
-    const article = extractArticle(doc, fixture.url, false);
+    const article = extractArticle(doc, fixture.url, 'full');
 
     it('should extract the title', () => {
       expect(article.title).toContain('Rust is the Future');
@@ -276,7 +276,7 @@ describe('Site Integration - Article Extraction', () => {
   describe('News Site (Clickbait)', () => {
     const fixture = SITE_FIXTURES.news;
     const doc = createDoc(fixture.html);
-    const article = extractArticle(doc, fixture.url, false);
+    const article = extractArticle(doc, fixture.url, 'full');
 
     it('should extract clickbait title', () => {
       expect(article.title).toContain("WON'T BELIEVE");
@@ -291,7 +291,7 @@ describe('Site Integration - Article Extraction', () => {
   describe('Documentation', () => {
     const fixture = SITE_FIXTURES.docs;
     const doc = createDoc(fixture.html);
-    const article = extractArticle(doc, fixture.url, false);
+    const article = extractArticle(doc, fixture.url, 'full');
 
     it('should extract the title', () => {
       expect(article.title).toContain('Getting Started');
@@ -312,7 +312,7 @@ describe('Site Integration - Article Extraction', () => {
 describe('Site Integration - Text-Only Mode', () => {
   it('should strip all images in text-only mode', () => {
     const doc = createDoc(SITE_FIXTURES.bbc.html);
-    const article = extractArticle(doc, SITE_FIXTURES.bbc.url, true);
+    const article = extractArticle(doc, SITE_FIXTURES.bbc.url, 'textOnly');
 
     expect(article.images.length).toBe(0);
     expect(article.contentHtml.querySelectorAll('img').length).toBe(0);
@@ -330,7 +330,7 @@ describe('Site Integration - Text-Only Mode', () => {
         <p>More text content after the media elements for extraction.</p>
       </article>
     `;
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
 
     expect(article.contentHtml.querySelectorAll('video').length).toBe(0);
     expect(article.contentHtml.querySelectorAll('audio').length).toBe(0);
@@ -346,7 +346,7 @@ describe('Site Integration - Text-Only Mode', () => {
         <p>Additional paragraph with enough content for extraction to work properly.</p>
       </article>
     `;
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
 
     // SVG icons should be preserved
     expect(article.contentHtml.querySelectorAll('svg').length).toBeGreaterThanOrEqual(1);
@@ -354,7 +354,7 @@ describe('Site Integration - Text-Only Mode', () => {
 
   it('should extract images when text-only is OFF', () => {
     const doc = createDoc(SITE_FIXTURES.bbc.html);
-    const article = extractArticle(doc, SITE_FIXTURES.bbc.url, false);
+    const article = extractArticle(doc, SITE_FIXTURES.bbc.url, 'full');
 
     expect(article.images.length).toBeGreaterThanOrEqual(1);
     expect(article.images[0].src).toContain('climate-summit');
@@ -363,8 +363,8 @@ describe('Site Integration - Text-Only Mode', () => {
   it('BEFORE/AFTER comparison for BBC', () => {
     const doc = createDoc(SITE_FIXTURES.bbc.html);
 
-    const textOnly = extractArticle(doc, SITE_FIXTURES.bbc.url, true);
-    const withImages = extractArticle(doc, SITE_FIXTURES.bbc.url, false);
+    const textOnly = extractArticle(doc, SITE_FIXTURES.bbc.url, 'textOnly');
+    const withImages = extractArticle(doc, SITE_FIXTURES.bbc.url, 'full');
 
     // Both should extract the core content
     expect(textOnly.content).toContain('landmark agreement');
@@ -452,7 +452,7 @@ describe('Site Integration - Layout Rendering', () => {
     it(`should render ${layoutId} layout without errors`, async () => {
       const { getLayout } = await import('../src/renderer/layouts');
       const doc = createDoc(SITE_FIXTURES.blog.html);
-      const article = extractArticle(doc, SITE_FIXTURES.blog.url, false);
+      const article = extractArticle(doc, SITE_FIXTURES.blog.url, 'full');
 
       const layout = getLayout(layoutId);
       const container = document.createElement('div');
@@ -468,12 +468,12 @@ describe('Site Integration - Layout Rendering', () => {
 
     // Blog should get reader layout (default)
     const blogDoc = createDoc(SITE_FIXTURES.blog.html);
-    const blogArticle = extractArticle(blogDoc, SITE_FIXTURES.blog.url, false);
+    const blogArticle = extractArticle(blogDoc, SITE_FIXTURES.blog.url, 'full');
     const blogLayout = autoDetectLayout(blogArticle);
 
     // Docs should get terminal layout (code-heavy)
     const docsDoc = createDoc(SITE_FIXTURES.docs.html);
-    const docsArticle = extractArticle(docsDoc, SITE_FIXTURES.docs.url, false);
+    const docsArticle = extractArticle(docsDoc, SITE_FIXTURES.docs.url, 'full');
     const docsLayout = autoDetectLayout(docsArticle);
 
     // At least one should differ

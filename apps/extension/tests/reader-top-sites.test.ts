@@ -43,7 +43,7 @@ function testSite(template: SiteTemplate) {
   
   let article;
   try {
-    article = extractArticle(doc, template.url, true);
+    article = extractArticle(doc, template.url, 'textOnly');
   } catch (e) {
     return {
       article: null,

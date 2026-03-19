@@ -18,10 +18,12 @@ function createDoc(html: string, title = 'Test Page'): Document {
   return doc;
 }
 
+import type { CleanMode } from '../src/renderer/extractor';
+
 // Helper to render and verify layout output
-function renderAndVerify(doc: Document, url: string, textOnly = true): { rendered: boolean; output: string; hasTitle: boolean } {
+function renderAndVerify(doc: Document, url: string, mode: CleanMode = 'textOnly'): { rendered: boolean; output: string; hasTitle: boolean } {
   try {
-    const article = extractArticle(doc, url, textOnly);
+    const article = extractArticle(doc, url, mode);
     const layout = autoDetectLayout(article);
     const container = document.createElement('div');
     const header = document.createElement('div');
@@ -249,7 +251,7 @@ describe('Reader - Layout Rendering', () => {
         </article>
       </body></html>
     `, 'https://example.com/article');
-    return extractArticle(doc, 'https://example.com/article', false);
+    return extractArticle(doc, 'https://example.com/article', 'full');
   })();
 
   it('adaptive layout renders with dark theme', () => {
@@ -323,7 +325,7 @@ describe('Reader - Extraction strips noise', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('Article content');
     expect(article.content).not.toContain('Site Header');
     expect(article.content).not.toContain('Copyright 2024');
@@ -342,7 +344,7 @@ describe('Reader - Extraction strips noise', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).not.toContain('console.log');
     expect(article.content).not.toContain('display: block');
     expect(article.content).toContain('Article content');
@@ -364,7 +366,7 @@ describe('Reader - Extraction strips noise', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('Main article content');
   });
 
@@ -384,7 +386,7 @@ describe('Reader - Extraction strips noise', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('preserved');
   });
 
@@ -403,7 +405,7 @@ describe('Reader - Extraction strips noise', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('Article content');
   });
 });
@@ -426,7 +428,7 @@ describe('Reader - Text-only mode', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('Text content');
     expect(article.contentHtml.querySelectorAll('img').length).toBe(0);
     expect(article.images.length).toBe(0);
@@ -444,7 +446,7 @@ describe('Reader - Text-only mode', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     // Small icon should remain
     expect(article.contentHtml.querySelectorAll('img').length).toBeGreaterThanOrEqual(1);
   });
@@ -462,7 +464,7 @@ describe('Reader - Text-only mode', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.contentHtml.querySelectorAll('video').length).toBe(0);
     expect(article.contentHtml.querySelectorAll('audio').length).toBe(0);
     expect(article.content).toContain('Article text content');
@@ -482,7 +484,7 @@ describe('Reader - Text-only mode', () => {
       </body></html>
     `, 'https://example.com');
 
-    const article = extractArticle(doc, 'https://example.com', true);
+    const article = extractArticle(doc, 'https://example.com', 'textOnly');
     expect(article.content).toContain('quarterly results');
   });
 });

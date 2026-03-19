@@ -29,7 +29,7 @@ function createDoc(html: string, title = 'Test Page'): Document {
 // Helper to test a page
 function testPage(page: TestPage) {
   const doc = createDoc(page.html, page.url);
-  const article = extractArticle(doc, page.url, true);
+  const article = extractArticle(doc, page.url, 'textOnly');
   
   const layout = autoDetectLayout(article);
   const container = document.createElement('div');
@@ -801,21 +801,21 @@ describe('Reader - Extraction quality checks', () => {
   it('should extract title from h1', () => {
     const page = PAGES.find(p => p.name === 'Wikipedia Simple Article')!;
     const doc = createDoc(page.html, page.url);
-    const article = extractArticle(doc, page.url, true);
+    const article = extractArticle(doc, page.url, 'textOnly');
     expect(article.title).toBe('Quantum Computing');
   });
 
   it('should extract title from article h1', () => {
     const page = PAGES.find(p => p.name === 'Blog Post - Simple')!;
     const doc = createDoc(page.html, page.url);
-    const article = extractArticle(doc, page.url, true);
+    const article = extractArticle(doc, page.url, 'textOnly');
     expect(article.title).toBe('My First Blog Post');
   });
 
   it('should calculate reading time based on content length', () => {
     const page = PAGES.find(p => p.name === 'Page with Very Long Content')!;
     const doc = createDoc(page.html, page.url);
-    const article = extractArticle(doc, page.url, true);
+    const article = extractArticle(doc, page.url, 'textOnly');
     expect(article.readingTime).toBeGreaterThan(5);
   });
 
@@ -831,7 +831,7 @@ describe('Reader - Layout rendering', () => {
   PAGES.forEach(page => {
     it(`layout renders correctly for: ${page.name}`, () => {
       const doc = createDoc(page.html, page.url);
-      const article = extractArticle(doc, page.url, true);
+      const article = extractArticle(doc, page.url, 'textOnly');
       const layout = getLayout('adaptive');
       
       const container = document.createElement('div');

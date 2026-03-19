@@ -29,7 +29,7 @@ describe('Reader Flow Debug', () => {
     `;
 
     // 2. Extract
-    const article = extractArticle(doc, 'https://en.wikipedia.org/wiki/Quantum_computing', true);
+    const article = extractArticle(doc, 'https://en.wikipedia.org/wiki/Quantum_computing', 'textOnly');
     
     console.log('--- EXTRACTION ---');
     console.log('Title:', article?.title);
@@ -79,7 +79,7 @@ describe('Reader Flow Debug', () => {
       <div class="footer">Footer content</div>
     `;
 
-    const article = extractArticle(doc, 'https://example.com/simple', true);
+    const article = extractArticle(doc, 'https://example.com/simple', 'textOnly');
     const layout = autoDetectLayout(article);
     const container = document.createElement('div');
 
@@ -94,7 +94,7 @@ describe('Reader Flow Debug', () => {
     const doc = document.implementation.createHTMLDocument('Empty Page');
     doc.body.innerHTML = `<div>Just a tiny bit of text</div>`;
 
-    const article = extractArticle(doc, 'https://example.com/tiny', true);
+    const article = extractArticle(doc, 'https://example.com/tiny', 'textOnly');
     // Even minimal content should produce something
     expect(article).toBeTruthy();
 
@@ -114,7 +114,7 @@ it('should render with different fonts', () => {
     for (const font of fonts) {
       const doc = document.implementation.createHTMLDocument('Font Test');
       doc.body.innerHTML = `<article><h1>Font Test Article</h1><p>Content</p></article>`;
-      const article = extractArticle(doc, 'https://example.com/font', true);
+      const article = extractArticle(doc, 'https://example.com/font', 'textOnly');
       const layout = autoDetectLayout(article);
       const container = document.createElement('div');
       expect(() => {
@@ -133,7 +133,7 @@ it('should render with different fonts', () => {
       </article>
     `;
 
-    const article = extractArticle(doc, 'https://example.com/theme', true);
+    const article = extractArticle(doc, 'https://example.com/theme', 'textOnly');
     const layout = autoDetectLayout(article);
     const container = document.createElement('div');
     layout.render(article, container);
