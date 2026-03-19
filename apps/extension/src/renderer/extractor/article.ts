@@ -22,33 +22,36 @@ export interface ExtractedArticle {
 }
 
 const REMOVE_SELECTORS = [
-  'nav', 'aside', 'footer', 'header:not(article header)',
-  '.ad', '.advertisement', '.ads', '.ad-container', '.ad-slot', '.ad-wrapper',
-  '.sidebar', '.related', '.recommended', '.suggestions',
-  '.social-share', '.share-buttons', '.social-links', '.social-bar',
-  '.comments', '#comments', '.comment-section',
-  'script', 'style', 'noscript', 'iframe',
-  '[class*="newsletter"]', '[class*="subscribe"]',
-  '[class*="popup"]', '[class*="modal"]',
-  '.author-bio', '.author-info', '.about-author',
-  '.tags', '.tag-list', '.categories',
-  '.breadcrumb', '.breadcrumbs',
-  '.pagination', '.pager',
-  '.cookie-notice', '.gdpr', '[class*="consent"]', '[class*="cookie-banner"]',
-  // Chat widgets
+  'nav', 'aside', 'footer', 'header:not(article header):not([class*="site-header"]):not([class*="main-header"])',
+  '.ad', '.advertisement', '.ads', '.ad-container', '.ad-slot', '.ad-wrapper', '.advert',
+  '[id*="ad-"]', '[class*="ad-"]', '[id*="advert"]', '[class*="advert"]',
+  '.sidebar', '.related', '.recommended', '.suggestions', '.more-stories',
+  '.social-share', '.share-buttons', '.social-links', '.social-bar', '.share-bar',
+  '.comments', '#comments', '.comment-section', '.responses', '.disqus',
+  'script', 'style', 'noscript', 'iframe:not([src*="youtube"]):not([src*="vimeo"])',
+  '[class*="newsletter"]', '[class*="subscribe"]', '[class*="signup"]',
+  '[class*="popup"]', '[class*="modal"]', '[class*="lightbox"]',
+  '.author-bio', '.author-info', '.about-author', '.post-author',
+  '.tags', '.tag-list', '.categories', '.topic-tags',
+  '.breadcrumb', '.breadcrumbs', '.crumbs',
+  '.pagination', '.pager', '.page-nav',
+  '.cookie-notice', '.gdpr', '[class*="consent"]', '[class*="cookie-banner"]', '.cookie-banner',
   '[class*="intercom"]', '[class*="drift"]', '[class*="zendesk"]', '[class*="crisp"]',
   '[class*="livechat"]', '[class*="chat-widget"]', '#intercom-container',
-  // Paywalls & overlays
-  '[class*="paywall"]', '[class*="premium"]', '[class*="metered"]',
-  '[class*="overlay"]', '[class*="backdrop"]',
-  // App banners & prompts
+  '[class*="paywall"]', '[class*="premium"]', '[class*="metered"]', '[class*="locked"]',
+  '[class*="overlay"]', '[class*="backdrop"]', '[class*="mask"]',
   '[class*="app-banner"]', '[class*="install-prompt"]', '[class*="download-app"]',
-  // Surveys & feedback
   '[class*="survey"]', '[class*="feedback"]', '[class*="poll"]', '[class*="rating"]',
-  // Sponsored content markers
   '[class*="sponsored"]', '[class*="promoted"]', '[class*="native-ad"]',
-  // Sticky elements (usually nav/banners)
+  '[class*="age-gate"]', '[class*="age-verification"]',
+  '[class*="cookie-law"]', '[class*="eu-cookie"]',
   '[style*="position: sticky"]', '[style*="position:fixed"]',
+  '[style*="display: none"]', '[style*="display:none"]', '[hidden]',
+  '[aria-hidden="true"]',
+  '.promo', '.promo-banner', '.promo-code',
+  '.newsletter-popup', '.subscribe-popup',
+  '#wpadminbar',
+  '.amp-sidebar', '.amp-menu',
 ];
 
 const CONTENT_SELECTORS = [
@@ -256,7 +259,11 @@ function findMainContent(doc: Document): HTMLElement {
     }
   }
 
-  // Fallback: find the element with most paragraph content
+  const body = doc.body;
+  if (body && body.textContent && body.textContent.trim().length > 100) {
+    return body;
+  }
+
   const candidates = doc.querySelectorAll('div, section, main');
   let best: HTMLElement | null = null;
   let bestScore = 0;
@@ -265,8 +272,9 @@ function findMainContent(doc: Document): HTMLElement {
     const el = candidate as HTMLElement;
     const text = el.textContent?.trim() || '';
     const paragraphs = el.querySelectorAll('p').length;
-    // Score: prefer elements with many paragraphs (article-like) over raw text
-    const score = text.length + (paragraphs * 500);
+    const lists = el.querySelectorAll('ul, ol').length;
+    const tables = el.querySelectorAll('table').length;
+    const score = text.length + (paragraphs * 300) + (lists * 200) + (tables * 500);
     if (score > bestScore) {
       bestScore = score;
       best = el;

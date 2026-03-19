@@ -25,11 +25,12 @@ function escapeHtml(text: string): string {
 // ============================================================================
 
 interface ContentProfile {
-  type: 'article' | 'code' | 'news' | 'docs' | 'essay';
+  type: 'article' | 'code' | 'news' | 'docs' | 'essay' | 'product' | 'forum' | 'listing';
   columns: number;
   maxWidth: string;
   dropcap: boolean;
   centered: boolean;
+  showHero: boolean;
 }
 
 function analyzeContent(article: ExtractedArticle): ContentProfile {
@@ -37,29 +38,52 @@ function analyzeContent(article: ExtractedArticle): ContentProfile {
   const codeBlocks = html.querySelectorAll('pre, code').length;
   const paragraphs = html.querySelectorAll('p').length;
   const headings = html.querySelectorAll('h1,h2,h3').length;
+  const tables = html.querySelectorAll('table').length;
+  const lists = html.querySelectorAll('ul, ol').length;
+  const listItems = html.querySelectorAll('li').length;
+  const images = html.querySelectorAll('img').length;
+  const links = html.querySelectorAll('a').length;
+  const inputs = html.querySelectorAll('input, select, textarea').length;
+  const buttons = html.querySelectorAll('button').length;
 
-  // Code-heavy → wider
+  const title = article.title.toLowerCase();
+  const hasProductKeywords = /\b(product|price|buy|cart|add to|in stock|specs|features|description)\b/i.test(title);
+  const hasForumKeywords = /\b(reply|thread|post|comment|user|posted|joined|topic)\b/i.test(title);
+  const hasListingKeywords = /\b(menu|directory|list|category|search|filter|sort)\b/i.test(title);
+
+  if (inputs >= 3 && (buttons >= 2 || hasProductKeywords)) {
+    return { type: 'product', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: false };
+  }
+
+  if (hasForumKeywords || (comments >= 5)) {
+    return { type: 'forum', columns: 1, maxWidth: '800px', dropcap: false, centered: false, showHero: false };
+  }
+
+  if (lists > 5 || listItems > 30) {
+    return { type: 'listing', columns: 1, maxWidth: '1000px', dropcap: false, centered: false, showHero: false };
+  }
+
   if (codeBlocks >= 3) {
-    return { type: 'code', columns: 1, maxWidth: '900px', dropcap: false, centered: false };
+    return { type: 'code', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: false };
   }
 
-  // Short news → compact columns
+  if (tables >= 2) {
+    return { type: 'docs', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: true };
+  }
+
   if (article.readingTime <= 3 && paragraphs <= 6) {
-    return { type: 'news', columns: 2, maxWidth: '800px', dropcap: false, centered: false };
+    return { type: 'news', columns: 2, maxWidth: '800px', dropcap: false, centered: false, showHero: true };
   }
 
-  // Long academic → 2 columns
   if (article.readingTime >= 8 && headings >= 3) {
-    return { type: 'docs', columns: 2, maxWidth: '900px', dropcap: false, centered: false };
+    return { type: 'docs', columns: 2, maxWidth: '900px', dropcap: false, centered: false, showHero: true };
   }
 
-  // Very long → centered
   if (article.readingTime >= 12) {
-    return { type: 'essay', columns: 1, maxWidth: '640px', dropcap: false, centered: true };
+    return { type: 'essay', columns: 1, maxWidth: '640px', dropcap: false, centered: true, showHero: true };
   }
 
-  // Default article → elegant with dropcap
-  return { type: 'article', columns: 1, maxWidth: '700px', dropcap: true, centered: false };
+  return { type: 'article', columns: 1, maxWidth: '700px', dropcap: true, centered: false, showHero: true };
 }
 
 // ============================================================================
