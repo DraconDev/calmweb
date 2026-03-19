@@ -270,11 +270,15 @@ const handlers: Record<string, MessageHandler> = {
         }
 
         const data = JSON.parse(responseText);
+        console.log('[CalmWeb] OpenRouter response:', JSON.stringify(data).slice(0, 500));
         const content = data.choices?.[0]?.message?.content;
         if (content) {
           return { success: true, model: testModel };
         }
-        return { success: false, error: 'No response content' };
+        if (data.error) {
+          return { success: false, error: `OpenRouter error: ${data.error.message || JSON.stringify(data.error)}` };
+        }
+        return { success: false, error: `No response content. Response: ${JSON.stringify(data).slice(0, 200)}` };
       } catch (error) {
         console.error('[CalmWeb] Test connection error:', error);
         return {
