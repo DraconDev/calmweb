@@ -17,10 +17,7 @@ export const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
 export const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
 export const AI_MODELS = [
-  { id: 'openrouter/free', label: 'Free Router (Auto)', free: true },
-  { id: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B', free: true },
-  { id: 'mistralai/mistral-7b-instruct:free', label: 'Mistral 7B', free: true },
-  { id: 'google/gemma-2-9b-it:free', label: 'Gemma 2 9B', free: true },
+  { id: 'openrouter/free', label: 'Free Router (Auto)', free: true, recommended: true },
 ] as const;
 
 export const ActionDecisionSchema = z.enum(['show', 'blur', 'hide', 'neutralize', 'collapse', 'rebuild']);
