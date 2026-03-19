@@ -90,43 +90,67 @@ export const adaptiveLayout: ReaderLayout = {
       contentHtml = contentHtml.replace(/<p>/g, '<p class="cw-centered">');
     }
 
-    // Update layout max-width based on profile
-    const layout = container.closest('.cw-overlay')?.querySelector('.cw-layout') as HTMLElement;
-    if (layout) {
-      layout.style.maxWidth = profile.maxWidth;
-    }
+    // Check if we're in shadow DOM mode with full structure
+    const cwOverlay = container.closest('.cw-overlay');
+    if (cwOverlay) {
+      // Shadow DOM mode - update existing elements
+      const layout = cwOverlay.querySelector('.cw-layout') as HTMLElement;
+      if (layout) layout.style.maxWidth = profile.maxWidth;
 
-    // Update header with article info
-    const header = container.closest('.cw-overlay')?.querySelector('.cw-article-header');
-    if (header) {
-      header.innerHTML = `
-        <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
-        <div class="cw-meta">
-          ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
-          ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
-          ${article.date ? `<span>${article.date}</span>` : ''}
-          <span class="cw-meta-sep">·</span>
-          <span>${article.readingTime} min</span>
+      const header = cwOverlay.querySelector('.cw-article-header');
+      if (header) {
+        header.innerHTML = `
+          <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
+          <div class="cw-meta">
+            ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
+            ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
+            ${article.date ? `<span>${article.date}</span>` : ''}
+            <span class="cw-meta-sep">·</span>
+            <span>${article.readingTime} min</span>
+          </div>
+        `;
+      }
+
+      const footer = cwOverlay.querySelector('.cw-footer');
+      if (footer) {
+        footer.innerHTML = `
+          <div class="cw-source">
+            ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
+            <span>${escapeHtml(article.source)}</span>
+          </div>
+        `;
+      }
+
+      // Set content with optional columns
+      container.innerHTML = `
+        ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
+        <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
+      `;
+    } else {
+      // Fallback mode for tests/standalone use - render everything inline
+      container.innerHTML = `
+        <div class="cw-layout" style="max-width:${profile.maxWidth};font-family:Inter,sans-serif;font-size:16px;line-height:1.75;">
+          ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
+          <header class="cw-article-header">
+            <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
+            <div class="cw-meta">
+              ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
+              ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
+              ${article.date ? `<span>${article.date}</span>` : ''}
+              <span class="cw-meta-sep">·</span>
+              <span>${article.readingTime} min</span>
+            </div>
+          </header>
+          <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
+          <footer class="cw-footer">
+            <div class="cw-source">
+              ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
+              <span>${escapeHtml(article.source)}</span>
+            </div>
+          </footer>
         </div>
       `;
     }
-
-    // Update footer with source info
-    const footer = container.closest('.cw-overlay')?.querySelector('.cw-footer');
-    if (footer) {
-      footer.innerHTML = `
-        <div class="cw-source">
-          ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
-          <span>${escapeHtml(article.source)}</span>
-        </div>
-      `;
-    }
-
-    // Set content with optional columns
-    container.innerHTML = `
-      ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
-      <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
-    `;
   },
 };
 
