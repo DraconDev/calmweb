@@ -1,8 +1,8 @@
 /**
- * Adaptive Layout Engine for CalmWeb
- *
- * ONE layout that adapts its presentation based on page content.
- * Analyzes the article and adjusts columns, spacing, typography accordingly.
+ * Layout Engine for CalmWeb Super Reader
+ * 
+ * Simply injects the extracted content into our premium dark UI.
+ * Respects the original content structure - no forced single-column.
  */
 
 import type { ExtractedArticle } from '../extractor';
@@ -20,109 +20,22 @@ function escapeHtml(text: string): string {
   return span.innerHTML;
 }
 
-// ============================================================================
-// Content Analysis
-// ============================================================================
-
-interface ContentProfile {
-  type: 'article' | 'code' | 'news' | 'docs' | 'essay' | 'product' | 'forum' | 'listing';
-  columns: number;
-  maxWidth: string;
-  dropcap: boolean;
-  centered: boolean;
-  showHero: boolean;
-}
-
-function analyzeContent(article: ExtractedArticle): ContentProfile {
-  const html = article.contentHtml;
-  const codeBlocks = html.querySelectorAll('pre, code').length;
-  const paragraphs = html.querySelectorAll('p').length;
-  const headings = html.querySelectorAll('h1,h2,h3').length;
-  const tables = html.querySelectorAll('table').length;
-  const lists = html.querySelectorAll('ul, ol').length;
-  const listItems = html.querySelectorAll('li').length;
-  const inputs = html.querySelectorAll('input, select, textarea').length;
-  const buttons = html.querySelectorAll('button').length;
-  const comments = html.querySelectorAll('[class*="comment"], [id*="comment"], .reply, .response').length;
-
-  const title = article.title.toLowerCase();
-  const hasProductKeywords = /\b(product|price|buy|cart|add to|in stock|specs|features|description)\b/i.test(title);
-  const hasForumKeywords = /\b(reply|thread|post|comment|user|posted|joined|topic)\b/i.test(title);
-
-  if (inputs >= 3 && (buttons >= 2 || hasProductKeywords)) {
-    return { type: 'product', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: false };
-  }
-
-  if (hasForumKeywords || comments >= 5) {
-    return { type: 'forum', columns: 1, maxWidth: '800px', dropcap: false, centered: false, showHero: false };
-  }
-
-  if (lists > 5 || listItems > 30) {
-    return { type: 'listing', columns: 1, maxWidth: '1000px', dropcap: false, centered: false, showHero: false };
-  }
-
-  if (codeBlocks >= 3) {
-    return { type: 'code', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: false };
-  }
-
-  if (tables >= 2) {
-    return { type: 'docs', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: true };
-  }
-
-  if (article.readingTime <= 3 && paragraphs <= 6) {
-    return { type: 'news', columns: 2, maxWidth: '800px', dropcap: false, centered: false, showHero: true };
-  }
-
-  if (article.readingTime >= 8 && headings >= 3) {
-    return { type: 'docs', columns: 2, maxWidth: '900px', dropcap: false, centered: false, showHero: true };
-  }
-
-  if (article.readingTime >= 12) {
-    return { type: 'essay', columns: 1, maxWidth: '640px', dropcap: false, centered: true, showHero: true };
-  }
-
-  return { type: 'article', columns: 1, maxWidth: '700px', dropcap: true, centered: false, showHero: true };
-}
-
-// ============================================================================
-// The One Layout
-// ============================================================================
-
-export const adaptiveLayout: ReaderLayout = {
-  id: 'adaptive',
-  name: 'Adaptive',
-  description: 'Automatically adjusts to page content',
-  render(article, container, options = {}, extras = {}) {
-    const profile = analyzeContent(article);
-    const heroImage = profile.showHero ? article.images?.[0] : undefined;
-
-    options.font;
-    options.fontSize;
-
-    let contentHtml = article.contentHtml.innerHTML;
-
-    if (profile.dropcap) {
-      contentHtml = contentHtml.replace(/<p>/, '<p class="cw-dropcap">');
-    }
-
-    if (profile.centered) {
-      contentHtml = contentHtml.replace(/<p>/g, '<p class="cw-centered">');
-    }
-
+export const defaultLayout: ReaderLayout = {
+  id: 'default',
+  name: 'Default',
+  description: 'Preserves original content structure',
+  render(article, container, _options = {}, extras = {}) {
     const headerEl = extras.header || container.closest('.cw-overlay')?.querySelector('.cw-article-header');
     const footerEl = extras.footer || container.closest('.cw-overlay')?.querySelector('.cw-footer');
 
     if (headerEl) {
-      const typeLabel = profile.type !== 'article' ? `<span class="cw-content-type">${profile.type}</span>` : '';
       headerEl.innerHTML = `
         <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
         <div class="cw-meta">
-          ${typeLabel}
           ${article.author ? `<span class="cw-meta-item">${escapeHtml(article.author)}</span>` : ''}
           ${article.author && article.date ? '<span class="cw-meta-sep"></span>' : ''}
-          ${article.date ? `<span class="cw-meta-item">${article.date}</span>` : ''}
-          ${(article.author || article.date) ? '<span class="cw-meta-sep"></span>' : ''}
-          <span class="cw-reading-time">${article.readingTime} min read</span>
+          ${article.date ? `<span class="cw-meta-item">${escapeHtml(article.date)}</span>` : ''}
+          ${article.source ? `<span class="cw-meta-sep"></span><span class="cw-meta-item">${escapeHtml(article.source)}</span>` : ''}
         </div>
       `;
     }
@@ -131,30 +44,23 @@ export const adaptiveLayout: ReaderLayout = {
       footerEl.innerHTML = `
         <a href="${escapeHtml(article.url)}" class="cw-source" target="_blank" rel="noopener noreferrer">
           ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
-          <span>${escapeHtml(article.source)}</span>
+          <span>View Original</span>
         </a>
       `;
     }
 
-    container.innerHTML = `
-      ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
-      <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''} cw-type-${profile.type}">${contentHtml}</article>
-    `;
+    container.innerHTML = `<article class="cw-content">${article.contentHtml.innerHTML}</article>`;
   },
 };
 
-// ============================================================================
-// Layout list (kept for compatibility, but only one real layout)
-// ============================================================================
-
 export const allLayouts: ReaderLayout[] = [
-  adaptiveLayout,
+  defaultLayout,
 ];
 
 export function getLayout(_id: string): ReaderLayout {
-  return adaptiveLayout;
+  return defaultLayout;
 }
 
 export function autoDetectLayout(_article: ExtractedArticle): ReaderLayout {
-  return adaptiveLayout;
+  return defaultLayout;
 }

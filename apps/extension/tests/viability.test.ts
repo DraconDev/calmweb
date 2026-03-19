@@ -12,7 +12,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor';
-import { adaptiveLayout } from '../src/renderer/layouts';
+import { defaultLayout } from '../src/renderer/layouts';
 import { applyLocalRules } from '../utils/classifier';
 import type { ContentUnit, UserRules } from '@calmweb/shared';
 
@@ -460,7 +460,7 @@ function scoreSite(fixture: SiteFixture): ViabilityScore {
   if (article) {
     try {
       const container = document.createElement('div');
-      adaptiveLayout.render(article, container);
+      defaultLayout.render(article, container);
       if (container.innerHTML.length > 100) layoutScore = 20;
       else issues.push('Layout rendered empty');
     } catch (err) {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor/article';
-import { getLayout, allLayouts, autoDetectLayout, adaptiveLayout } from '../src/renderer/layouts';
+import { getLayout, allLayouts, autoDetectLayout, defaultLayout } from '../src/renderer/layouts';
 import { getTheme, allThemes, defaultTheme, darkTheme } from '../src/renderer/themes';
 
 describe('Article Extractor', () => {
@@ -73,11 +73,11 @@ describe('Layout Engine', () => {
     doc.body.innerHTML = '<article><h1>Test</h1><p>Content here for testing layout detection with enough text.</p></article>';
     const article = extractArticle(doc, 'https://example.com');
     const layout = autoDetectLayout(article);
-    expect(layout.id).toBe('adaptive');
+    expect(layout.id).toBe('default');
   });
 
   it('should have render method', () => {
-    expect(typeof adaptiveLayout.render).toBe('function');
+    expect(typeof defaultLayout.render).toBe('function');
   });
 
   it('should render without errors', () => {
@@ -85,7 +85,7 @@ describe('Layout Engine', () => {
     doc.body.innerHTML = '<article><h1>Test Article</h1><p>Some content here that is long enough to be extracted properly by the extractor function.</p></article>';
     const article = extractArticle(doc, 'https://example.com/test');
     const container = document.createElement('div');
-    expect(() => adaptiveLayout.render(article, container)).not.toThrow();
+    expect(() => defaultLayout.render(article, container)).not.toThrow();
     expect(container.innerHTML.length).toBeGreaterThan(100);
   });
 });

@@ -31,7 +31,7 @@ export {
   getLayout,
   allLayouts,
   autoDetectLayout,
-  adaptiveLayout,
+  defaultLayout,
   type ReaderLayout,
 } from './layouts';
 

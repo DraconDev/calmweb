@@ -266,104 +266,37 @@ export function openReader(options: ReaderOptions = {}): void {
       letter-spacing: 0.05em;
     }
 
-    .cw-content-type {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 10px;
-      background: rgba(59, 130, 246, 0.1);
-      border-radius: 20px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #60a5fa;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    /* Product type */
-    .cw-content.cw-type-product {
-      max-width: 900px;
-    }
-
-    .cw-content.cw-type-product h1,
-    .cw-content.cw-type-product h2 {
-      color: #f1f5f9;
-      border-bottom-color: rgba(59, 130, 246, 0.2);
-    }
-
-    /* Forum type */
-    .cw-content.cw-type-forum {
-      max-width: 800px;
-    }
-
-    .cw-content.cw-type-forum .reply,
-    .cw-content.cw-type-forum .comment {
-      padding: 16px;
-      margin: 1em 0;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-    }
-
-    /* Listing type */
-    .cw-content.cw-type-listing {
-      max-width: 1000px;
-    }
-
-    .cw-content.cw-type-listing ul,
-    .cw-content.cw-type-listing ol {
-      columns: 2;
-      column-gap: 32px;
-    }
-
-    .cw-content.cw-type-listing li {
-      break-inside: avoid;
-    }
-
-    /* Content styles */
+    /* Content styles - universal for all content types */
     .cw-content {
-      font-size: 1.125rem;
-      line-height: 1.8;
+      font-size: 1rem;
+      line-height: 1.7;
       color: #cbd5e1;
     }
+
+    .cw-content > * {
+      margin-bottom: 1em;
+    }
+
+    .cw-content h1,
+    .cw-content h2,
+    .cw-content h3,
+    .cw-content h4,
+    .cw-content h5,
+    .cw-content h6 {
+      color: #f1f5f9;
+      line-height: 1.3;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .cw-content h1 { font-size: 1.75em; font-weight: 700; }
+    .cw-content h2 { font-size: 1.5em; font-weight: 600; }
+    .cw-content h3 { font-size: 1.25em; font-weight: 600; }
+    .cw-content h4 { font-size: 1.1em; font-weight: 600; }
 
     .cw-content p {
-      margin: 0 0 1.5em;
+      margin: 0 0 1em;
       color: #cbd5e1;
-    }
-
-    .cw-content p:first-of-type {
-      font-size: 1.2em;
-      color: #e2e8f0;
-      line-height: 1.7;
-    }
-
-    /* Dropcap for first letter */
-    .cw-content p:first-of-type::first-letter {
-      float: left;
-      font-size: 3.5em;
-      line-height: 0.8;
-      margin: 0.05em 0.12em 0 0;
-      font-weight: 700;
-      color: #a78bfa;
-      text-shadow: 0 2px 20px rgba(139, 92, 246, 0.3);
-    }
-
-    .cw-content h1 {
-      font-size: 1.75em;
-      font-weight: 700;
-      color: #f1f5f9;
-      margin: 2em 0 0.75em;
-      letter-spacing: -0.02em;
-    }
-
-    .cw-content h2 {
-      font-size: 1.5em;
-      font-weight: 600;
-      color: #e2e8f0;
-      margin: 2.5em 0 1em;
-      letter-spacing: -0.02em;
-      padding-bottom: 0.5em;
-      border-bottom: 1px solid rgba(139, 92, 246, 0.15);
     }
 
     .cw-content h3 {
