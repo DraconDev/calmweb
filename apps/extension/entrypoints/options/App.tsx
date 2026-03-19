@@ -732,26 +732,28 @@ function AdvancedTab({ processingMode, byokKey, aiModel, onChange }: Omit<Advanc
             {testResult?.success && <p className="mt-2 text-xs text-green-500">Connected to {testResult.model} successfully</p>}
           </FormField>
 
-          {/* Model Selection */}
-          <FormField label="AI Model" description="Pick a preset or type any OpenRouter model ID.">
-            <div className="grid grid-cols-1 gap-2 pt-2">
-              {AI_MODELS.map((model) => (
-                <div key={model.id} onClick={() => onChange({ aiModel: model.id })}
-                  className={clsx("flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
-                    aiModel === model.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
-                  <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                    aiModel === model.id ? "border-primary" : "border-muted-foreground/30")}>
-                    {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-sm font-medium">{model.label}</span>
-                    <span className="text-[10px] text-muted-foreground ml-2 font-mono">{model.id}</span>
-                  </div>
-                  {model.free && <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">Free</span>}
+{/* Model Selection */}
+        <FormField label="AI Model" description="Free Router auto-selects the best available free model.">
+          <div className="grid grid-cols-1 gap-2 pt-2">
+            {AI_MODELS.map((model) => (
+              <div key={model.id} onClick={() => onChange({ aiModel: model.id })}
+                className={clsx("flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
+                aiModel === model.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
+                <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
+                  aiModel === model.id ? "border-primary" : "border-muted-foreground/30")}>
+                  {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
                 </div>
-              ))}
-            </div>
-          </FormField>
+                <div className="flex-1">
+                  <span className="text-sm font-medium">{model.label}</span>
+                </div>
+                {'recommended' in model && model.recommended && (
+                  <span className="text-[10px] font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
+                )}
+                {model.free && <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">Free</span>}
+              </div>
+            ))}
+          </div>
+        </FormField>
 
           {/* Custom Model */}
           <FormField label="Custom Model ID" description="Type any OpenRouter model ID. Overrides preset above.">
