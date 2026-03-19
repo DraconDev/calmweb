@@ -104,13 +104,15 @@ const DATE_SELECTORS = [
   '[property="article:published_time"]',
 ];
 
-export function extractArticle(doc: Document, url: string, textOnly = true): ExtractedArticle {
+export type CleanMode = 'textOnly' | 'safe' | 'full';
+
+export function extractArticle(doc: Document, url: string, mode: CleanMode = 'textOnly'): ExtractedArticle {
   const title = extractTitle(doc);
   const author = extractAuthor(doc);
   const date = extractDate(doc);
   const mainContent = findMainContent(doc);
-  const images = textOnly ? [] : extractImages(mainContent);
-  const cleanedContent = cleanContent(mainContent, textOnly);
+  const images = mode === 'full' ? extractImages(mainContent) : [];
+  const cleanedContent = cleanContent(mainContent, mode);
   const favicon = extractFavicon(doc);
   const readingTime = calculateReadingTime(cleanedContent.textContent || '');
 
@@ -209,50 +211,53 @@ function findMainContent(doc: Document): HTMLElement {
   return best || doc.body;
 }
 
-function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
+function cleanContent(el: HTMLElement, mode: CleanMode = 'textOnly'): HTMLElement {
   const clone = el.cloneNode(true) as HTMLElement;
 
+  // Always remove noise
   REMOVE_SELECTORS.forEach((selector) => {
     clone.querySelectorAll(selector).forEach((el) => el.remove());
   });
 
-  // Strip media in text-only mode, but preserve caption text
-  if (textOnly) {
-    // Replace <figure> with its <figcaption> text as a <p>
-    clone.querySelectorAll('figure').forEach((figure) => {
-      const caption = figure.querySelector('figcaption');
-      if (caption && caption.textContent?.trim()) {
-        const p = document.createElement('p');
-        p.textContent = caption.textContent.trim();
-        p.classList.add('calmweb-caption');
-        figure.replaceWith(p);
-      } else {
-        figure.remove();
-      }
-    });
-
-    // Remove media elements but keep small icons (width/height <= 32 or SVG data URIs)
-    clone.querySelectorAll('img').forEach((img) => {
-      const w = parseInt(img.getAttribute('width') || '0');
-      const h = parseInt(img.getAttribute('height') || '0');
-      const src = img.getAttribute('src') || '';
-      // Keep small icons, SVGs, data URIs
-      if ((w > 0 && w <= 32) || (h > 0 && h <= 32)) return;
-      if (src.startsWith('data:image/svg')) return;
-      img.remove();
-    });
-    clone.querySelectorAll('video, audio, source, track, picture, canvas, embed, object').forEach((el) => el.remove());
+  if (mode === 'textOnly') {
+    // Full stripping - remove all media, classes, styles
+    cleanTextOnly(clone);
+  } else if (mode === 'safe') {
+    // Safe mode - preserve structure, links, buttons, strip media
+    cleanSafeMode(clone);
   }
+  // 'full' mode - no cleaning, just return clone as-is
 
-  clone.querySelectorAll('a').forEach((a) => {
-    const href = a.getAttribute('href');
-    if (href && !href.startsWith('http') && !href.startsWith('/')) {
-      a.removeAttribute('href');
+  return clone;
+}
+
+function cleanTextOnly(el: HTMLElement): void {
+  // Replace <figure> with its <figcaption> text as a <p>
+  el.querySelectorAll('figure').forEach((figure) => {
+    const caption = figure.querySelector('figcaption');
+    if (caption && caption.textContent?.trim()) {
+      const p = document.createElement('p');
+      p.textContent = caption.textContent.trim();
+      figure.replaceWith(p);
+    } else {
+      figure.remove();
     }
   });
 
-  clone.querySelectorAll('*').forEach((el) => {
-    const html = el as HTMLElement;
+  // Remove media elements but keep small icons
+  el.querySelectorAll('img').forEach((img) => {
+    const w = parseInt(img.getAttribute('width') || '0');
+    const h = parseInt(img.getAttribute('height') || '0');
+    const src = img.getAttribute('src') || '';
+    if ((w > 0 && w <= 32) || (h > 0 && h <= 32)) return;
+    if (src.startsWith('data:image/svg')) return;
+    img.remove();
+  });
+  el.querySelectorAll('video, audio, source, track, picture, canvas, embed, object, iframe').forEach((e) => e.remove());
+
+  // Remove classes, styles, event handlers from all elements
+  el.querySelectorAll('*').forEach((e) => {
+    const html = e as HTMLElement;
     html.removeAttribute('style');
     html.removeAttribute('class');
     html.removeAttribute('id');
@@ -261,7 +266,92 @@ function cleanContent(el: HTMLElement, textOnly = true): HTMLElement {
     html.removeAttribute('onmouseout');
   });
 
-  return clone;
+  // Sanitize links
+  el.querySelectorAll('a').forEach((a) => {
+    const href = a.getAttribute('href');
+    if (href && !href.startsWith('http') && !href.startsWith('/') && !href.startsWith('#')) {
+      a.removeAttribute('href');
+    }
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+  });
+}
+
+function cleanSafeMode(el: HTMLElement): void {
+  // Keep interactive elements (buttons, links, inputs) but neutralize them
+  // Remove media but preserve structure
+
+  // Replace figures with caption text
+  el.querySelectorAll('figure').forEach((figure) => {
+    const caption = figure.querySelector('figcaption');
+    if (caption && caption.textContent?.trim()) {
+      const p = document.createElement('p');
+      p.textContent = `[Image: ${caption.textContent.trim()}]`;
+      figure.replaceWith(p);
+    } else {
+      figure.remove();
+    }
+  });
+
+  // Remove media - replace with placeholder
+  el.querySelectorAll('img').forEach((img) => {
+    const alt = img.getAttribute('alt') || 'Image';
+    const span = document.createElement('span');
+    span.className = 'cw-media-placeholder';
+    span.textContent = `[${alt}]`;
+    span.setAttribute('data-cw-media', 'image');
+    img.replaceWith(span);
+  });
+
+  // Remove video/audio/embeds and replace with placeholder
+  el.querySelectorAll('video, audio, source, track, picture, canvas, embed, object, iframe').forEach((media) => {
+    const span = document.createElement('span');
+    span.className = 'cw-media-placeholder';
+    span.textContent = `[Media - ${media.tagName.toLowerCase()}]`;
+    span.setAttribute('data-cw-media', media.tagName.toLowerCase());
+    media.replaceWith(span);
+  });
+
+  // Neutralize links - make them safe but keep them visible
+  el.querySelectorAll('a').forEach((a) => {
+    const href = a.getAttribute('href') || '';
+    // Keep http/https links, mark external ones
+    if (href.startsWith('http') || href.startsWith('/') || href.startsWith('#')) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      // Remove javascript: and other unsafe links
+      a.removeAttribute('href');
+    }
+  });
+
+  // Keep buttons but disable them visually (mark as disabled)
+  el.querySelectorAll('button, input[type="submit"], input[type="button"], input[type="reset"]').forEach((btn) => {
+    btn.setAttribute('data-cw-disabled', 'true');
+    btn.setAttribute('disabled', 'true');
+  });
+
+  // Neutralize form inputs (show values but don't allow editing)
+  el.querySelectorAll('input:not([type="submit"]):not([type="button"]):not([type="reset"]), textarea, select').forEach((input) => {
+    input.setAttribute('data-cw-disabled', 'true');
+    input.setAttribute('disabled', 'true');
+  });
+
+  // Remove event handlers but keep element structure
+  el.querySelectorAll('*').forEach((e) => {
+    const html = e as HTMLElement;
+    html.removeAttribute('onclick');
+    html.removeAttribute('onmouseover');
+    html.removeAttribute('onmouseout');
+    html.removeAttribute('onchange');
+    html.removeAttribute('onsubmit');
+    // Keep class and style for basic structure if simple
+    // Remove only complex inline styles
+    const style = html.getAttribute('style') || '';
+    if (style && !style.includes('display') && !style.includes('visibility')) {
+      html.removeAttribute('style');
+    }
+  });
 }
 
 function extractImages(content: HTMLElement): Array<{ src: string; alt: string; caption?: string }> {

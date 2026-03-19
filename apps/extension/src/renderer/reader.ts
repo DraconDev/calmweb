@@ -3,14 +3,14 @@
  * Works on any webpage, not just articles
  */
 
-import type { ExtractedArticle } from './extractor';
+import type { ExtractedArticle, CleanMode } from './extractor';
 import type { ReaderLayout } from './layouts';
 import { extractArticle } from './extractor';
 import { getLayout, autoDetectLayout } from './layouts';
 
 export interface ReaderOptions {
   layoutId?: string;
-  textOnly?: boolean;
+  mode?: CleanMode;
   font?: string;
   fontSize?: string;
   onClose?: () => void;
@@ -22,9 +22,11 @@ export function openReader(options: ReaderOptions = {}): void {
   document.body.style.setProperty('overflow', 'hidden', 'important');
   closeReader();
 
+  const mode = options.mode || 'textOnly';
+
   let article: ExtractedArticle | null = null;
   try {
-    article = extractArticle(document, window.location.href, options.textOnly ?? true);
+    article = extractArticle(document, window.location.href, mode);
   } catch (err) {
     console.error('[CalmWeb] Extraction failed:', err);
   }
