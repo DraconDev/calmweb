@@ -24,11 +24,14 @@ function renderAndVerify(doc: Document, url: string, textOnly = true): { rendere
     const article = extractArticle(doc, url, textOnly);
     const layout = autoDetectLayout(article);
     const container = document.createElement('div');
-    layout.render(article, container, { font: 'Inter, sans-serif', fontSize: '16px' });
+    const header = document.createElement('div');
+    const footer = document.createElement('div');
+    layout.render(article, container, { font: 'Inter, sans-serif', fontSize: '16px' }, { header, footer });
+    const fullOutput = header.innerHTML + container.innerHTML + footer.innerHTML;
     return {
       rendered: container.innerHTML.length > 100,
-      output: container.innerHTML,
-      hasTitle: container.innerHTML.includes(article.title),
+      output: fullOutput,
+      hasTitle: fullOutput.includes(article.title),
     };
   } catch (err) {
     return { rendered: false, output: String(err), hasTitle: false };
@@ -271,7 +274,9 @@ describe('Reader - Layout Rendering', () => {
   it('adaptive layout renders title and content', () => {
     const layout = getLayout('adaptive');
     const container = document.createElement('div');
-    layout.render(sampleArticle, container);
+    const header = document.createElement('div');
+    const footer = document.createElement('div');
+    layout.render(sampleArticle, container, {}, { header, footer });
     
     expect(container.innerHTML).toContain('Sample Article Title');
     expect(container.innerHTML).toContain('First paragraph');
@@ -281,17 +286,21 @@ describe('Reader - Layout Rendering', () => {
   it('adaptive layout includes source attribution', () => {
     const layout = getLayout('adaptive');
     const container = document.createElement('div');
-    layout.render(sampleArticle, container);
+    const header = document.createElement('div');
+    const footer = document.createElement('div');
+    layout.render(sampleArticle, container, {}, { header, footer });
     
-    expect(container.innerHTML).toContain('example.com');
+    expect(footer.innerHTML).toContain('example.com');
   });
 
   it('adaptive layout includes reading time', () => {
     const layout = getLayout('adaptive');
     const container = document.createElement('div');
-    layout.render(sampleArticle, container);
+    const header = document.createElement('div');
+    const footer = document.createElement('div');
+    layout.render(sampleArticle, container, {}, { header, footer });
     
-    expect(container.innerHTML).toContain('min');
+    expect(header.innerHTML).toContain('min');
   });
 });
 

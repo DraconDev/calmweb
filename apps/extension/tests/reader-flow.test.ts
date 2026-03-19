@@ -138,9 +138,9 @@ it('should render with different fonts', () => {
     const container = document.createElement('div');
     layout.render(article, container);
 
-    // Check for rendered content structure (styles are now in Shadow DOM)
+// Check for rendered content structure (layout fills content area)
     const html = container.innerHTML;
-    expect(html).toContain('cw-layout');
+    expect(html).toContain('cw-content');
     expect(html).toContain('Dark Theme Test'); // title
-});
+  });
 });
