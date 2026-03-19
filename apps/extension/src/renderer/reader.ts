@@ -451,6 +451,244 @@ export function openReader(options: ReaderOptions = {}): void {
       background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
     }
 
+    /* Figures and captions */
+    .cw-content figure {
+      margin: 2em 0;
+      padding: 0;
+    }
+
+    .cw-content figcaption {
+      margin-top: 0.75em;
+      font-size: 0.875rem;
+      color: #64748b;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* Media */
+    .cw-content video,
+    .cw-content audio {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin: 1.5em 0;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .cw-content iframe {
+      max-width: 100%;
+      border-radius: 12px;
+      margin: 1.5em 0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Definition lists */
+    .cw-content dl {
+      margin: 1.5em 0;
+    }
+
+    .cw-content dt {
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-top: 1em;
+    }
+
+    .cw-content dd {
+      margin-left: 1.5em;
+      color: #94a3b8;
+    }
+
+    /* Details/Summary (accordions) */
+    .cw-content details {
+      margin: 1.5em 0;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+    }
+
+    .cw-content summary {
+      font-weight: 600;
+      color: #e2e8f0;
+      cursor: pointer;
+      padding: 4px 0;
+      list-style: none;
+    }
+
+    .cw-content summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .cw-content summary::before {
+      content: '▶';
+      display: inline-block;
+      margin-right: 10px;
+      font-size: 0.75em;
+      color: #7c3aed;
+      transition: transform 0.2s ease;
+    }
+
+    .cw-content details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .cw-content details > *:not(summary) {
+      margin-top: 1em;
+      padding-left: 1.5em;
+    }
+
+    /* Form elements - disabled/neutralized */
+    .cw-content form[data-cw-form-disabled],
+    .cw-content form[disabled] {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .cw-content input,
+    .cw-content textarea,
+    .cw-content select {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      margin: 1em 0;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .cw-content input[data-cw-disabled],
+    .cw-content input[disabled],
+    .cw-content textarea[data-cw-disabled],
+    .cw-content textarea[disabled],
+    .cw-content select[data-cw-disabled],
+    .cw-content select[disabled] {
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.2);
+      color: #64748b;
+    }
+
+    .cw-content input::placeholder,
+    .cw-content textarea::placeholder {
+      color: #475569;
+    }
+
+    .cw-content button,
+    .cw-content input[type="submit"],
+    .cw-content input[type="button"],
+    .cw-content input[type="reset"] {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 10px;
+      color: #a78bfa;
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 0.5em 0;
+    }
+
+    .cw-content button[data-cw-disabled],
+    .cw-content button[disabled],
+    .cw-content input[type="submit"][data-cw-disabled],
+    .cw-content input[type="submit"][disabled] {
+      pointer-events: none;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Abbreviations */
+    .cw-content abbr {
+      border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+      cursor: help;
+    }
+
+    /* Mark/highlight */
+    .cw-content mark {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      padding: 0.1em 0.3em;
+      border-radius: 4px;
+    }
+
+    /* Del/ins (edits) */
+    .cw-content del {
+      color: #64748b;
+      text-decoration: line-through;
+    }
+
+    .cw-content ins {
+      color: #34d399;
+      text-decoration: underline;
+    }
+
+    /* Small text */
+    .cw-content small {
+      font-size: 0.8em;
+      color: #64748b;
+    }
+
+    /* Strong/emphasis */
+    .cw-content strong {
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .cw-content em {
+      font-style: italic;
+    }
+
+    /* Address */
+    .cw-content address {
+      font-style: normal;
+      margin: 1.5em 0;
+      padding: 16px 20px;
+      background: rgba(139, 92, 246, 0.05);
+      border-left: 3px solid #7c3aed;
+      border-radius: 0 12px 12px 0;
+    }
+
+    /* Cite */
+    .cw-content cite {
+      font-style: italic;
+      color: #a78bfa;
+    }
+
+    /* Time */
+    .cw-content time {
+      color: #64748b;
+      font-size: 0.9em;
+    }
+
+    /* Code blocks with language labels */
+    .cw-content pre[class*="language-"] {
+      position: relative;
+    }
+
+    .cw-content pre[class*="language-"]::before {
+      content: attr(class);
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    /* Math/code equations */
+    .cw-content math,
+    .cw-content .math {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95em;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.2em 0.5em;
+      border-radius: 6px;
+    }
+
     /* Hero image */
     .cw-hero {
       width: calc(100% + 80px);
