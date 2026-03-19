@@ -1,5 +1,6 @@
 /**
- * Reader Overlay - Uses Shadow DOM for complete CSS isolation from host page
+ * Reader Overlay - Universal reading mode with Shadow DOM isolation
+ * Works on any webpage, not just articles
  */
 
 import type { ExtractedArticle } from './extractor';
@@ -17,18 +18,10 @@ export interface ReaderOptions {
 
 const HOST_ID = 'calmweb-reader-host';
 
-let currentLayout: ReaderLayout;
-let currentFont: string = 'Inter, -apple-system, sans-serif';
-let currentFontSize: string = '17px';
-
 export function openReader(options: ReaderOptions = {}): void {
-  // Lock page scrolling
   document.body.style.setProperty('overflow', 'hidden', 'important');
-
-  // Remove existing overlay
   closeReader();
 
-  // Extract content
   let article: ExtractedArticle | null = null;
   try {
     article = extractArticle(document, window.location.href, options.textOnly ?? true);
@@ -36,13 +29,9 @@ export function openReader(options: ReaderOptions = {}): void {
     console.error('[CalmWeb] Extraction failed:', err);
   }
 
-  currentLayout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article || fallbackArticle());
-  currentFont = options.font ? `${options.font}, -apple-system, sans-serif` : 'Inter, -apple-system, sans-serif';
-  currentFontSize = options.fontSize || '17px';
-
   const titleText = article?.title || document.title || 'Current Page';
+  const layout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article || fallbackArticle());
 
-  // Create host element (invisible boundary)
   const host = document.createElement('div');
   host.id = HOST_ID;
   host.style.cssText = `
@@ -57,315 +46,544 @@ export function openReader(options: ReaderOptions = {}): void {
     pointer-events: auto !important;
   `;
 
-  // Attach Shadow DOM for complete CSS isolation
   const shadow = host.attachShadow({ mode: 'open' });
 
-  // Inject all styles into shadow root
+  // Premium dark theme styles
   const style = document.createElement('style');
   style.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
     
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: transparent;
+      color: #e2e8f0;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
     .cw-overlay {
       width: 100%;
       height: 100%;
-      background: linear-gradient(180deg, #0d0d12 0%, #09090b 50%, #08080a 100%);
-      color: #c9c9d0;
+      background: linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #0d0d14 100%);
       overflow-y: auto;
       overflow-x: hidden;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    .cw-toolbar {
-      position: sticky;
+    /* Subtle animated gradient background */
+    .cw-bg-pattern {
+      position: fixed;
       top: 0;
-      z-index: 10;
-      height: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      opacity: 0.4;
+      background: 
+        radial-gradient(ellipse at 20% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+    }
+
+    /* Toolbar */
+    .cw-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      background: linear-gradient(180deg, rgba(13,13,18,0.98) 0%, rgba(9,9,11,0.95) 100%);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(139,92,246,0.15);
+      padding: 0 24px;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .cw-toolbar-left {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-width: 0;
+      gap: 16px;
     }
 
     .cw-logo {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-weight: 700;
-      font-size: 14px;
-      color: #8b5cf6;
+      font-size: 15px;
+      color: #a78bfa;
+      letter-spacing: -0.02em;
+    }
+
+    .cw-logo svg {
+      filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
     }
 
     .cw-title {
       font-size: 13px;
-      color: #52525b;
-      max-width: 400px;
+      color: #64748b;
+      max-width: 300px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      padding-left: 16px;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .cw-toolbar-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
 
     .cw-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 8px;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
       font-size: 13px;
-      color: #a1a1aa;
+      font-weight: 500;
+      color: #94a3b8;
       cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
     }
 
     .cw-btn:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      transform: translateY(-1px);
+    }
+
+    .cw-btn:active {
+      transform: translateY(0);
+    }
+
+    .cw-btn-primary {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%);
+      border-color: rgba(139, 92, 246, 0.25);
+      color: #a78bfa;
+    }
+
+    .cw-btn-primary:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.15) 100%);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
     }
 
     .cw-btn-close {
-      background: rgba(239,68,68,0.15);
-      border-color: rgba(239,68,68,0.3);
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
       color: #f87171;
     }
 
     .cw-btn-close:hover {
-      background: rgba(239,68,68,0.25);
+      background: rgba(239, 68, 68, 0.2);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
     }
 
-    .cw-content {
-      padding: 0 0 80px;
-      min-height: calc(100vh - 56px);
-    }
-
-    .cw-layout {
+    /* Main content area */
+    .cw-main {
+      max-width: 720px;
       margin: 0 auto;
-      padding: 0 32px 100px;
-      color: #c9c9d0;
-      line-height: 1.8;
-      max-width: 800px;
+      padding: 120px 24px 120px;
     }
 
+    /* Article header */
     .cw-article-header {
       margin-bottom: 48px;
       padding-bottom: 32px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
 
-    .cw-article-header.centered { text-align: center; }
-
     .cw-title-main {
-      font-size: 2.2em;
+      font-size: 2.75rem;
       font-weight: 700;
-      line-height: 1.2;
+      line-height: 1.15;
       margin: 0 0 20px;
-      color: #f0f0f5;
-      letter-spacing: -0.03em;
+      color: #f8fafc;
+      letter-spacing: -0.035em;
+      text-shadow: 0 2px 30px rgba(139, 92, 246, 0.1);
     }
 
     .cw-meta {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
-      font-size: 0.85em;
-      color: #7a7a85;
-      font-weight: 500;
+      font-size: 0.875rem;
+      color: #64748b;
     }
 
-    .cw-header.centered .cw-meta { justify-content: center; }
+    .cw-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-    .cw-meta-sep { color: #4a4a55; }
+    .cw-meta-sep {
+      width: 4px;
+      height: 4px;
+      background: #334155;
+      border-radius: 50%;
+    }
 
-    .cw-content p { 
-      margin: 0 0 1.5em; 
-      color: #c9c9d0; 
-      line-height: 1.85;
-      font-size: 1.05em;
+    .cw-reading-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a78bfa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Content styles */
+    .cw-content {
+      font-size: 1.125rem;
+      line-height: 1.8;
+      color: #cbd5e1;
+    }
+
+    .cw-content p {
+      margin: 0 0 1.5em;
+      color: #cbd5e1;
+    }
+
+    .cw-content p:first-of-type {
+      font-size: 1.2em;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+
+    /* Dropcap for first letter */
+    .cw-content p:first-of-type::first-letter {
+      float: left;
+      font-size: 3.5em;
+      line-height: 0.8;
+      margin: 0.05em 0.12em 0 0;
+      font-weight: 700;
+      color: #a78bfa;
+      text-shadow: 0 2px 20px rgba(139, 92, 246, 0.3);
     }
 
     .cw-content h1 {
-      font-size: 1.8em;
-      color: #e8e8f0;
-      font-weight: 600;
-      margin: 1.5em 0 0.8em;
+      font-size: 1.75em;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin: 2em 0 0.75em;
+      letter-spacing: -0.02em;
     }
 
     .cw-content h2 {
-      margin: 2.5em 0 0.8em;
       font-size: 1.5em;
-      color: #e8e8f0;
       font-weight: 600;
+      color: #e2e8f0;
+      margin: 2.5em 0 1em;
       letter-spacing: -0.02em;
-      padding-bottom: 0.3em;
-      border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+      padding-bottom: 0.5em;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.15);
     }
 
     .cw-content h3 {
-      margin: 2em 0 0.6em;
-      font-size: 1.2em;
-      color: #d8d8e0;
+      font-size: 1.25em;
       font-weight: 600;
+      color: #e2e8f0;
+      margin: 2em 0 0.75em;
     }
 
     .cw-content h4 {
-      margin: 1.5em 0 0.5em;
-      font-size: 1.05em;
-      color: #c0c0c8;
+      font-size: 1.1em;
       font-weight: 600;
+      color: #e2e8f0;
+      margin: 1.5em 0 0.5em;
     }
 
-    .cw-content.columns-2 {
-      column-count: 2;
-      column-gap: 48px;
-      column-rule: 1px solid rgba(255,255,255,0.06);
+    .cw-content a {
+      color: #818cf8;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(129, 140, 248, 0.3);
+      transition: all 0.15s ease;
     }
 
-    .cw-content.columns-2 h1,
-    .cw-content.columns-2 h2,
-    .cw-content.columns-2 h3,
-    .cw-content.columns-2 blockquote,
-    .cw-content.columns-2 pre,
-    .cw-content.columns-2 figure {
-      column-span: all;
+    .cw-content a:hover {
+      color: #a5b4fc;
+      border-bottom-color: rgba(129, 140, 248, 0.6);
     }
-
-    .cw-content ul, .cw-content ol {
-      margin: 0 0 1.5em;
-      padding-left: 1.8em;
-    }
-
-    .cw-content li { 
-      margin: 0.4em 0; 
-      line-height: 1.75;
-    }
-
-    .cw-content blockquote {
-      border-left: 3px solid #7c6aed;
-      padding: 0.75em 0 0.75em 1.5em;
-      margin: 2em 0;
-      color: #9090a0;
-      font-style: italic;
-      background: rgba(124, 106, 237, 0.05);
-      border-radius: 0 8px 8px 0;
-    }
-
-    .cw-content blockquote p { margin-bottom: 0; color: #9090a0; }
 
     .cw-content img {
       max-width: 100%;
       height: auto;
-      border-radius: 12px;
+      border-radius: 16px;
       margin: 2em 0;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
-    .cw-hero {
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-      margin-bottom: 32px;
-      opacity: 0.9;
+    .cw-content blockquote {
+      margin: 2.5em 0;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%);
+      border-left: 3px solid #7c3aed;
+      border-radius: 0 16px 16px 0;
+      font-style: italic;
+      color: #a5b4fc;
     }
 
-    .cw-content a { 
-      color: #8b7cf6; 
-      text-decoration: none; 
-    }
-    .cw-content a:hover { 
-      color: #b49eff; 
-      text-decoration: underline; 
+    .cw-content blockquote p {
+      margin: 0;
+      font-size: 1.1em;
+      color: inherit;
     }
 
-    .cw-content code {
-      background: rgba(139, 92, 246, 0.1);
-      padding: 0.15em 0.4em;
-      border-radius: 4px;
-      font-size: 0.9em;
-      color: #c4b5fd;
+    .cw-content blockquote p:first-of-type::first-letter {
+      float: none;
+      font-size: inherit;
+      line-height: inherit;
+      margin: 0;
+      font-weight: inherit;
+      color: inherit;
+      text-shadow: none;
+    }
+
+    .cw-content ul, .cw-content ol {
+      margin: 1.5em 0;
+      padding-left: 1.75em;
+    }
+
+    .cw-content li {
+      margin: 0.6em 0;
+      color: #cbd5e1;
+    }
+
+    .cw-content ul li::marker {
+      color: #7c3aed;
+    }
+
+    .cw-content ol li::marker {
+      color: #7c3aed;
+      font-weight: 600;
     }
 
     .cw-content pre {
-      background: rgba(0,0,0,0.4);
-      border: 1px solid rgba(139, 92, 246, 0.15);
-      border-radius: 12px;
-      padding: 1.25em;
-      overflow-x: auto;
-      font-size: 0.88em;
       margin: 2em 0;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(139, 92, 246, 0.15);
+      border-radius: 16px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
       line-height: 1.6;
+      color: #e2e8f0;
     }
 
-    .cw-content pre code { 
-      background: none; 
-      padding: 0; 
-      color: #e0dffe; 
+    .cw-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      padding: 0.2em 0.5em;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 6px;
+      color: #c4b5fd;
     }
 
-    .cw-dropcap::first-letter {
-      float: left;
-      font-size: 3.5em;
-      line-height: 0.85;
-      margin-right: 10px;
-      margin-top: 4px;
-      font-weight: 700;
-      color: #8b7cf6;
+    .cw-content pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
     }
 
+    .cw-content table {
+      width: 100%;
+      margin: 2em 0;
+      border-collapse: collapse;
+      font-size: 0.95em;
+    }
+
+    .cw-content th, .cw-content td {
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: left;
+    }
+
+    .cw-content th {
+      background: rgba(139, 92, 246, 0.1);
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .cw-content td {
+      color: #94a3b8;
+    }
+
+    .cw-content hr {
+      margin: 3em 0;
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+    }
+
+    /* Hero image */
+    .cw-hero {
+      width: calc(100% + 80px);
+      max-width: calc(100% + 80px);
+      height: auto;
+      border-radius: 24px;
+      margin: 0 -40px 48px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Footer */
     .cw-footer {
-      margin-top: 64px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      font-size: 0.82em;
-      color: #5a5a65;
-      text-align: center;
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .cw-source {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: #64748b;
     }
 
-    .cw-favicon { 
-      width: 14px; 
-      height: 14px; 
-      border-radius: 2px; 
-      opacity: 0.6; 
+    .cw-favicon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      opacity: 0.7;
     }
 
-    @media (max-width: 700px) {
-      .cw-content.columns-2 { column-count: 1; }
-      .cw-layout { padding: 0 16px 60px; }
-      .cw-title-main { font-size: 1.6em; }
+    .cw-source-url {
+      color: #818cf8;
+      text-decoration: none;
+    }
+
+    /* Two column layout for long content */
+    .cw-columns-2 {
+      column-count: 2;
+      column-gap: 48px;
+      column-rule: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cw-columns-2 h1,
+    .cw-columns-2 h2,
+    .cw-columns-2 h3,
+    .cw-columns-2 blockquote,
+    .cw-columns-2 pre {
+      column-span: all;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .cw-toolbar {
+        padding: 0 16px;
+        height: 56px;
+      }
+      
+      .cw-title {
+        display: none;
+      }
+      
+      .cw-main {
+        padding: 100px 20px 80px;
+      }
+      
+      .cw-title-main {
+        font-size: 2rem;
+      }
+      
+      .cw-content {
+        font-size: 1rem;
+      }
+      
+      .cw-content p:first-of-type {
+        font-size: 1.1em;
+      }
+      
+      .cw-columns-2 {
+        column-count: 1;
+      }
+      
+      .cw-hero {
+        width: calc(100% + 40px);
+        margin: 0 -20px 32px;
+        border-radius: 16px;
+      }
+      
+      .cw-btn span {
+        display: none;
+      }
+      
+      .cw-btn {
+        padding: 10px 12px;
+      }
+    }
+
+    /* Focus visible for accessibility */
+    .cw-btn:focus-visible {
+      outline: 2px solid #7c3aed;
+      outline-offset: 2px;
+    }
+
+    /* Selection color */
+    ::selection {
+      background: rgba(139, 92, 246, 0.3);
+      color: #f8fafc;
+    }
+
+    /* Animations */
+    @keyframes cw-fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .cw-main {
+      animation: cw-fade-in 0.4s ease-out;
+    }
+
+    @keyframes cw-underline-expand {
+      from { width: 0; }
+      to { width: 100%; }
     }
   `;
   shadow.appendChild(style);
 
-  // Build overlay structure
+  // Build overlay
   const overlay = document.createElement('div');
   overlay.className = 'cw-overlay';
+
+  // Background pattern
+  const bgPattern = document.createElement('div');
+  bgPattern.className = 'cw-bg-pattern';
 
   // Toolbar
   const toolbar = document.createElement('div');
@@ -373,55 +591,61 @@ export function openReader(options: ReaderOptions = {}): void {
   toolbar.innerHTML = `
     <div class="cw-toolbar-left">
       <div class="cw-logo">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M9 12l2 2 4-4"/>
         </svg>
-        Filtered
+        CalmWeb
       </div>
       <div class="cw-title">${escapeHtml(titleText)}</div>
     </div>
     <div class="cw-toolbar-right">
-      <button class="cw-btn" id="cw-raw-btn">
+      <button class="cw-btn cw-btn-primary" id="cw-raw-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="21" x2="9" y2="9"/>
         </svg>
-        Raw
+        <span>Original</span>
       </button>
       <button class="cw-btn cw-btn-close" id="cw-close-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 6L6 18M6 6l12 12"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
-        Close
+        <span>Close</span>
       </button>
     </div>
   `;
 
-  // Content area
+  // Main content area
+  const main = document.createElement('main');
+  main.className = 'cw-main';
+
+  // Article header placeholder
+  const headerPlaceholder = document.createElement('header');
+  headerPlaceholder.className = 'cw-article-header';
+
+  // Content placeholder
   const content = document.createElement('div');
   content.className = 'cw-content';
 
-  // Header and footer placeholders (layout will fill these)
-  const headerPlaceholder = document.createElement('div');
-  headerPlaceholder.className = 'cw-article-header';
-
+  // Footer placeholder
   const footerPlaceholder = document.createElement('footer');
   footerPlaceholder.className = 'cw-footer';
 
-  // Layout wrapper
-  const layoutWrapper = document.createElement('div');
-  layoutWrapper.className = 'cw-layout';
-  layoutWrapper.appendChild(headerPlaceholder);
-  layoutWrapper.appendChild(content);
-  layoutWrapper.appendChild(footerPlaceholder);
+  main.appendChild(headerPlaceholder);
+  main.appendChild(content);
+  main.appendChild(footerPlaceholder);
 
+  overlay.appendChild(bgPattern);
   overlay.appendChild(toolbar);
-  overlay.appendChild(layoutWrapper);
+  overlay.appendChild(main);
   shadow.appendChild(overlay);
 
-  // Add to page
   document.body.appendChild(host);
 
-  // Event listeners (on shadow elements)
+  // Event listeners
   shadow.getElementById('cw-close-btn')?.addEventListener('click', () => {
     closeReader();
     options.onClose?.();
@@ -431,18 +655,27 @@ export function openReader(options: ReaderOptions = {}): void {
     options.onClose?.();
   });
 
-  // Render layout into shadow content area
+  // Render layout
   const renderArticle = article && article.title ? article : fallbackArticle();
   try {
-    currentLayout.render(renderArticle, content, { font: currentFont, fontSize: currentFontSize });
+    layout.render(renderArticle, content, {
+      font: options.font || 'Inter',
+      fontSize: options.fontSize || '17px',
+    }, {
+      header: headerPlaceholder,
+      footer: footerPlaceholder,
+    });
   } catch (err) {
     console.error('[CalmWeb] Layout render failed:', err);
-    renderFallback(content, renderArticle.title, renderArticle.content);
+    renderFallback(content, renderArticle);
   }
 
-  // Escape key
+  // Escape key handler
   const handleEsc = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') { closeReader(); document.removeEventListener('keydown', handleEsc); }
+    if (e.key === 'Escape') {
+      closeReader();
+      document.removeEventListener('keydown', handleEsc);
+    }
   };
   document.addEventListener('keydown', handleEsc);
 }
@@ -472,13 +705,9 @@ function fallbackArticle(): ExtractedArticle {
   };
 }
 
-function renderFallback(container: HTMLElement, title: string, content: string): void {
-  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 20).slice(0, 15);
+function renderFallback(container: HTMLElement, article: ExtractedArticle): void {
   container.innerHTML = `
-    <div class="cw-layout">
-      <h1 class="cw-title-main">${escapeHtml(title)}</h1>
-      ${paragraphs.map(p => `<p>${escapeHtml(p.trim())}</p>`).join('')}
-    </div>
+    <p>${escapeHtml(article.content.slice(0, 500))}</p>
   `;
 }
 

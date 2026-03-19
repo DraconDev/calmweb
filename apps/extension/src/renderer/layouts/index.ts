@@ -11,7 +11,7 @@ export interface ReaderLayout {
   id: string;
   name: string;
   description: string;
-  render: (article: ExtractedArticle, container: HTMLElement, options?: { font?: string; fontSize?: string }) => void;
+  render: (article: ExtractedArticle, container: HTMLElement, options?: { font?: string; fontSize?: string }, extras?: { header?: HTMLElement; footer?: HTMLElement }) => void;
 }
 
 function escapeHtml(text: string): string {
@@ -70,7 +70,7 @@ export const adaptiveLayout: ReaderLayout = {
   id: 'adaptive',
   name: 'Adaptive',
   description: 'Automatically adjusts to page content',
-  render(article, container, options = {}) {
+  render(article, container, options = {}, extras = {}) {
     const profile = analyzeContent(article);
     const heroImage = article.images?.[0];
 
@@ -90,67 +90,39 @@ export const adaptiveLayout: ReaderLayout = {
       contentHtml = contentHtml.replace(/<p>/g, '<p class="cw-centered">');
     }
 
-    // Check if we're in shadow DOM mode with full structure
-    const cwOverlay = container.closest('.cw-overlay');
-    if (cwOverlay) {
-      // Shadow DOM mode - update existing elements
-      const layout = cwOverlay.querySelector('.cw-layout') as HTMLElement;
-      if (layout) layout.style.maxWidth = profile.maxWidth;
+    // Use extras header/footer if provided (new Shadow DOM mode)
+    const headerEl = extras.header || container.closest('.cw-overlay')?.querySelector('.cw-article-header');
+    const footerEl = extras.footer || container.closest('.cw-overlay')?.querySelector('.cw-footer');
 
-      const header = cwOverlay.querySelector('.cw-article-header');
-      if (header) {
-        header.innerHTML = `
-          <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
-          <div class="cw-meta">
-            ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
-            ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
-            ${article.date ? `<span>${article.date}</span>` : ''}
-            <span class="cw-meta-sep">·</span>
-            <span>${article.readingTime} min</span>
-          </div>
-        `;
-      }
-
-      const footer = cwOverlay.querySelector('.cw-footer');
-      if (footer) {
-        footer.innerHTML = `
-          <div class="cw-source">
-            ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
-            <span>${escapeHtml(article.source)}</span>
-          </div>
-        `;
-      }
-
-      // Set content with optional columns
-      container.innerHTML = `
-        ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
-        <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
-      `;
-    } else {
-      // Fallback mode for tests/standalone use - render everything inline
-      container.innerHTML = `
-        <div class="cw-layout" style="max-width:${profile.maxWidth};font-family:Inter,sans-serif;font-size:16px;line-height:1.75;">
-          ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
-          <header class="cw-article-header">
-            <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
-            <div class="cw-meta">
-              ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
-              ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
-              ${article.date ? `<span>${article.date}</span>` : ''}
-              <span class="cw-meta-sep">·</span>
-              <span>${article.readingTime} min</span>
-            </div>
-          </header>
-          <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
-          <footer class="cw-footer">
-            <div class="cw-source">
-              ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
-              <span>${escapeHtml(article.source)}</span>
-            </div>
-          </footer>
+    // Update header
+    if (headerEl) {
+      headerEl.innerHTML = `
+        <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
+        <div class="cw-meta">
+          ${article.author ? `<span class="cw-meta-item">${escapeHtml(article.author)}</span>` : ''}
+          ${article.author && article.date ? '<span class="cw-meta-sep"></span>' : ''}
+          ${article.date ? `<span class="cw-meta-item">${article.date}</span>` : ''}
+          ${(article.author || article.date) ? '<span class="cw-meta-sep"></span>' : ''}
+          <span class="cw-reading-time">${article.readingTime} min read</span>
         </div>
       `;
     }
+
+    // Update footer
+    if (footerEl) {
+      footerEl.innerHTML = `
+        <a href="${escapeHtml(article.url)}" class="cw-source" target="_blank" rel="noopener noreferrer">
+          ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
+          <span>${escapeHtml(article.source)}</span>
+        </a>
+      `;
+    }
+
+    // Set content with optional columns and hero
+    container.innerHTML = `
+      ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
+      <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
+    `;
   },
 };
 
