@@ -746,7 +746,7 @@ function AdvancedTab({ processingMode, byokKey, aiModel, onChange }: Omit<Advanc
                 <div className="flex-1">
                   <span className="text-sm font-medium">{model.label}</span>
                 </div>
-                {'recommended' in model && model.recommended && (
+                {(model as { recommended?: boolean }).recommended && (
                   <span className="text-[10px] font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
                 )}
                 {model.free && <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">Free</span>}
