@@ -52,25 +52,22 @@ const REMOVE_SELECTORS = [
 ];
 
 const CONTENT_SELECTORS = [
-  // Wikipedia-specific (before generic #content)
   '#mw-content-text',
   '.mw-parser-output',
-  // Semantic HTML
   'article',
   '[role="article"]',
   'main article',
-  // Common CMS patterns
   '.post-content',
   '.article-content',
   '.entry-content',
   '.post-body',
   '.article-body',
   '.content-body',
-  // Main containers (last resort)
   'main',
   '[role="main"]',
   '#content',
   '.content',
+  'body',
 ];
 
 const TITLE_SELECTORS = [
@@ -78,10 +75,18 @@ const TITLE_SELECTORS = [
   'h1[itemprop="headline"]',
   '[property="og:title"]',
   'meta[name="twitter:title"]',
+  'h1.title',
+  'h1[itemprop="name"]',
+  '.product-title',
+  '.product-name',
+  '.listing-title',
+  '.thread-title',
   'h1',
   '.post-title',
   '.article-title',
   '.entry-title',
+  '[class*="title"] h1',
+  'meta[property="og:title"]',
 ];
 
 const AUTHOR_SELECTORS = [
