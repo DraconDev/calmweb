@@ -54,25 +54,6 @@ const REMOVE_SELECTORS = [
   '.amp-sidebar', '.amp-menu',
 ];
 
-const CONTENT_SELECTORS = [
-  '#mw-content-text',
-  '.mw-parser-output',
-  'article',
-  '[role="article"]',
-  'main article',
-  '.post-content',
-  '.article-content',
-  '.entry-content',
-  '.post-body',
-  '.article-body',
-  '.content-body',
-  'main',
-  '[role="main"]',
-  '#content',
-  '.content',
-  'body',
-];
-
 const TITLE_SELECTORS = [
   'article h1',
   'h1[itemprop="headline"]',
@@ -252,36 +233,90 @@ function extractDate(doc: Document): string | undefined {
 }
 
 function findMainContent(doc: Document): HTMLElement {
-  for (const selector of CONTENT_SELECTORS) {
-    const el = doc.querySelector(selector);
-    if (el && el.textContent && el.textContent.trim().length > 100) {
-      return el as HTMLElement;
-    }
-  }
+  const candidates = doc.querySelectorAll('main, article, [role="main"], [role="article"], section, div, body');
 
-  const body = doc.body;
-  if (body && body.textContent && body.textContent.trim().length > 100) {
-    return body;
-  }
-
-  const candidates = doc.querySelectorAll('div, section, main');
-  let best: HTMLElement | null = null;
+  let bestElement: HTMLElement | null = null;
   let bestScore = 0;
 
   for (const candidate of Array.from(candidates)) {
-    const el = candidate as HTMLElement;
-    const text = el.textContent?.trim() || '';
-    const paragraphs = el.querySelectorAll('p').length;
-    const lists = el.querySelectorAll('ul, ol').length;
-    const tables = el.querySelectorAll('table').length;
-    const score = text.length + (paragraphs * 300) + (lists * 200) + (tables * 500);
+    if (!isVisibleElement(candidate)) continue;
+    
+    const score = scoreElement(candidate);
     if (score > bestScore) {
       bestScore = score;
-      best = el;
+      bestElement = candidate as HTMLElement;
     }
   }
 
-  return best || doc.body;
+  return bestElement || doc.body;
+}
+
+function isVisibleElement(el: Element): boolean {
+  const style = window.getComputedStyle(el);
+  if (style.display === 'none') return false;
+  if (style.visibility === 'hidden') return false;
+  if (style.opacity === '0') return false;
+  if (parseFloat(style.opacity) < 0.1) return false;
+  if (el.hasAttribute('hidden')) return false;
+  if (el.getAttribute('aria-hidden') === 'true') return false;
+  if (el.hasAttribute('data-visible') && el.getAttribute('data-visible') === 'false') return false;
+  return true;
+}
+
+function scoreElement(el: Element): number {
+  const html = el as HTMLElement;
+  const text = html.textContent?.trim() || '';
+  const innerHTML = html.innerHTML || '';
+
+  if (text.length < 50) return 0;
+
+  const textLength = text.length;
+  const htmlLength = innerHTML.length;
+  const textDensity = htmlLength > 0 ? textLength / htmlLength : 0;
+
+  if (textDensity < 0.05) return 0;
+
+  const paragraphs = html.querySelectorAll('p').length;
+  const headings = html.querySelectorAll('h1,h2,h3,h4,h5,h6').length;
+  const lists = html.querySelectorAll('ul, ol, dl').length;
+  const tables = html.querySelectorAll('table').length;
+  const links = html.querySelectorAll('a').length;
+  const images = html.querySelectorAll('img').length;
+  const blockChildren = html.querySelectorAll('p, div, section, article, blockquote, pre, ul, ol, table').length;
+
+  let score = 0;
+
+  score += textLength * textDensity;
+
+  score += paragraphs * 100;
+  score += headings * 80;
+  score += lists * 60;
+  score += tables * 100;
+  score += links * 5;
+  score += images * 10;
+  score += blockChildren * 30;
+
+  const tagName = el.tagName.toLowerCase();
+  if (tagName === 'article') score += 500;
+  if (tagName === 'main') score += 400;
+  if (tagName === 'section') score += 200;
+
+  const depth = getDepth(el);
+  score *= Math.max(0.3, 1 - (depth * 0.05));
+
+  if (score > 50000) return 50000;
+
+  return score;
+}
+
+function getDepth(el: Element): number {
+  let depth = 0;
+  let parent = el.parentElement;
+  while (parent) {
+    depth++;
+    parent = parent.parentElement;
+  }
+  return depth;
 }
 
 function cleanContent(el: HTMLElement, mode: CleanMode = 'textOnly', baseUrl: string = ''): HTMLElement {
