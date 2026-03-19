@@ -4,7 +4,6 @@
  */
 
 import type { ExtractedArticle, CleanMode } from './extractor';
-import type { ReaderLayout } from './layouts';
 import { extractArticle } from './extractor';
 import { getLayout, autoDetectLayout } from './layouts';
 

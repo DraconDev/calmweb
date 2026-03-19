@@ -186,7 +186,7 @@ export default defineContentScript({
       hideLoading();
       try {
         openReader({
-          textOnly: readerSettings.textOnly !== false,
+          mode: readerSettings.mode || 'full',
           layoutId: readerSettings.defaultLayout,
           font: readerSettings.font,
           fontSize: readerSettings.fontSize,

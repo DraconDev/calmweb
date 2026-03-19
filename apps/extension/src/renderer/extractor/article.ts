@@ -106,13 +106,73 @@ const DATE_SELECTORS = [
 
 export type CleanMode = 'textOnly' | 'safe' | 'full';
 
+const TRACKING_PARAMS = [
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+  'fbclid', 'gclid', 'gclsrc',
+  'mc_cid', 'mc_eid',
+  'ref', 'referer', 'referrer',
+  'affiliate', 'aff_id',
+  'campaign_id', 'ad_id', 'adgroup_id',
+  'ttclid', 'twclid',
+  's_kwcid', 'scid',
+  '_ga', '_gl',
+  'vero_id', 'mailchimp_campaign_id',
+  'fb_action_ids', 'fb_action_types', 'fb_source',
+  'fb_campaign_ids',
+  'oly_enc_id', 'oly_anon_id',
+  'perfmon_ref_id',
+  'spm', 'spm_id',
+  'rdt_cid', 'rdt_tid',
+  'trk_contact', 'trk_msg', 'trk_module', 'trk_sid',
+  'zanpid',
+  'igshid',
+  'tt_sigid', 'tt_mediaid',
+];
+
+const SUSPICIOUS_DOMAINS = [
+  'bit.ly', 'tinyurl.com', 't.co', 'goo.gl',
+  'ow.ly', 'is.gd', 'buff.ly', 'adf.ly',
+  'j.mp', 'tr.im', 'tiny.cc', 'lnkd.in',
+  'db.tt', 'qr.ae', 'adcrun.ch', 'psty.jp',
+  'shorl.com', 'hypERM.com', 'firefe.st',
+  'cort.as', 'clck.ru', 'clicky.me', 'budurl.com',
+  'snipurl.com', 'snurl.com', 'short.to', 'url.ie',
+  'shorenstein.org',
+];
+
+function stripTrackingFromUrl(href: string, baseUrl: string): string {
+  try {
+    const url = new URL(href, baseUrl);
+    const hostname = url.hostname;
+
+    if (SUSPICIOUS_DOMAINS.some(d => hostname.includes(d))) {
+      return '';
+    }
+
+    TRACKING_PARAMS.forEach(param => url.searchParams.delete(param));
+
+    url.searchParams.delete('_ga');
+    url.searchParams.delete('_gl');
+    url.searchParams.delete('ref');
+    url.searchParams.delete('ref_src');
+    url.searchParams.delete('ref_url');
+
+    url.hash = '';
+
+    const cleaned = url.toString();
+    return cleaned === url.origin + url.pathname + '/' ? '' : cleaned;
+  } catch {
+    return '';
+  }
+}
+
 export function extractArticle(doc: Document, url: string, mode: CleanMode = 'textOnly'): ExtractedArticle {
   const title = extractTitle(doc);
   const author = extractAuthor(doc);
   const date = extractDate(doc);
   const mainContent = findMainContent(doc);
-  const images = mode === 'full' ? extractImages(mainContent) : [];
-  const cleanedContent = cleanContent(mainContent, mode);
+  const images = mode !== 'textOnly' ? extractImages(mainContent) : [];
+  const cleanedContent = cleanContent(mainContent, mode, url);
   const favicon = extractFavicon(doc);
   const readingTime = calculateReadingTime(cleanedContent.textContent || '');
 
@@ -211,22 +271,20 @@ function findMainContent(doc: Document): HTMLElement {
   return best || doc.body;
 }
 
-function cleanContent(el: HTMLElement, mode: CleanMode = 'textOnly'): HTMLElement {
+function cleanContent(el: HTMLElement, mode: CleanMode = 'textOnly', baseUrl: string = ''): HTMLElement {
   const clone = el.cloneNode(true) as HTMLElement;
 
-  // Always remove noise
   REMOVE_SELECTORS.forEach((selector) => {
     clone.querySelectorAll(selector).forEach((el) => el.remove());
   });
 
   if (mode === 'textOnly') {
-    // Full stripping - remove all media, classes, styles
     cleanTextOnly(clone);
   } else if (mode === 'safe') {
-    // Safe mode - preserve structure, links, buttons, strip media
-    cleanSafeMode(clone);
+    cleanSafeMode(clone, baseUrl);
+  } else if (mode === 'full') {
+    cleanFullMode(clone, baseUrl);
   }
-  // 'full' mode - no cleaning, just return clone as-is
 
   return clone;
 }
@@ -277,11 +335,7 @@ function cleanTextOnly(el: HTMLElement): void {
   });
 }
 
-function cleanSafeMode(el: HTMLElement): void {
-  // Keep interactive elements (buttons, links, inputs) but neutralize them
-  // Remove media but preserve structure
-
-  // Replace figures with caption text
+function cleanSafeMode(el: HTMLElement, baseUrl: string): void {
   el.querySelectorAll('figure').forEach((figure) => {
     const caption = figure.querySelector('figcaption');
     if (caption && caption.textContent?.trim()) {
@@ -293,7 +347,6 @@ function cleanSafeMode(el: HTMLElement): void {
     }
   });
 
-  // Remove media - replace with placeholder
   el.querySelectorAll('img').forEach((img) => {
     const alt = img.getAttribute('alt') || 'Image';
     const span = document.createElement('span');
@@ -303,7 +356,6 @@ function cleanSafeMode(el: HTMLElement): void {
     img.replaceWith(span);
   });
 
-  // Remove video/audio/embeds and replace with placeholder
   el.querySelectorAll('video, audio, source, track, picture, canvas, embed, object, iframe').forEach((media) => {
     const span = document.createElement('span');
     span.className = 'cw-media-placeholder';
@@ -312,32 +364,32 @@ function cleanSafeMode(el: HTMLElement): void {
     media.replaceWith(span);
   });
 
-  // Neutralize links - make them safe but keep them visible
   el.querySelectorAll('a').forEach((a) => {
     const href = a.getAttribute('href') || '';
-    // Keep http/https links, mark external ones
     if (href.startsWith('http') || href.startsWith('/') || href.startsWith('#')) {
+      const cleaned = stripTrackingFromUrl(href, baseUrl);
+      if (cleaned) {
+        a.setAttribute('href', cleaned);
+      } else {
+        a.removeAttribute('href');
+      }
       a.setAttribute('target', '_blank');
       a.setAttribute('rel', 'noopener noreferrer');
     } else {
-      // Remove javascript: and other unsafe links
       a.removeAttribute('href');
     }
   });
 
-  // Keep buttons but disable them visually (mark as disabled)
   el.querySelectorAll('button, input[type="submit"], input[type="button"], input[type="reset"]').forEach((btn) => {
     btn.setAttribute('data-cw-disabled', 'true');
     btn.setAttribute('disabled', 'true');
   });
 
-  // Neutralize form inputs (show values but don't allow editing)
   el.querySelectorAll('input:not([type="submit"]):not([type="button"]):not([type="reset"]), textarea, select').forEach((input) => {
     input.setAttribute('data-cw-disabled', 'true');
     input.setAttribute('disabled', 'true');
   });
 
-  // Remove event handlers but keep element structure
   el.querySelectorAll('*').forEach((e) => {
     const html = e as HTMLElement;
     html.removeAttribute('onclick');
@@ -345,12 +397,84 @@ function cleanSafeMode(el: HTMLElement): void {
     html.removeAttribute('onmouseout');
     html.removeAttribute('onchange');
     html.removeAttribute('onsubmit');
-    // Keep class and style for basic structure if simple
-    // Remove only complex inline styles
     const style = html.getAttribute('style') || '';
     if (style && !style.includes('display') && !style.includes('visibility')) {
       html.removeAttribute('style');
     }
+  });
+}
+
+function cleanFullMode(el: HTMLElement, baseUrl: string): void {
+  el.querySelectorAll('a').forEach((a) => {
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('http') || href.startsWith('/') || href.startsWith('#')) {
+      const cleaned = stripTrackingFromUrl(href, baseUrl);
+      if (cleaned) {
+        a.setAttribute('href', cleaned);
+      } else {
+        a.removeAttribute('href');
+      }
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    } else {
+      a.removeAttribute('href');
+    }
+  });
+
+  el.querySelectorAll('img').forEach((img) => {
+    const src = img.getAttribute('src') || '';
+    if (src.startsWith('javascript:') || src.startsWith('data:text/html')) {
+      img.remove();
+    } else {
+      const cleaned = stripTrackingFromUrl(src, baseUrl);
+      if (cleaned) {
+        img.setAttribute('src', cleaned);
+      }
+    }
+  });
+
+  el.querySelectorAll('video, audio').forEach((media) => {
+    media.removeAttribute('autoplay');
+    media.removeAttribute('autoplay');
+    const sources = media.querySelectorAll('source');
+    sources.forEach((source) => {
+      const src = source.getAttribute('src') || '';
+      if (src.startsWith('javascript:')) {
+        source.remove();
+      }
+    });
+  });
+
+  el.querySelectorAll('iframe').forEach((iframe) => {
+    const src = iframe.getAttribute('src') || '';
+    if (src.startsWith('javascript:')) {
+      iframe.remove();
+    } else if (!src.startsWith('http') && !src.startsWith('/')) {
+      iframe.remove();
+    }
+  });
+
+  el.querySelectorAll('form').forEach((form) => {
+    form.setAttribute('data-cw-form-disabled', 'true');
+    form.addEventListener('submit', (e) => e.preventDefault(), { once: true });
+  });
+
+  el.querySelectorAll('*').forEach((e) => {
+    const html = e as HTMLElement;
+    html.removeAttribute('onclick');
+    html.removeAttribute('onmouseover');
+    html.removeAttribute('onmouseout');
+    html.removeAttribute('onchange');
+    html.removeAttribute('onsubmit');
+    html.removeAttribute('onfocus');
+    html.removeAttribute('onblur');
+    html.removeAttribute('onload');
+    html.removeAttribute('onerror');
+    const style = html.getAttribute('style') || '';
+    if (style && (style.includes('expression') || style.includes('behavior') || style.includes('javascript:'))) {
+      html.removeAttribute('style');
+    }
+    html.removeAttribute('id');
   });
 }
 
