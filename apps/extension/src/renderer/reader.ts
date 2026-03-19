@@ -51,7 +51,7 @@ export function openReader(options: ReaderOptions = {}): void {
     'top:0!important;left:0!important;right:0!important;bottom:0!important',
     'width:100vw!important;height:100vh!important',
     'z-index:2147483647!important',
-    'background:#09090b!important',
+    'background:linear-gradient(180deg, #0d0d12 0%, #09090b 50%, #08080a 100%)!important',
     'color:#d4d4d8!important',
     'overflow-y:auto!important;overflow-x:hidden!important',
     `font-family:${currentFont}!important`,
@@ -63,8 +63,8 @@ export function openReader(options: ReaderOptions = {}): void {
     'position:sticky!important;top:0!important;z-index:10!important',
     'height:56px!important;display:flex!important;align-items:center!important',
     'justify-content:space-between!important;padding:0 20px!important',
-    'background:rgba(9,9,11,0.95)!important;backdrop-filter:blur(12px)!important',
-    'border-bottom:1px solid rgba(139,92,246,0.1)!important',
+    'background:linear-gradient(180deg, rgba(13,13,18,0.98) 0%, rgba(9,9,11,0.95) 100%)!important;backdrop-filter:blur(12px)!important',
+    'border-bottom:1px solid rgba(139,92,246,0.15)!important',
   ].join(';'));
 
   // Logo
