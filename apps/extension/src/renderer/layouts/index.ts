@@ -67,171 +67,210 @@ function analyzeContent(article: ExtractedArticle): ContentProfile {
 // ============================================================================
 
 const DARK_CSS = `
-  .calm-layout {
-    margin: 0 auto;
-    padding: 0 32px 100px;
-    color: #c9c9d0;
-    line-height: 1.8;
+  #calmweb-reader-overlay * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #calmweb-reader-overlay .cw-layout {
+    margin: 0 auto !important;
+    padding: 0 32px 100px !important;
+    color: #c9c9d0 !important;
+    line-height: 1.8 !important;
+    max-width: 800px;
   }
 
-  .calm-header {
-    margin-bottom: 48px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+  #calmweb-reader-overlay .cw-header {
+    margin-bottom: 48px !important;
+    padding-bottom: 32px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
   }
 
-  .calm-header.centered { text-align: center; }
+  #calmweb-reader-overlay .cw-header.cw-centered { text-align: center !important; }
 
-  .calm-title {
-    font-size: 2.2em;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0 0 20px;
-    color: #f0f0f5;
-    letter-spacing: -0.03em;
-    text-shadow: 0 2px 20px rgba(139, 92, 246, 0.15);
+  #calmweb-reader-overlay .cw-title {
+    font-size: 2.2em !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin: 0 0 20px !important;
+    color: #f0f0f5 !important;
+    letter-spacing: -0.03em !important;
   }
 
-  .calm-meta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    font-size: 0.85em;
-    color: #7a7a85;
-    font-weight: 500;
+  #calmweb-reader-overlay .cw-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    font-size: 0.85em !important;
+    color: #7a7a85 !important;
+    font-weight: 500 !important;
   }
 
-  .calm-header.centered .calm-meta { justify-content: center; }
+  #calmweb-reader-overlay .cw-header.cw-centered .cw-meta { justify-content: center !important; }
 
-  .calm-meta-sep { color: #4a4a55; }
+  #calmweb-reader-overlay .cw-meta-sep { color: #4a4a55 !important; }
 
-  .calm-content p { margin: 0 0 1.5em; color: #c9c9d0; line-height: 1.85; }
-  .calm-content p.centered { text-align: center; }
+  #calmweb-reader-overlay .cw-content p { 
+    margin: 0 0 1.5em !important; 
+    color: #c9c9d0 !important; 
+    line-height: 1.85 !important;
+    font-size: 1.05em !important;
+  }
+  #calmweb-reader-overlay .cw-content p.cw-centered { text-align: center !important; }
 
-  .calm-content h2 {
-    margin: 2.5em 0 0.8em;
-    font-size: 1.5em;
-    color: #e8e8f0;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    padding-bottom: 0.3em;
-    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  #calmweb-reader-overlay .cw-content h2 {
+    margin: 2.5em 0 0.8em !important;
+    font-size: 1.5em !important;
+    color: #e8e8f0 !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+    padding-bottom: 0.3em !important;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2) !important;
   }
 
-  .calm-content h3 {
-    margin: 2em 0 0.6em;
-    font-size: 1.2em;
-    color: #d8d8e0;
-    font-weight: 600;
+  #calmweb-reader-overlay .cw-content h3 {
+    margin: 2em 0 0.6em !important;
+    font-size: 1.2em !important;
+    color: #d8d8e0 !important;
+    font-weight: 600 !important;
   }
 
-  .calm-content h4 {
-    margin: 1.5em 0 0.5em;
-    font-size: 1.05em;
-    color: #c0c0c8;
-    font-weight: 600;
+  #calmweb-reader-overlay .cw-content h4 {
+    margin: 1.5em 0 0.5em !important;
+    font-size: 1.05em !important;
+    color: #c0c0c8 !important;
+    font-weight: 600 !important;
   }
 
-  .calm-content.columns-2 {
-    column-count: 2;
-    column-gap: 48px;
-    column-rule: 1px solid rgba(255,255,255,0.06);
+  #calmweb-reader-overlay .cw-content.cw-columns-2 {
+    column-count: 2 !important;
+    column-gap: 48px !important;
+    column-rule: 1px solid rgba(255,255,255,0.06) !important;
   }
 
-  .calm-content.columns-2 h2,
-  .calm-content.columns-2 h3,
-  .calm-content.columns-2 blockquote,
-  .calm-content.columns-2 pre,
-  .calm-content.columns-2 figure {
-    column-span: all;
+  #calmweb-reader-overlay .cw-content.cw-columns-2 h2,
+  #calmweb-reader-overlay .cw-content.cw-columns-2 h3,
+  #calmweb-reader-overlay .cw-content.cw-columns-2 blockquote,
+  #calmweb-reader-overlay .cw-content.cw-columns-2 pre,
+  #calmweb-reader-overlay .cw-content.cw-columns-2 figure {
+    column-span: all !important;
   }
 
-  .calm-content ul, .calm-content ol {
-    margin: 0 0 1.5em;
-    padding-left: 1.8em;
+  #calmweb-reader-overlay .cw-content ul, 
+  #calmweb-reader-overlay .cw-content ol {
+    margin: 0 0 1.5em !important;
+    padding-left: 1.8em !important;
   }
 
-  .calm-content li { margin: 0.4em 0; line-height: 1.75; }
-
-  .calm-content blockquote {
-    border-left: 3px solid #7c6aed;
-    padding: 0.75em 0 0.75em 1.5em;
-    margin: 2em 0;
-    color: #9090a0;
-    font-style: italic;
-    background: rgba(124, 106, 237, 0.05);
-    border-radius: 0 8px 8px 0;
+  #calmweb-reader-overlay .cw-content li { 
+    margin: 0.4em 0 !important; 
+    line-height: 1.75 !important;
+    color: #c9c9d0 !important;
   }
 
-  .calm-content blockquote p { margin-bottom: 0; color: #9090a0; }
-
-  .calm-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 12px;
-    margin: 2em 0;
-    border: 1px solid rgba(255,255,255,0.06);
+  #calmweb-reader-overlay .cw-content blockquote {
+    border-left: 3px solid #7c6aed !important;
+    padding: 0.75em 0 0.75em 1.5em !important;
+    margin: 2em 0 !important;
+    color: #9090a0 !important;
+    font-style: italic !important;
+    background: rgba(124, 106, 237, 0.05) !important;
+    border-radius: 0 8px 8px 0 !important;
   }
 
-  .calm-content a { color: #8b7cf6; text-decoration: none; transition: color 0.15s; }
-  .calm-content a:hover { color: #b49eff; text-decoration: underline; }
+  #calmweb-reader-overlay .cw-content blockquote p { margin-bottom: 0 !important; color: #9090a0 !important; }
 
-  .calm-content code {
-    background: rgba(139, 92, 246, 0.1);
-    padding: 0.15em 0.4em;
-    border-radius: 4px;
-    font-size: 0.9em;
-    color: #c4b5fd;
+  #calmweb-reader-overlay .cw-content img {
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 12px !important;
+    margin: 2em 0 !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
   }
 
-  .calm-content pre {
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(139, 92, 246, 0.15);
-    border-radius: 12px;
-    padding: 1.25em;
-    overflow-x: auto;
-    font-size: 0.88em;
-    margin: 2em 0;
-    line-height: 1.6;
+  #calmweb-reader-overlay .cw-content a { 
+    color: #8b7cf6 !important; 
+    text-decoration: none !important; 
+    transition: color 0.15s !important; 
+  }
+  #calmweb-reader-overlay .cw-content a:hover { 
+    color: #b49eff !important; 
+    text-decoration: underline !important; 
   }
 
-  .calm-content pre code { background: none; padding: 0; color: #e0dffe; }
-
-  .calm-dropcap::first-letter {
-    float: left;
-    font-size: 3.5em;
-    line-height: 0.85;
-    margin-right: 10px;
-    margin-top: 4px;
-    font-weight: 700;
-    color: #8b7cf6;
-    text-shadow: 0 2px 12px rgba(139, 92, 246, 0.4);
+  #calmweb-reader-overlay .cw-content code {
+    background: rgba(139, 92, 246, 0.1) !important;
+    padding: 0.15em 0.4em !important;
+    border-radius: 4px !important;
+    font-size: 0.9em !important;
+    color: #c4b5fd !important;
   }
 
-  .calm-caption {
-    font-size: 0.85em;
-    color: #6a6a75;
-    font-style: italic;
-    margin: 0.5em 0 1.5em;
+  #calmweb-reader-overlay .cw-content pre {
+    background: rgba(0,0,0,0.4) !important;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    border-radius: 12px !important;
+    padding: 1.25em !important;
+    overflow-x: auto !important;
+    font-size: 0.88em !important;
+    margin: 2em 0 !important;
+    line-height: 1.6 !important;
   }
 
-  .calm-footer {
-    margin-top: 64px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 0.82em;
-    color: #5a5a65;
-    text-align: center;
+  #calmweb-reader-overlay .cw-content pre code { 
+    background: none !important; 
+    padding: 0 !important; 
+    color: #e0dffe !important; 
   }
 
-  .calm-source {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+  #calmweb-reader-overlay .cw-dropcap::first-letter {
+    float: left !important;
+    font-size: 3.5em !important;
+    line-height: 0.85 !important;
+    margin-right: 10px !important;
+    margin-top: 4px !important;
+    font-weight: 700 !important;
+    color: #8b7cf6 !important;
   }
 
-  .calm-favicon { width: 14px; height: 14px; border-radius: 2px; opacity: 0.6; }
+  #calmweb-reader-overlay .cw-caption {
+    font-size: 0.85em !important;
+    color: #6a6a75 !important;
+    font-style: italic !important;
+    margin: 0.5em 0 1.5em !important;
+  }
+
+  #calmweb-reader-overlay .cw-footer {
+    margin-top: 64px !important;
+    padding-top: 24px !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    font-size: 0.82em !important;
+    color: #5a5a65 !important;
+    text-align: center !important;
+  }
+
+  #calmweb-reader-overlay .cw-source {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  #calmweb-reader-overlay .cw-favicon { 
+    width: 14px !important; 
+    height: 14px !important; 
+    border-radius: 2px !important; 
+    opacity: 0.6 !important; 
+  }
+  
+  #calmweb-reader-overlay .cw-content span,
+  #calmweb-reader-overlay .cw-content i,
+  #calmweb-reader-overlay .cw-content em,
+  #calmweb-reader-overlay .cw-content b,
+  #calmweb-reader-overlay .cw-content strong {
+    color: inherit !important;
+  }
 `;
 
 // ============================================================================
@@ -255,37 +294,32 @@ export const adaptiveLayout: ReaderLayout = {
 
     // Wrap first <p> with dropcap class if appropriate
     if (profile.dropcap) {
-      contentHtml = contentHtml.replace(/<p>/, '<p class="calm-dropcap">');
+      contentHtml = contentHtml.replace(/<p>/, '<p class="cw-dropcap">');
     }
 
     // Center paragraphs for essay mode
     if (profile.centered) {
-      contentHtml = contentHtml.replace(/<p>/g, '<p class="centered">');
+      contentHtml = contentHtml.replace(/<p>/g, '<p class="cw-centered">');
     }
 
     container.innerHTML = `
-      <style>
-        ${DARK_CSS}
-        @media (max-width: 700px) {
-          .calm-content.columns-2 { column-count: 1; }
-        }
-      </style>
-      <div class="calm-layout" style="max-width:${profile.maxWidth};font-family:${font};font-size:${fontSize};line-height:${lineHeight};">
-        ${heroImage ? `<img class="calm-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}" style="width:100%;height:auto;border-radius:12px;margin-bottom:32px;opacity:0.9;">` : ''}
-        <header class="calm-header ${profile.centered ? 'centered' : ''}">
-          <h1 class="calm-title">${escapeHtml(article.title)}</h1>
-          <div class="calm-meta">
+      <style>${DARK_CSS}</style>
+      <div class="cw-layout" style="max-width:${profile.maxWidth};font-family:${font};font-size:${fontSize};line-height:${lineHeight};">
+        ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}" style="width:100%;height:auto;border-radius:12px;margin-bottom:32px;opacity:0.9;">` : ''}
+        <header class="cw-header ${profile.centered ? 'cw-centered' : ''}">
+          <h1 class="cw-title">${escapeHtml(article.title)}</h1>
+          <div class="cw-meta">
             ${article.author ? `<span>${escapeHtml(article.author)}</span>` : ''}
-            ${(article.author && article.date) ? '<span class="calm-meta-sep">·</span>' : ''}
+            ${(article.author && article.date) ? '<span class="cw-meta-sep">·</span>' : ''}
             ${article.date ? `<span>${article.date}</span>` : ''}
-            <span class="calm-meta-sep">·</span>
+            <span class="cw-meta-sep">·</span>
             <span>${article.readingTime} min</span>
           </div>
         </header>
-        <article class="calm-content ${profile.columns > 1 ? 'columns-2' : ''}">${contentHtml}</article>
-        <footer class="calm-footer ${profile.centered ? 'centered' : ''}">
-          <div class="calm-source">
-            ${article.favicon ? `<img class="calm-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
+        <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
+        <footer class="cw-footer ${profile.centered ? 'cw-centered' : ''}">
+          <div class="cw-source">
+            ${article.favicon ? `<img class="cw-favicon" src="${escapeHtml(article.favicon)}" alt="">` : ''}
             <span>${escapeHtml(article.source)}</span>
           </div>
         </footer>
