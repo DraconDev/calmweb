@@ -281,6 +281,14 @@ export function openReader(options: ReaderOptions = {}): void {
       border: 1px solid rgba(255,255,255,0.06);
     }
 
+    .cw-hero {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      opacity: 0.9;
+    }
+
     .cw-content a { 
       color: #8b7cf6; 
       text-decoration: none; 
