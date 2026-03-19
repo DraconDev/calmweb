@@ -266,6 +266,59 @@ export function openReader(options: ReaderOptions = {}): void {
       letter-spacing: 0.05em;
     }
 
+    .cw-content-type {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #60a5fa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Product type */
+    .cw-content.cw-type-product {
+      max-width: 900px;
+    }
+
+    .cw-content.cw-type-product h1,
+    .cw-content.cw-type-product h2 {
+      color: #f1f5f9;
+      border-bottom-color: rgba(59, 130, 246, 0.2);
+    }
+
+    /* Forum type */
+    .cw-content.cw-type-forum {
+      max-width: 800px;
+    }
+
+    .cw-content.cw-type-forum .reply,
+    .cw-content.cw-type-forum .comment {
+      padding: 16px;
+      margin: 1em 0;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+    }
+
+    /* Listing type */
+    .cw-content.cw-type-listing {
+      max-width: 1000px;
+    }
+
+    .cw-content.cw-type-listing ul,
+    .cw-content.cw-type-listing ol {
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .cw-content.cw-type-listing li {
+      break-inside: avoid;
+    }
+
     /* Content styles */
     .cw-content {
       font-size: 1.125rem;

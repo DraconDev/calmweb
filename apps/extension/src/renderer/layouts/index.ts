@@ -41,21 +41,19 @@ function analyzeContent(article: ExtractedArticle): ContentProfile {
   const tables = html.querySelectorAll('table').length;
   const lists = html.querySelectorAll('ul, ol').length;
   const listItems = html.querySelectorAll('li').length;
-  const images = html.querySelectorAll('img').length;
-  const links = html.querySelectorAll('a').length;
   const inputs = html.querySelectorAll('input, select, textarea').length;
   const buttons = html.querySelectorAll('button').length;
+  const comments = html.querySelectorAll('[class*="comment"], [id*="comment"], .reply, .response').length;
 
   const title = article.title.toLowerCase();
   const hasProductKeywords = /\b(product|price|buy|cart|add to|in stock|specs|features|description)\b/i.test(title);
   const hasForumKeywords = /\b(reply|thread|post|comment|user|posted|joined|topic)\b/i.test(title);
-  const hasListingKeywords = /\b(menu|directory|list|category|search|filter|sort)\b/i.test(title);
 
   if (inputs >= 3 && (buttons >= 2 || hasProductKeywords)) {
     return { type: 'product', columns: 1, maxWidth: '900px', dropcap: false, centered: false, showHero: false };
   }
 
-  if (hasForumKeywords || (comments >= 5)) {
+  if (hasForumKeywords || comments >= 5) {
     return { type: 'forum', columns: 1, maxWidth: '800px', dropcap: false, centered: false, showHero: false };
   }
 
@@ -96,33 +94,30 @@ export const adaptiveLayout: ReaderLayout = {
   description: 'Automatically adjusts to page content',
   render(article, container, options = {}, extras = {}) {
     const profile = analyzeContent(article);
-    const heroImage = article.images?.[0];
+    const heroImage = profile.showHero ? article.images?.[0] : undefined;
 
-    options.font; // unused - styles are in shadow DOM
-    options.fontSize; // unused
+    options.font;
+    options.fontSize;
 
-    // Build content HTML
     let contentHtml = article.contentHtml.innerHTML;
 
-    // Wrap first <p> with dropcap class if appropriate
     if (profile.dropcap) {
       contentHtml = contentHtml.replace(/<p>/, '<p class="cw-dropcap">');
     }
 
-    // Center paragraphs for essay mode
     if (profile.centered) {
       contentHtml = contentHtml.replace(/<p>/g, '<p class="cw-centered">');
     }
 
-    // Use extras header/footer if provided (new Shadow DOM mode)
     const headerEl = extras.header || container.closest('.cw-overlay')?.querySelector('.cw-article-header');
     const footerEl = extras.footer || container.closest('.cw-overlay')?.querySelector('.cw-footer');
 
-    // Update header
     if (headerEl) {
+      const typeLabel = profile.type !== 'article' ? `<span class="cw-content-type">${profile.type}</span>` : '';
       headerEl.innerHTML = `
         <h1 class="cw-title-main">${escapeHtml(article.title)}</h1>
         <div class="cw-meta">
+          ${typeLabel}
           ${article.author ? `<span class="cw-meta-item">${escapeHtml(article.author)}</span>` : ''}
           ${article.author && article.date ? '<span class="cw-meta-sep"></span>' : ''}
           ${article.date ? `<span class="cw-meta-item">${article.date}</span>` : ''}
@@ -132,7 +127,6 @@ export const adaptiveLayout: ReaderLayout = {
       `;
     }
 
-    // Update footer
     if (footerEl) {
       footerEl.innerHTML = `
         <a href="${escapeHtml(article.url)}" class="cw-source" target="_blank" rel="noopener noreferrer">
@@ -142,10 +136,9 @@ export const adaptiveLayout: ReaderLayout = {
       `;
     }
 
-    // Set content with optional columns and hero
     container.innerHTML = `
       ${heroImage ? `<img class="cw-hero" src="${heroImage.src}" alt="${heroImage.alt || ''}">` : ''}
-      <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''}">${contentHtml}</article>
+      <article class="cw-content ${profile.columns > 1 ? 'cw-columns-2' : ''} cw-type-${profile.type}">${contentHtml}</article>
     `;
   },
 };
