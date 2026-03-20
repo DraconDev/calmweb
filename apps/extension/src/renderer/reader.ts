@@ -3,15 +3,14 @@
  * Works on any webpage, not just articles
  * 
  * Can work in two modes:
- * 1. Fast mode: Direct CSS-based extraction (no AI)
- * 2. AI mode: AI-powered content analysis and filtering
+ * 1. Fast mode: Direct CSS-based extraction (no AI) - free for all
+ * 2. AI mode: AI-powered analysis via Dracon platform API - requires subscription
  */
 
 import type { ExtractedArticle, CleanMode } from './extractor';
 import { extractArticle } from './extractor';
 import { getLayout, defaultLayout } from './layouts';
-import { analyzeWithAI, type ReaderAnalysisResult } from './reader-ai';
-import type { UserSettings } from '@calmweb/shared';
+import { analyzePageWithBackend, getQuotaInfo, type AnalysisResponse } from './reader-api';
 
 export interface ReaderOptions {
   layoutId?: string;
@@ -19,8 +18,6 @@ export interface ReaderOptions {
   font?: string;
   fontSize?: string;
   onClose?: () => void;
-  settings?: UserSettings;
-  useAI?: boolean;
 }
 
 const HOST_ID = 'calmweb-reader-host';
@@ -32,31 +29,34 @@ export async function openReader(options: ReaderOptions = {}): Promise<void> {
   const mode = options.mode || 'full';
 
   let article: ExtractedArticle | null = null;
-  let aiResult: ReaderAnalysisResult | null = null;
+  let apiResult: AnalysisResponse | null = null;
 
-  if (options.useAI && options.settings) {
+  const quota = await getQuotaInfo();
+  console.log('[CalmWeb] Quota check:', quota.isPaidUser ? 'Paid user' : 'Free user', '- Remaining:', quota.remaining);
+
+  if (quota.isPaidUser && quota.remaining > 0) {
     console.log('[CalmWeb] Using AI-powered analysis...');
     try {
-      aiResult = await analyzeWithAI({
+      apiResult = await analyzePageWithBackend({
         title: document.title,
         url: window.location.href,
         html: document.body?.innerHTML?.slice(0, 15000) || '',
         text: document.body?.textContent?.slice(0, 8000) || '',
-      }, options.settings);
+      });
 
-      if (aiResult.confidence > 0.5 && aiResult.filteredContent) {
-        console.log('[CalmWeb] AI analysis succeeded, confidence:', aiResult.confidence);
+      if (apiResult.success) {
+        console.log('[CalmWeb] API analysis succeeded');
       } else {
-        console.log('[CalmWeb] AI analysis low confidence, falling back to CSS extraction');
-        aiResult = null;
+        console.log('[CalmWeb] API analysis failed:', apiResult.error);
       }
     } catch (err) {
-      console.error('[CalmWeb] AI analysis failed:', err);
-      aiResult = null;
+      console.error('[CalmWeb] API analysis error:', err);
     }
+  } else {
+    console.log('[CalmWeb] No AI - using CSS extraction (free tier)');
   }
 
-  if (!aiResult) {
+  if (!apiResult?.success) {
     try {
       article = extractArticle(document, window.location.href, mode);
     } catch (err) {
@@ -64,7 +64,7 @@ export async function openReader(options: ReaderOptions = {}): Promise<void> {
     }
   }
 
-  const titleText = aiResult?.title || article?.title || document.title || 'Current Page';
+  const titleText = apiResult?.title || article?.title || document.title || 'Current Page';
   const layout = options.layoutId ? getLayout(options.layoutId) : defaultLayout;
 
   const host = document.createElement('div');
@@ -930,11 +930,11 @@ export async function openReader(options: ReaderOptions = {}): Promise<void> {
   });
 
   // Render content
-  if (aiResult && aiResult.confidence > 0.5 && aiResult.filteredContent) {
+  if (apiResult?.success && apiResult.filteredContent) {
     headerPlaceholder.innerHTML = `
-      <h1 class="cw-title-main">${escapeHtml(aiResult.title)}</h1>
+      <h1 class="cw-title-main">${escapeHtml(apiResult.title)}</h1>
       <div class="cw-meta">
-        ${aiResult.summary ? `<span class="cw-meta-item">${escapeHtml(aiResult.summary.slice(0, 100))}</span>` : ''}
+        ${apiResult.summary ? `<span class="cw-meta-item">${escapeHtml(apiResult.summary.slice(0, 100))}</span>` : ''}
         <span class="cw-meta-sep"></span>
         <span class="cw-ai-badge">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -946,7 +946,7 @@ export async function openReader(options: ReaderOptions = {}): Promise<void> {
         </span>
       </div>
     `;
-    content.innerHTML = aiResult.filteredContent;
+    content.innerHTML = apiResult.filteredContent;
     sanitizeLinks(content);
   } else {
     const renderArticle = article && article.title ? article : fallbackArticle();

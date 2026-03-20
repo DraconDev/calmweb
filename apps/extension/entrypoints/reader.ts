@@ -162,12 +162,10 @@ export default defineContentScript({
     // Load settings with timeout - default to filtering if settings unavailable
     let shouldFilter = true;
     let readerSettings: any = {};
-    let fullSettings: UserSettings | undefined = undefined;
     try {
       const settingsPromise = sendToBackground<UserSettings>({ type: MESSAGE_TYPES.GET_SETTINGS });
       const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Settings timeout')), 2000));
       const settings = await Promise.race([settingsPromise, timeout]) as UserSettings;
-      fullSettings = settings;
       if (settings?.reader?.autoOpen === false || settings?.enabled === false) shouldFilter = false;
       readerSettings = settings?.reader || {};
       console.log('[CalmWeb] Settings loaded, filtering:', shouldFilter);
@@ -186,8 +184,6 @@ export default defineContentScript({
       layoutId: readerSettings.defaultLayout,
       font: readerSettings.font,
       fontSize: readerSettings.fontSize,
-      settings: fullSettings,
-      useAI: readerSettings.useAI !== false,
     }).then(() => {
       hideLoading();
       console.log('[CalmWeb] Reader opened OK');
