@@ -1,27 +1,20 @@
 /**
- * AI Reader Before/After Tests
+ * CSS Reader Before/After Tests
  * 
- * Tests the complete AI-powered reader flow showing what gets filtered
- * and how content is transformed.
+ * Tests the CSS-based reader filtering showing what gets removed.
+ * AI-powered analysis is handled by the Dracon platform API (requires extension context).
  * 
- * Note: AI analysis requires authentication to the Dracon platform.
- * Without auth, these tests demonstrate CSS-only filtering.
+ * These tests verify CSS extraction works correctly without the extension runtime.
  */
 
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor';
-import { analyzePageWithBackend, getQuotaInfo } from '../src/renderer/reader-api';
 
 interface BeforeAfterResult {
   url: string;
   title: string;
   originalLength: number;
-  aiFilteredLength: number;
   cssFilteredLength: number;
-  aiConfidence: number;
-  aiSummary: string;
-  decisions: Array<{ action: string; reason: string }>;
-  filteredElements: string[];
   removedElements: string[];
 }
 
@@ -88,48 +81,6 @@ async function testBeforeAfter(url: string): Promise<BeforeAfterResult | null> {
   const cssFilteredLength = article.content.length;
   const cssElements = countElements(article.contentHtml);
 
-  // AI-based filtering (only if API key is available)
-  let aiFilteredLength = 0;
-  let aiConfidence = 0;
-  let aiSummary = '';
-  let aiDecisions: Array<{ action: string; reason: string }> = [];
-  const hasApiKey = !!process.env.OPENROUTER_API_KEY;
-  
-  if (hasApiKey) {
-    const mockSettings: UserSettings = {
-      enabled: true,
-      processingMode: 'byok_llm',
-      strictness: 80,
-      rules: {
-        blocklistChannels: [],
-        blocklistKeywords: [],
-        allowlistChannels: [],
-        allowlistKeywords: [],
-        presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
-      },
-      byokKey: process.env.OPENROUTER_API_KEY,
-      aiModel: 'openrouter/free',
-      neutralization: { enabled: true, mode: 'medium', showIndicator: true, showDiffOnHover: true, excludeDomains: [] },
-      reader: { enabled: true, defaultLayout: 'auto', defaultTheme: 'default', autoOpen: true, textOnly: false, font: 'Inter', fontSize: '17px', showInContextMenu: true },
-    };
-
-    try {
-      const aiResult = await analyzeWithAI({
-        title: doc.title,
-        url,
-        html: doc.body?.innerHTML?.slice(0, 12000) || '',
-        text: doc.body?.textContent?.slice(0, 6000) || '',
-      }, mockSettings);
-
-      aiFilteredLength = aiResult.filteredContent.length;
-      aiConfidence = aiResult.confidence;
-      aiSummary = aiResult.summary;
-      aiDecisions = aiResult.decisions.slice(0, 5);
-    } catch {
-      // AI failed, will use CSS fallback
-    }
-  }
-
   const removedElements: string[] = [];
   if (originalElements.scripts > 0 && cssElements.scripts === 0) {
     removedElements.push(`scripts: ${originalElements.scripts}`);
@@ -160,12 +111,7 @@ async function testBeforeAfter(url: string): Promise<BeforeAfterResult | null> {
     url,
     title,
     originalLength,
-    aiFilteredLength: aiFilteredLength || cssFilteredLength,
     cssFilteredLength,
-    aiConfidence,
-    aiSummary,
-    decisions: aiDecisions,
-    filteredElements: removedElements,
     removedElements,
   };
 }
@@ -179,11 +125,11 @@ const TEST_SITES = [
   { name: 'Reddit', url: 'https://www.reddit.com/r/programming/' },
 ];
 
-describe('AI Reader Before/After', () => {
+describe('CSS Reader Filtering', () => {
   const results: BeforeAfterResult[] = [];
 
-  it('should compare AI filtering vs CSS filtering on real pages', async () => {
-    console.log('\n🔬 AI READER BEFORE/AFTER ANALYSIS\n');
+  it('should demonstrate CSS filtering on real pages', async () => {
+    console.log('\n🔬 CSS READER FILTERING ANALYSIS\n');
     console.log('='.repeat(100));
 
     for (const site of TEST_SITES) {
@@ -191,6 +137,7 @@ describe('AI Reader Before/After', () => {
       const result = await testBeforeAfter(site.url);
       if (result) {
         results.push(result);
+        console.log(`  ✓ Done`);
       } else {
         console.log(`  ⚠ Failed to fetch: ${site.url}`);
       }
@@ -202,32 +149,18 @@ describe('AI Reader Before/After', () => {
     console.log('='.repeat(100));
 
     for (const r of results) {
-      const cssReduction = ((1 - r.cssFilteredLength / r.originalLength) * 100).toFixed(1);
-      const aiReduction = ((1 - r.aiFilteredLength / r.originalLength) * 100).toFixed(1);
+      const reduction = ((1 - r.cssFilteredLength / r.originalLength) * 100).toFixed(1);
 
       console.log(`\n📰 ${r.title || r.url}`);
       console.log(`   URL: ${r.url}`);
       console.log(`   ─────────────────────────────────────────`);
       console.log(`   ORIGINAL CONTENT:  ${r.originalLength.toLocaleString().padStart(10)} chars`);
-      console.log(`   CSS FILTERED:      ${r.cssFilteredLength.toLocaleString().padStart(10)} chars (${cssReduction}% removed)`);
-      console.log(`   AI FILTERED:       ${r.aiFilteredLength.toLocaleString().padStart(10)} chars (${aiReduction}% removed)`);
-      console.log(`   AI CONFIDENCE:     ${(r.aiConfidence * 100).toFixed(0)}%`);
-
-      if (r.aiSummary) {
-        console.log(`   AI SUMMARY: "${r.aiSummary.slice(0, 100)}..."`);
-      }
+      console.log(`   CSS FILTERED:      ${r.cssFilteredLength.toLocaleString().padStart(10)} chars (${reduction}% removed)`);
 
       if (r.removedElements.length > 0) {
-        console.log(`   📦 REMOVED BY CSS:`);
+        console.log(`   📦 REMOVED ELEMENTS:`);
         for (const el of r.removedElements.slice(0, 5)) {
           console.log(`      - ${el}`);
-        }
-      }
-
-      if (r.decisions.length > 0) {
-        console.log(`   🤖 AI DECISIONS:`);
-        for (const d of r.decisions.slice(0, 3)) {
-          console.log(`      - [${d.action}] ${d.reason.slice(0, 60)}`);
         }
       }
     }
@@ -237,58 +170,16 @@ describe('AI Reader Before/After', () => {
 
     const avgOriginal = results.reduce((s, r) => s + r.originalLength, 0) / results.length;
     const avgCSS = results.reduce((s, r) => s + r.cssFilteredLength, 0) / results.length;
-    const avgAI = results.reduce((s, r) => s + r.aiFilteredLength, 0) / results.length;
-    const avgConfidence = results.reduce((s, r) => s + r.aiConfidence, 0) / results.length;
 
     console.log(`   Average Original:  ${Math.round(avgOriginal).toLocaleString()} chars`);
-    console.log(`   Average CSS:       ${Math.round(avgCSS).toLocaleString()} chars (${((1 - avgCSS/avgOriginal) * 100).toFixed(1)}% removed)`);
-    console.log(`   Average AI:        ${Math.round(avgAI).toLocaleString()} chars (${((1 - avgAI/avgOriginal) * 100).toFixed(1)}% removed)`);
-    console.log(`   Average Confidence: ${(avgConfidence * 100).toFixed(0)}%`);
+    console.log(`   Average CSS:      ${Math.round(avgCSS).toLocaleString()} chars (${((1 - avgCSS/avgOriginal) * 100).toFixed(1)}% removed)`);
+    console.log(`   AI Features:       Requires Dracon platform authentication (works in extension context)`);
     console.log('\n');
 
     expect(results.length).toBeGreaterThan(0);
   }, 120000);
 
-  it('should show what AI decided to keep vs remove', async () => {
-    console.log('\n🎯 AI DECISION DETAILS\n');
-
-    for (const r of results) {
-      console.log(`\n${'─'.repeat(60)}`);
-      console.log(`${r.title || r.url}`);
-      console.log(`${'─'.repeat(60)}`);
-
-      const keepDecisions = r.decisions.filter(d => d.action === 'keep');
-      const removeDecisions = r.decisions.filter(d => d.action === 'remove');
-      const summarizeDecisions = r.decisions.filter(d => d.action === 'summarize');
-
-      console.log(`\n   ✅ AI CHOSE TO KEEP (${keepDecisions.length} decisions):`);
-      for (const d of keepDecisions.slice(0, 3)) {
-        console.log(`      - ${d.reason.slice(0, 70)}`);
-      }
-      if (keepDecisions.length > 3) {
-        console.log(`      ... and ${keepDecisions.length - 3} more`);
-      }
-
-      console.log(`\n   ❌ AI CHOSE TO REMOVE (${removeDecisions.length} decisions):`);
-      for (const d of removeDecisions.slice(0, 3)) {
-        console.log(`      - ${d.reason.slice(0, 70)}`);
-      }
-      if (removeDecisions.length > 3) {
-        console.log(`      ... and ${removeDecisions.length - 3} more`);
-      }
-
-      if (summarizeDecisions.length > 0) {
-        console.log(`\n   📝 AI CHOSE TO SUMMARIZE (${summarizeDecisions.length} decisions):`);
-        for (const d of summarizeDecisions.slice(0, 2)) {
-          console.log(`      - ${d.reason.slice(0, 70)}`);
-        }
-      }
-    }
-
-    console.log('\n');
-  });
-
-  it('should verify filtering quality', () => {
+  it('should verify CSS filtering quality', async () => {
     console.log('\n✅ FILTERING QUALITY CHECKS\n');
 
     let passed = 0;
@@ -297,22 +188,20 @@ describe('AI Reader Before/After', () => {
     for (const r of results) {
       const checks = {
         contentExtracted: r.cssFilteredLength > 100,
-        aiAvailable: r.aiConfidence > 0,  // AI only if we have real API key
         meaningfulReduction: (1 - r.cssFilteredLength / r.originalLength) > 0.05,
-        noCompleteEmpty: r.aiFilteredLength > 50 || r.cssFilteredLength > 50,
+        noCompleteEmpty: r.cssFilteredLength > 50,
       };
 
-      const cssOnlyPassed = checks.contentExtracted && checks.meaningfulReduction && checks.noCompleteEmpty;
-      if (cssOnlyPassed) passed++; else failed++;
+      const cssPassed = checks.contentExtracted && checks.meaningfulReduction && checks.noCompleteEmpty;
+      if (cssPassed) passed++; else failed++;
 
-      console.log(`   ${cssOnlyPassed ? '✓' : '✗'} ${r.url.replace('https://', '').slice(0, 40)}`);
+      console.log(`   ${cssPassed ? '✓' : '✗'} ${r.url.replace('https://', '').slice(0, 40)}`);
       console.log(`      CSS extracted: ${checks.contentExtracted ? '✓' : '✗'} (${r.cssFilteredLength.toLocaleString()} chars)`);
-      console.log(`      AI available: ${checks.aiAvailable ? '✓' : '○'} (confidence: ${(r.aiConfidence * 100).toFixed(0)}%)`);
       console.log(`      Reduction: ${checks.meaningfulReduction ? '✓' : '✗'} (${((1 - r.cssFilteredLength / r.originalLength) * 100).toFixed(1)}% removed)`);
     }
 
-    console.log(`\n   Total: ${passed}/${results.length} passed (CSS filtering working)`);
-    console.log(`   Note: AI requires OPENROUTER_API_KEY env var to run`);
+    console.log(`\n   Total: ${passed}/${results.length} passed`);
+    console.log(`   Note: AI features require Dracon platform authentication in extension context`);
 
     expect(passed / results.length).toBeGreaterThanOrEqual(0.8);
   });
