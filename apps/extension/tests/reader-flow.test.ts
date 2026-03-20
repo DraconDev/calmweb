@@ -47,7 +47,7 @@ describe('Reader Flow Debug', () => {
     console.log('--- LAYOUT ---');
     console.log('Layout ID:', layout.id);
     console.log('Layout name:', layout.name);
-    expect(layout.id).toBe('adaptive');
+    expect(layout.id).toBe('default');
 
     // 4. Render
     const container = document.createElement('div');

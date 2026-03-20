@@ -57,18 +57,18 @@ describe('Article Extractor', () => {
 });
 
 describe('Layout Engine', () => {
-  it('should return 1 adaptive layout', () => {
+  it('should return 1 layout', () => {
     expect(allLayouts.length).toBe(1);
-    expect(allLayouts[0].id).toBe('adaptive');
+    expect(allLayouts[0].id).toBe('default');
   });
 
-  it('should always return adaptive layout', () => {
-    expect(getLayout('anything').id).toBe('adaptive');
-    expect(getLayout('reader').id).toBe('adaptive');
-    expect(getLayout('').id).toBe('adaptive');
+  it('should always return default layout', () => {
+    expect(getLayout('anything').id).toBe('default');
+    expect(getLayout('reader').id).toBe('default');
+    expect(getLayout('').id).toBe('default');
   });
 
-  it('autoDetectLayout should return adaptive', () => {
+  it('autoDetectLayout should return default', () => {
     const doc = document.implementation.createHTMLDocument();
     doc.body.innerHTML = '<article><h1>Test</h1><p>Content here for testing layout detection with enough text.</p></article>';
     const article = extractArticle(doc, 'https://example.com');

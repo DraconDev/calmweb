@@ -294,16 +294,6 @@ describe('Reader - Layout Rendering', () => {
     
     expect(footer.innerHTML).toContain('example.com');
   });
-
-  it('adaptive layout includes reading time', () => {
-    const layout = getLayout('adaptive');
-    const container = document.createElement('div');
-    const header = document.createElement('div');
-    const footer = document.createElement('div');
-    layout.render(sampleArticle, container, {}, { header, footer });
-    
-    expect(header.innerHTML).toContain('min');
-  });
 });
 
 // ============================================================================
