@@ -3,12 +3,14 @@
  * 
  * Tests the complete AI-powered reader flow showing what gets filtered
  * and how content is transformed.
+ * 
+ * Note: AI analysis requires authentication to the Dracon platform.
+ * Without auth, these tests demonstrate CSS-only filtering.
  */
 
 import { describe, it, expect } from 'vitest';
 import { extractArticle } from '../src/renderer/extractor';
-import { analyzeWithAI } from '../src/renderer/reader-ai';
-import type { UserSettings } from '@calmweb/shared';
+import { analyzePageWithBackend, getQuotaInfo } from '../src/renderer/reader-api';
 
 interface BeforeAfterResult {
   url: string;
