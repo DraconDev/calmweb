@@ -86,43 +86,46 @@ async function testBeforeAfter(url: string): Promise<BeforeAfterResult | null> {
   const cssFilteredLength = article.content.length;
   const cssElements = countElements(article.contentHtml);
 
-  // AI-based filtering (may fail without real API key)
+  // AI-based filtering (only if API key is available)
   let aiFilteredLength = 0;
   let aiConfidence = 0;
   let aiSummary = '';
   let aiDecisions: Array<{ action: string; reason: string }> = [];
+  const hasApiKey = !!process.env.OPENROUTER_API_KEY;
+  
+  if (hasApiKey) {
+    const mockSettings: UserSettings = {
+      enabled: true,
+      processingMode: 'byok_llm',
+      strictness: 80,
+      rules: {
+        blocklistChannels: [],
+        blocklistKeywords: [],
+        allowlistChannels: [],
+        allowlistKeywords: [],
+        presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
+      },
+      byokKey: process.env.OPENROUTER_API_KEY,
+      aiModel: 'openrouter/free',
+      neutralization: { enabled: true, mode: 'medium', showIndicator: true, showDiffOnHover: true, excludeDomains: [] },
+      reader: { enabled: true, defaultLayout: 'auto', defaultTheme: 'default', autoOpen: true, textOnly: false, font: 'Inter', fontSize: '17px', showInContextMenu: true },
+    };
 
-  const mockSettings: UserSettings = {
-    enabled: true,
-    processingMode: 'byok_llm',
-    strictness: 80,
-    rules: {
-      blocklistChannels: [],
-      blocklistKeywords: [],
-      allowlistChannels: [],
-      allowlistKeywords: [],
-      presets: { politics: false, ragebait: false, spoilers: false, clickbait: false },
-    },
-    byokKey: process.env.OPENROUTER_API_KEY || 'test-key',
-    aiModel: 'openrouter/free',
-    neutralization: { enabled: true, mode: 'medium', showIndicator: true, showDiffOnHover: true, excludeDomains: [] },
-    reader: { enabled: true, defaultLayout: 'auto', defaultTheme: 'default', autoOpen: true, textOnly: false, font: 'Inter', fontSize: '17px', showInContextMenu: true },
-  };
+    try {
+      const aiResult = await analyzeWithAI({
+        title: doc.title,
+        url,
+        html: doc.body?.innerHTML?.slice(0, 12000) || '',
+        text: doc.body?.textContent?.slice(0, 6000) || '',
+      }, mockSettings);
 
-  try {
-    const aiResult = await analyzeWithAI({
-      title: doc.title,
-      url,
-      html: doc.body?.innerHTML?.slice(0, 12000) || '',
-      text: doc.body?.textContent?.slice(0, 6000) || '',
-    }, mockSettings);
-
-    aiFilteredLength = aiResult.filteredContent.length;
-    aiConfidence = aiResult.confidence;
-    aiSummary = aiResult.summary;
-    aiDecisions = aiResult.decisions.slice(0, 5);
-  } catch {
-    // AI failed, will use CSS fallback
+      aiFilteredLength = aiResult.filteredContent.length;
+      aiConfidence = aiResult.confidence;
+      aiSummary = aiResult.summary;
+      aiDecisions = aiResult.decisions.slice(0, 5);
+    } catch {
+      // AI failed, will use CSS fallback
+    }
   }
 
   const removedElements: string[] = [];
