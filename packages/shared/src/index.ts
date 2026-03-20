@@ -111,6 +111,8 @@ export const ReaderSettingsSchema = z.object({
   font: z.string().default('Inter'),
   fontSize: z.string().default('17px'),
   showInContextMenu: z.boolean().default(true),
+  apiEndpoint: z.string().optional(),
+  apiKey: z.string().optional(),
 });
 export type ReaderSettings = z.infer<typeof ReaderSettingsSchema>;
 
