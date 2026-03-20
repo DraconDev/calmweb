@@ -1,11 +1,17 @@
 /**
  * Reader Overlay - Universal reading mode with Shadow DOM isolation
  * Works on any webpage, not just articles
+ * 
+ * Can work in two modes:
+ * 1. Fast mode: Direct CSS-based extraction (no AI)
+ * 2. AI mode: AI-powered content analysis and filtering
  */
 
 import type { ExtractedArticle, CleanMode } from './extractor';
 import { extractArticle } from './extractor';
-import { getLayout, autoDetectLayout } from './layouts';
+import { getLayout, defaultLayout } from './layouts';
+import { analyzeWithAI, type ReaderAnalysisResult } from './reader-ai';
+import type { UserSettings } from '@calmweb/shared';
 
 export interface ReaderOptions {
   layoutId?: string;
@@ -13,25 +19,53 @@ export interface ReaderOptions {
   font?: string;
   fontSize?: string;
   onClose?: () => void;
+  settings?: UserSettings;
+  useAI?: boolean;
 }
 
 const HOST_ID = 'calmweb-reader-host';
 
-export function openReader(options: ReaderOptions = {}): void {
+export async function openReader(options: ReaderOptions = {}): Promise<void> {
   document.body.style.setProperty('overflow', 'hidden', 'important');
   closeReader();
 
-  const mode = options.mode || 'textOnly';
+  const mode = options.mode || 'full';
 
   let article: ExtractedArticle | null = null;
-  try {
-    article = extractArticle(document, window.location.href, mode);
-  } catch (err) {
-    console.error('[CalmWeb] Extraction failed:', err);
+  let aiResult: ReaderAnalysisResult | null = null;
+
+  if (options.useAI && options.settings) {
+    console.log('[CalmWeb] Using AI-powered analysis...');
+    try {
+      aiResult = await analyzeWithAI({
+        title: document.title,
+        url: window.location.href,
+        html: document.body?.innerHTML?.slice(0, 15000) || '',
+        text: document.body?.textContent?.slice(0, 8000) || '',
+      }, options.settings);
+
+      if (aiResult.confidence > 0.5 && aiResult.filteredContent) {
+        console.log('[CalmWeb] AI analysis succeeded, confidence:', aiResult.confidence);
+      } else {
+        console.log('[CalmWeb] AI analysis low confidence, falling back to CSS extraction');
+        aiResult = null;
+      }
+    } catch (err) {
+      console.error('[CalmWeb] AI analysis failed:', err);
+      aiResult = null;
+    }
   }
 
-  const titleText = article?.title || document.title || 'Current Page';
-  const layout = options.layoutId ? getLayout(options.layoutId) : autoDetectLayout(article || fallbackArticle());
+  if (!aiResult) {
+    try {
+      article = extractArticle(document, window.location.href, mode);
+    } catch (err) {
+      console.error('[CalmWeb] Extraction failed:', err);
+    }
+  }
+
+  const titleText = aiResult?.title || article?.title || document.title || 'Current Page';
+  const layout = options.layoutId ? getLayout(options.layoutId) : defaultLayout;
 
   const host = document.createElement('div');
   host.id = HOST_ID;
@@ -262,6 +296,21 @@ export function openReader(options: ReaderOptions = {}): void {
       font-size: 0.75rem;
       font-weight: 600;
       color: #a78bfa;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cw-ai-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #60a5fa;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -880,19 +929,39 @@ export function openReader(options: ReaderOptions = {}): void {
     options.onClose?.();
   });
 
-  // Render layout
-  const renderArticle = article && article.title ? article : fallbackArticle();
-  try {
-    layout.render(renderArticle, content, {
-      font: options.font || 'Inter',
-      fontSize: options.fontSize || '17px',
-    }, {
-      header: headerPlaceholder,
-      footer: footerPlaceholder,
-    });
-  } catch (err) {
-    console.error('[CalmWeb] Layout render failed:', err);
-    renderFallback(content, renderArticle);
+  // Render content
+  if (aiResult && aiResult.confidence > 0.5 && aiResult.filteredContent) {
+    headerPlaceholder.innerHTML = `
+      <h1 class="cw-title-main">${escapeHtml(aiResult.title)}</h1>
+      <div class="cw-meta">
+        ${aiResult.summary ? `<span class="cw-meta-item">${escapeHtml(aiResult.summary.slice(0, 100))}</span>` : ''}
+        <span class="cw-meta-sep"></span>
+        <span class="cw-ai-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          AI Filtered
+        </span>
+      </div>
+    `;
+    content.innerHTML = aiResult.filteredContent;
+    sanitizeLinks(content);
+  } else {
+    const renderArticle = article && article.title ? article : fallbackArticle();
+    try {
+      layout.render(renderArticle, content, {
+        font: options.font || 'Inter',
+        fontSize: options.fontSize || '17px',
+      }, {
+        header: headerPlaceholder,
+        footer: footerPlaceholder,
+      });
+    } catch (err) {
+      console.error('[CalmWeb] Layout render failed:', err);
+      renderFallback(content, renderArticle);
+    }
   }
 
   // Escape key handler
@@ -934,6 +1003,13 @@ function renderFallback(container: HTMLElement, article: ExtractedArticle): void
   container.innerHTML = `
     <p>${escapeHtml(article.content.slice(0, 500))}</p>
   `;
+}
+
+function sanitizeLinks(container: HTMLElement): void {
+  container.querySelectorAll('a').forEach(a => {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+  });
 }
 
 export function closeReader(): void {

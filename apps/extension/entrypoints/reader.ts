@@ -162,40 +162,39 @@ export default defineContentScript({
     // Load settings with timeout - default to filtering if settings unavailable
     let shouldFilter = true;
     let readerSettings: any = {};
+    let fullSettings: UserSettings | undefined = undefined;
     try {
       const settingsPromise = sendToBackground<UserSettings>({ type: MESSAGE_TYPES.GET_SETTINGS });
       const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Settings timeout')), 2000));
       const settings = await Promise.race([settingsPromise, timeout]) as UserSettings;
+      fullSettings = settings;
       if (settings?.reader?.autoOpen === false || settings?.enabled === false) shouldFilter = false;
       readerSettings = settings?.reader || {};
       console.log('[CalmWeb] Settings loaded, filtering:', shouldFilter);
     } catch (err) {
       console.warn('[CalmWeb] Settings load failed, defaulting to filter:', err);
-      // Default to filtering anyway
     }
 
     if (!shouldFilter) { showFloatingButton(); return; }
     if (isInteractiveSite()) { showFloatingButton(); return; }
 
-    // Open filtered view immediately
     console.log('[CalmWeb] Opening reader...');
     showLoading();
 
-    // Don't wait for requestAnimationFrame - open ASAP
-    setTimeout(() => {
+    openReader({
+      mode: readerSettings.mode || 'full',
+      layoutId: readerSettings.defaultLayout,
+      font: readerSettings.font,
+      fontSize: readerSettings.fontSize,
+      settings: fullSettings,
+      useAI: readerSettings.useAI !== false,
+    }).then(() => {
       hideLoading();
-      try {
-        openReader({
-          mode: readerSettings.mode || 'full',
-          layoutId: readerSettings.defaultLayout,
-          font: readerSettings.font,
-          fontSize: readerSettings.fontSize,
-        });
-        console.log('[CalmWeb] Reader opened OK');
-      } catch (err) {
-        console.error('[CalmWeb] Reader failed:', err);
-        showFloatingButton();
-      }
-    }, 250);
+      console.log('[CalmWeb] Reader opened OK');
+    }).catch((err) => {
+      console.error('[CalmWeb] Reader failed:', err);
+      hideLoading();
+      showFloatingButton();
+    });
   },
 });
