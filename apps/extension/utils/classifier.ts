@@ -9,6 +9,7 @@
 
 import type { ContentUnit, ClassificationResult, UserRules } from '@calmweb/shared';
 import type { ApiClient } from '@dracon/wxt-shared/api';
+import { chatCompletion } from '@dracon/wxt-shared/byok';
 import { matchPresetKeywords, matchPresetChannel, getPreset } from '@/src/presets';
 import { OPENROUTER_ENDPOINT, DEFAULT_OPENROUTER_MODEL } from '@calmweb/shared';
 
@@ -121,49 +122,27 @@ Respond with ONLY valid JSON:
 Be moderate. Prefer "collapse" over "hide" when uncertain. Default to "show" if unsure.`;
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey.trim()}`,
-        'HTTP-Referer': 'https://calmweb.app',
-        'X-OpenRouter-Title': 'CalmWeb',
-      },
-      body: JSON.stringify({
+    const response = await chatCompletion(
+      [
+        {
+          role: 'user',
+          content: `${systemPrompt}\n\n---\n\nClassify this content:\nTitle: ${unit.title}\nSource: ${unit.sourceName || 'unknown'}\nSite: ${unit.site}\nMetadata: ${unit.metadata.join(', ')}\n\nRespond with JSON only.`,
+        },
+      ],
+      apiKey.trim(),
+      {
         model: model || DEFAULT_OPENROUTER_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: `${systemPrompt}\n\n---\n\nClassify this content:\nTitle: ${unit.title}\nSource: ${unit.sourceName || 'unknown'}\nSite: ${unit.site}\nMetadata: ${unit.metadata.join(', ')}\n\nRespond with JSON only.`,
-          },
-        ],
         temperature: 0.2,
         max_tokens: 200,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`OpenAI API error ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response content from LLM');
-    }
+        custom_endpoint: endpoint !== DEFAULT_OPENROUTER_MODEL ? endpoint : undefined,
+      }
+    );
 
     let parsed: ClassificationResult;
     try {
-      parsed = JSON.parse(content);
+      parsed = JSON.parse(response.content);
     } catch (e) {
-      // Try to extract JSON from the response
-      const jsonMatch = content.match(/\{.*\}/s);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('Failed to parse LLM response as JSON');
-      }
+      throw new Error('Failed to parse LLM response as JSON');
     }
 
     // Validate decision
