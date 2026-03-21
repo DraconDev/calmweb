@@ -98,6 +98,17 @@ export async function analyzePageWithBackend(
   }
 
   try {
+    const quota = await getQuotaInfo();
+    
+    if (!quota.isPaidUser || quota.remaining <= 0) {
+      return fallbackResponse(
+        request,
+        quota.isPaidUser 
+          ? 'No analyses remaining. Upgrade for unlimited access.'
+          : 'AI analysis requires a subscription.',
+      );
+    }
+
     const pageContext = `Page URL: ${request.url}\nPage Title: ${request.title}\n\nPage Content:\n${request.text}`;
 
     const completion = await client.chatCompletions({
