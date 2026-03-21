@@ -16,8 +16,6 @@ export type ProcessingMode = z.infer<typeof ProcessingModeSchema>;
 export const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
 export const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 
-export { DEFAULT_OPENROUTER_MODEL as SHARED_DEFAULT_MODEL, OPENROUTER_ENDPOINT as SHARED_OPENROUTER_ENDPOINT } from '@dracon/wxt-shared/byok';
-
 export const AI_MODELS = [
   { id: 'openrouter/free', label: 'Free Router (Auto)', free: true, recommended: true },
 ] as const;
