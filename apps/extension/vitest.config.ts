@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname),
       '@calmweb/shared': resolve(__dirname, '../../packages/shared/src'),
+      '@dracon/wxt-shared': resolve(__dirname, 'tests/__mocks__/@dracon/wxt-shared.ts'),
     },
   },
 });
