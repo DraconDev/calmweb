@@ -3,7 +3,7 @@
  * 
  * Uses wxt-shared for auth and API calls to the Dracon platform.
  * - Free tier: CSS-only filtering (no AI)
- * - Paid tier: AI-powered analysis via /api/v1/reader/analyze (platform endpoint)
+ * - Paid tier: AI-powered analysis via /api/v1/chat/completions
  */
 
 import { createApiClient } from '@dracon/wxt-shared/api';
@@ -38,18 +38,26 @@ export interface QuotaInfo {
   isPaidUser: boolean;
 }
 
-interface ReaderAnalyzePlatformResponse {
-  success: boolean;
-  title: string;
-  summary: string;
-  filtered_content: string;
-  confidence: number;
-  decisions: Array<{
-    action: string;
-    reason: string;
-  }>;
-  error?: string;
+const READER_SYSTEM_PROMPT = `You are a web page analyzer for CalmWeb, a browser extension that helps users read web pages more comfortably. Your task is to analyze the provided web page content and return a JSON response indicating what content should be kept, removed, or summarized.
+
+Return a JSON object with this exact structure:
+{
+  "title": "improved or confirmed page title",
+  "summary": "2-3 sentence summary of the main content",
+  "filteredContent": "the cleaned main content with ads, navigation, and irrelevant elements removed",
+  "confidence": 0.0-1.0 indicating how confident you are in the analysis,
+  "decisions": [
+    {"action": "keep"|"remove"|"summarize", "reason": "explanation"}
+  ]
 }
+
+Rules:
+- Keep the main article/story/content body
+- Remove: ads, navigation menus, headers, footers, sidebars, comments (unless they add value), cookie notices, popups
+- Summarize: long discussions, comment threads, nested replies
+- Preserve: headings, paragraphs, lists, code blocks, images with alt text, links
+- filteredContent should be plain text content, not raw HTML
+- confidence should be lower for very messy/complex pages or pages with unusual structures`;
 
 let apiClient: ReturnType<typeof createApiClient> | null = null;
 let config: DraconConfig | null = null;
@@ -90,34 +98,63 @@ export async function analyzePageWithBackend(
   }
 
   try {
-    const result = await client.post<ReaderAnalyzePlatformResponse>(
-      '/api/v1/reader/analyze',
-      {
-        url: request.url,
-        html: request.html,
-        text: request.text,
-        title: request.title,
-      },
-    );
+    const pageContext = `Page URL: ${request.url}\nPage Title: ${request.title}\n\nPage Content:\n${request.text}`;
 
-    return {
-      success: result.success,
-      title: result.title || request.title,
-      summary: result.summary || '',
-      filteredContent: result.filtered_content || '',
-      confidence: result.confidence ?? 0,
-      decisions: Array.isArray(result.decisions)
-        ? result.decisions.map((d) => ({
-            action: d.action as 'keep' | 'remove' | 'summarize',
-            reason: d.reason,
-          }))
-        : [],
-      error: result.error,
-    };
+    const completion = await client.chatCompletions({
+      messages: [
+        { role: 'system', content: READER_SYSTEM_PROMPT },
+        { role: 'user', content: pageContext },
+      ],
+      stream: false,
+    });
+
+    const content = completion.choices[0]?.message?.content || '';
+    return parseReaderResponse(content, request.title);
   } catch (err: any) {
     console.error('[CalmWeb] API analysis failed:', err);
     return fallbackResponse(request, err.message || 'Analysis failed');
   }
+}
+
+function parseReaderResponse(
+  content: string,
+  fallbackTitle: string,
+): AnalysisResponse {
+  const trimmed = content.trim();
+
+  let jsonStr = trimmed;
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (codeBlockMatch) {
+    jsonStr = codeBlockMatch[1];
+  }
+
+  const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        success: true,
+        title: parsed.title || fallbackTitle,
+        summary: parsed.summary || '',
+        filteredContent: parsed.filteredContent || '',
+        confidence: parsed.confidence ?? 0.5,
+        decisions: Array.isArray(parsed.decisions) ? parsed.decisions : [],
+        error: undefined,
+      };
+    } catch {
+      // Fall through
+    }
+  }
+
+  return {
+    success: false,
+    title: fallbackTitle,
+    summary: '',
+    filteredContent: trimmed.slice(0, 10000),
+    confidence: 0,
+    decisions: [],
+    error: 'Failed to parse AI response as JSON',
+  };
 }
 
 function fallbackResponse(
