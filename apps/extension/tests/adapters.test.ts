@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { youtubeAdapter } from '@/src/adapters/youtube';
 import { redditAdapter } from '@/src/adapters/reddit';
 import { xAdapter } from '@/src/adapters/x';
+import { buildDuckDuckGoSearchUrl, isGoogleSearchPage } from '@/src/adapters/google';
 
 describe('Site Adapters', () => {
   describe('YouTube Adapter', () => {
@@ -155,6 +156,20 @@ describe('Site Adapters', () => {
       expect(data.title).toBe('This is a very angry tweet about nothing.');
       expect(data.sourceName).toBe('Elon Musk');
       expect(data.site).toBe('x');
+    });
+  });
+
+  describe('Google Search Redirect', () => {
+    it('should detect Google search pages', () => {
+      expect(isGoogleSearchPage('https://www.google.com/search?q=duckduckgo+bbs+news')).toBe(true);
+      expect(isGoogleSearchPage('https://www.google.com/')).toBe(false);
+      expect(isGoogleSearchPage('https://en.wikipedia.org/wiki/Main_Page')).toBe(false);
+    });
+
+    it('should build a DuckDuckGo URL from a Google search query', () => {
+      const redirected = buildDuckDuckGoSearchUrl('https://www.google.com/search?q=duckduckgo+bbs+news&oq=duckduckgo+bbs+news');
+
+      expect(redirected).toBe('https://duckduckgo.com/?q=duckduckgo+bbs+news');
     });
   });
 });

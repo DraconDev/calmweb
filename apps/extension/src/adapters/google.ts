@@ -144,3 +144,22 @@ export function extractSearchData(doc: Document = document): GoogleSearchData {
     resultCount: extractSearchResults(doc).length,
   };
 }
+
+/**
+ * Build a DuckDuckGo URL for the current Google search query.
+ */
+export function buildDuckDuckGoSearchUrl(url: string = window.location.href): string {
+  try {
+    const parsed = new URL(url);
+    const query = parsed.searchParams.get('q')?.trim() || '';
+
+    const duckduckgo = new URL('https://duckduckgo.com/');
+    if (query) {
+      duckduckgo.searchParams.set('q', query);
+    }
+
+    return duckduckgo.toString();
+  } catch {
+    return 'https://duckduckgo.com/';
+  }
+}

@@ -7,7 +7,12 @@
 
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import { isGoogleSearchPage, extractSearchData, type GoogleSearchResult } from '@/src/adapters/google';
+import {
+  isGoogleSearchPage,
+  buildDuckDuckGoSearchUrl,
+  extractSearchData,
+  type GoogleSearchResult,
+} from '@/src/adapters/google';
 import browser from 'webextension-polyfill';
 
 const OVERLAY_ID = 'calmweb-google-reader';
@@ -20,6 +25,13 @@ export default defineContentScript({
     if (!isGoogleSearchPage()) return;
 
     console.log('[CalmWeb] Google Search script loaded');
+
+    const redirectUrl = buildDuckDuckGoSearchUrl();
+    if (redirectUrl && redirectUrl !== window.location.href) {
+      console.log('[CalmWeb] Redirecting Google search to DuckDuckGo:', redirectUrl);
+      window.location.replace(redirectUrl);
+      return;
+    }
 
     // Listen for reader toggle from popup/context menu
     browser.runtime.onMessage.addListener((message: any) => {
