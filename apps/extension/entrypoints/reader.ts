@@ -11,6 +11,7 @@ import { MESSAGE_TYPES } from '../src/messaging';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import browser from 'webextension-polyfill';
 import type { UserSettings } from '@calmweb/shared';
+import { isGoogleSearchPage } from '@/src/adapters/google';
 
 const LOADING_ID = 'calmweb-loading';
 const FLOATING_BTN_ID = 'calmweb-raw-toggle';
@@ -141,6 +142,12 @@ export default defineContentScript({
 
   async main() {
     console.log('[CalmWeb] Reader loaded on', window.location.hostname);
+
+    // Google search pages are handled by the dedicated redirect script.
+    if (isGoogleSearchPage()) {
+      console.log('[CalmWeb] Skipping reader on Google search page');
+      return;
+    }
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
