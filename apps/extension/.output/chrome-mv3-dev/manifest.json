@@ -19,6 +19,12 @@
     "tabs"
   ],
   "host_permissions": [
+    "*://*.google.com/*",
+    "*://*.google.co.uk/*",
+    "*://*.google.ca/*",
+    "*://*.google.de/*",
+    "*://*.google.fr/*",
+    "*://*.google.com.au/*",
     "*://*.youtube.com/*",
     "*://*.reddit.com/*",
     "*://*.x.com/*",

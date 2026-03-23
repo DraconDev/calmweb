@@ -18,7 +18,7 @@ import browser from 'webextension-polyfill';
 const OVERLAY_ID = 'calmweb-google-reader';
 
 export default defineContentScript({
-  matches: ['*://*.google.com/search*', '*://*.google.co.uk/search*', '*://*.google.ca/search*', '*://*.google.de/search*', '*://*.google.fr/search*', '*://*.google.com.au/search*'],
+  matches: ['*://*.google.com/*', '*://*.google.co.uk/*', '*://*.google.ca/*', '*://*.google.de/*', '*://*.google.fr/*', '*://*.google.com.au/*'],
   runAt: 'document_idle',
 
   main() {

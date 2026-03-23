@@ -29,6 +29,9 @@ const RESULT_SELECTORS = [
   '.yuRUbf',
 ];
 
+const GOOGLE_SEARCH_HOST_RE = /^(?:www\.|encrypted\.)?google\.[a-z.]+$/;
+const GOOGLE_SEARCH_PATHS = new Set(['/', '/search', '/webhp']);
+
 /**
  * Check if the current page is a Google search results page
  */
@@ -36,9 +39,8 @@ export function isGoogleSearchPage(url: string = window.location.href): boolean 
   try {
     const parsed = new URL(url);
     return (
-      parsed.hostname.includes('google.') &&
-      parsed.pathname === '/search' &&
-      parsed.searchParams.has('q')
+      GOOGLE_SEARCH_HOST_RE.test(parsed.hostname) &&
+      (parsed.searchParams.has('q') || GOOGLE_SEARCH_PATHS.has(parsed.pathname))
     );
   } catch {
     return false;

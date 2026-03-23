@@ -13,6 +13,12 @@ export default defineConfig({
     version: "1.0.0",
     permissions: ["storage", "activeTab", "scripting", "contextMenus"],
     host_permissions: [
+      "*://*.google.com/*",
+      "*://*.google.co.uk/*",
+      "*://*.google.ca/*",
+      "*://*.google.de/*",
+      "*://*.google.fr/*",
+      "*://*.google.com.au/*",
       "*://*.youtube.com/*",
       "*://*.reddit.com/*",
       "*://*.x.com/*",

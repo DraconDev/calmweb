@@ -162,7 +162,8 @@ describe('Site Adapters', () => {
   describe('Google Search Redirect', () => {
     it('should detect Google search pages', () => {
       expect(isGoogleSearchPage('https://www.google.com/search?q=duckduckgo+bbs+news')).toBe(true);
-      expect(isGoogleSearchPage('https://www.google.com/')).toBe(false);
+      expect(isGoogleSearchPage('https://www.google.com/webhp?hl=en')).toBe(true);
+      expect(isGoogleSearchPage('https://www.google.com/')).toBe(true);
       expect(isGoogleSearchPage('https://en.wikipedia.org/wiki/Main_Page')).toBe(false);
     });
 
@@ -170,6 +171,12 @@ describe('Site Adapters', () => {
       const redirected = buildDuckDuckGoSearchUrl('https://www.google.com/search?q=duckduckgo+bbs+news&oq=duckduckgo+bbs+news');
 
       expect(redirected).toBe('https://duckduckgo.com/?q=duckduckgo+bbs+news');
+    });
+
+    it('should build the DuckDuckGo home URL when no query is present', () => {
+      const redirected = buildDuckDuckGoSearchUrl('https://www.google.com/');
+
+      expect(redirected).toBe('https://duckduckgo.com/');
     });
   });
 });
