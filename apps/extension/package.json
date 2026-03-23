@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@calmweb/shared": "file:../../packages/shared",
-    "@dracon/wxt-shared": "file:/home/dracon/Dev/extensions/wxt-shared",
+    "@dracon/wxt-shared": "file:../../../wxt-shared",
     "@radix-ui/themes": "^3.1.6",
     "@types/webextension-polyfill": "^0.12.4",
     "clsx": "^2.1.1",
