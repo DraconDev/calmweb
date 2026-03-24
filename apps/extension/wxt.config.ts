@@ -11,7 +11,45 @@ export default defineConfig({
     description: "__MSG_extDescription__",
     default_locale: "en",
     version: "1.0.0",
-    permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+    permissions: ["storage", "activeTab", "scripting", "contextMenus", "declarativeNetRequest"],
+    declarativeNetRequest: {
+      rule_resources: [
+        {
+          id: "google_search_redirect",
+          enabled: true,
+          rules: [
+            {
+              id: 1,
+              priority: 1,
+              action: {
+                type: "redirect",
+                redirect: {
+                  regexSubstitution: "https://duckduckgo.com/?q=\\1"
+                }
+              },
+              condition: {
+                regexPattern: "^https?://(?:www\\.)?google\\.[a-z.]+/search\\?[^&]+q=([^&]+)",
+                resourceTypes: ["main_frame"]
+              }
+            },
+            {
+              id: 2,
+              priority: 1,
+              action: {
+                type: "redirect",
+                redirect: {
+                  regexSubstitution: "https://duckduckgo.com/?q=\\1"
+                }
+              },
+              condition: {
+                regexPattern: "^https?://(?:www\\.)?google\\.[a-z.]+/webhp\\?[^&]+q=([^&]+)",
+                resourceTypes: ["main_frame"]
+              }
+            }
+          ]
+        }
+      ]
+    },
     host_permissions: [
       "*://*.google.com/*",
       "*://*.google.co.uk/*",
