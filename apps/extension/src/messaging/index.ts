@@ -22,12 +22,6 @@ export const MESSAGE_TYPES = {
   // Statistics
   GET_STATS: 'calmweb:getStats',
   INCREMENT_STAT: 'calmweb:incrementStat',
-  // Reader
-  TOGGLE_READER: 'calmweb:toggleReader',
-  OPEN_READER: 'calmweb:openReader',
-  CLOSE_READER: 'calmweb:closeReader',
-  // AI Connection
-  TEST_CONNECTION: 'calmweb:testConnection',
 } as const;
 
 export type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
@@ -74,19 +68,6 @@ export interface IncrementStatMessage {
   amount?: number;
 }
 
-export interface TestConnectionMessage {
-  type: typeof MESSAGE_TYPES.TEST_CONNECTION;
-  apiKey: string;
-  model?: string;
-  endpoint?: string;
-}
-
-export interface TestConnectionResponse {
-  success: boolean;
-  model?: string;
-  error?: string;
-}
-
 // ============================================================================
 // Union Type for All Messages
 // ============================================================================
@@ -97,8 +78,7 @@ export type CalmWebMessage =
   | UpdateSettingsMessage
   | ClearCacheMessage
   | GetStatsMessage
-  | IncrementStatMessage
-  | TestConnectionMessage;
+  | IncrementStatMessage;
 
 // ============================================================================
 // Response Types
@@ -136,8 +116,6 @@ const UpdateSettingsMessageSchema = z.object({
   type: z.literal(MESSAGE_TYPES.UPDATE_SETTINGS),
   settings: z.object({
     enabled: z.boolean().optional(),
-    processingMode: z.enum(['byok_llm', 'hosted_llm']).optional(),
-    strictness: z.number().min(0).max(100).optional(),
     rules: z.object({
       blocklistChannels: z.array(z.string()).optional(),
       blocklistKeywords: z.array(z.string()).optional(),
@@ -150,7 +128,6 @@ const UpdateSettingsMessageSchema = z.object({
         clickbait: z.boolean().optional(),
       }).optional(),
     }).optional(),
-    byokKey: z.string().optional(),
   }),
 });
 
@@ -168,13 +145,6 @@ const IncrementStatMessageSchema = z.object({
   amount: z.number().optional(),
 });
 
-const TestConnectionMessageSchema = z.object({
-  type: z.literal(MESSAGE_TYPES.TEST_CONNECTION),
-  apiKey: z.string(),
-  model: z.string().optional(),
-  endpoint: z.string().optional(),
-});
-
 export const MessageSchema = z.discriminatedUnion('type', [
   ClassifyUnitMessageSchema,
   GetSettingsMessageSchema,
@@ -182,7 +152,6 @@ export const MessageSchema = z.discriminatedUnion('type', [
   ClearCacheMessageSchema,
   GetStatsMessageSchema,
   IncrementStatMessageSchema,
-  TestConnectionMessageSchema,
 ]);
 
 /**
@@ -190,6 +159,5 @@ export const MessageSchema = z.discriminatedUnion('type', [
  * Throws if invalid.
  */
 export function validateMessage(message: unknown): CalmWebMessage {
-  // For now, perform runtime type assertion. Future: use MessageSchema.parse(message)
   return message as CalmWebMessage;
 }

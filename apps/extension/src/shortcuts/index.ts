@@ -20,8 +20,6 @@ export interface ShortcutCombo {
 
 const SHORTCUT_DEFAULTS: Record<string, string> = {
   toggleExtension: 'Alt+Shift+E',
-  toggleReader: 'Alt+R',
-  cycleLayout: 'Alt+L',
   toggleNeutralize: 'Alt+N',
   showOriginal: 'Alt+O',
   openSettings: 'Alt+,',
@@ -143,24 +141,6 @@ export const defaultShortcuts: ShortcutDefinition[] = [
     defaultCombo: SHORTCUT_DEFAULTS.toggleExtension,
     action: () => {
       console.log('[CalmWeb] Toggle extension shortcut triggered');
-    },
-  },
-  {
-    id: 'toggleReader',
-    name: 'Toggle Super Reader',
-    description: 'Open or close the Super Reader overlay',
-    defaultCombo: SHORTCUT_DEFAULTS.toggleReader,
-    action: () => {
-      console.log('[CalmWeb] Toggle reader shortcut triggered');
-    },
-  },
-  {
-    id: 'cycleLayout',
-    name: 'Cycle Reader Layout',
-    description: 'Switch to the next reader layout',
-    defaultCombo: SHORTCUT_DEFAULTS.cycleLayout,
-    action: () => {
-      console.log('[CalmWeb] Cycle layout shortcut triggered');
     },
   },
 ];

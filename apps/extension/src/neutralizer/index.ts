@@ -8,12 +8,10 @@ export { rewriteText, shouldNeutralize } from './rewriter';
 export type { RewriteMode, RewriteOptions, RewriteResult, TextChange } from './rewriter';
 
 export { rewriteWithLocalRules, getRulesForMode, previewChanges } from './local-rules';
-export { rewriteWithLLM } from './llm-rewrite';
 
 import { analyzeSentiment } from './sentiment';
 import { classifyTone, isManipulative } from './tone-classifier';
 import { rewriteText, type RewriteMode, type RewriteOptions } from './rewriter';
-import type { UserSettings } from '@calmweb/shared';
 
 export interface NeutralizationAnalysis {
   sentiment: ReturnType<typeof analyzeSentiment>;
@@ -47,7 +45,6 @@ export function analyzeForNeutralization(text: string): NeutralizationAnalysis {
 
 export async function neutralizeText(
   text: string,
-  settings: UserSettings,
   mode: RewriteMode = 'medium'
 ): Promise<{ original: string; rewritten: string; analysis: NeutralizationAnalysis }> {
   const analysis = analyzeForNeutralization(text);
@@ -65,7 +62,7 @@ export async function neutralizeText(
     preserveFacts: true,
   };
 
-  const result = await rewriteText(text, options, settings);
+  const result = await rewriteText(text, options);
 
   return {
     original: text,

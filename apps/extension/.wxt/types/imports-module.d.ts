@@ -18,6 +18,6 @@ declare module '#imports' {
   export { InvalidMatchPattern, MatchPattern } from 'wxt/utils/match-patterns';
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
-  export { applyLocalRules, classifyWithBYOK, classifyWithHosted, classifyContent, ClassifierOptions } from '../utils/classifier';
-  export { STORAGE_KEYS, settingsStore, decisionCache, ClassificationResult, byokKeysStore, statsStore, getCachedResult, setCachedResult, clearDecisionCache, incrementFilteredCount, resetStats, initializeStores } from '../utils/storage';
+  export { applyLocalRules, classifyContent } from '../utils/classifier';
+  export { STORAGE_KEYS, settingsStore, decisionCache, byokKeysStore, statsStore, getCachedResult, setCachedResult, clearDecisionCache, incrementFilteredCount, resetStats, initializeStores } from '../utils/storage';
 }

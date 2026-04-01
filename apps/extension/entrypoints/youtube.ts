@@ -8,13 +8,20 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { youtubeAdapter } from '@/src/adapters/youtube';
 import { MESSAGE_TYPES } from '@/src/messaging';
+import { injectCleanupCss } from '@/src/adfilter/css-only';
+import { initActivityOverlay } from '@/src/ui/activity-overlay';
 import type { ClassificationResult, ContentUnit } from '@calmweb/shared';
 
 export default defineContentScript({
   matches: ['*://*.youtube.com/*'],
   runAt: 'document_idle',
   main() {
-    console.log('[Content] YouTube script loaded');
+    console.log('[CalmWeb] YouTube script starting...');
+
+    initActivityOverlay().catch(e => console.error('[CalmWeb] Overlay error:', e));
+
+    // Inject CSS cleanup rules (ads, popups, cookie banners, etc.)
+    injectCleanupCss();
 
     // Inject global styles for blur/hide effects
     const style = document.createElement('style');
@@ -39,11 +46,14 @@ export default defineContentScript({
     `;
     document.head.appendChild(style);
 
+    let filteredCount = 0;
+
     const processUnits = async (units: HTMLElement[], isNew: boolean = false) => {
+      console.log(`[CalmWeb] YouTube: Processing ${units.length} units (isNew: ${isNew})`);
       if (units.length === 0) return;
 
       // Prepare data payloads
-      const unitDataList: ContentUnit[] = units.map(el => {
+      const unitDataList: ContentUnit[] = units.map((el) => {
         const data = youtubeAdapter.extractData(el);
         data.isNew = isNew;
         return data;
@@ -64,16 +74,28 @@ export default defineContentScript({
         const result = results[idx];
         if (result && !('error' in result)) {
           youtubeAdapter.applyDecision(el, result);
+          if (result.decision !== 'show') {
+            filteredCount++;
+          }
         }
-        // Remove processing flag
         el.removeAttribute('data-calmweb-processing');
       });
+      
+      console.log(`[CalmWeb] YouTube: Total filtered so far: ${filteredCount}`);
     };
 
     // Initial pass: process all existing video cards
     const initialCards = youtubeAdapter.discoverUnits(document);
-    initialCards.forEach(el => el.setAttribute('data-calmweb-processing', ''));
-    processUnits(initialCards, false);
+    console.log('[CalmWeb] YouTube: Found', initialCards.length, 'video cards');
+    
+    if (initialCards.length === 0) {
+      console.log('[CalmWeb] YouTube: No cards found with specific selectors, will rely on universal adapter');
+      // Don't return early - let universal adapter also run as fallback
+      // But still set up observers for if YouTube loads more content
+    } else {
+      initialCards.forEach(el => el.setAttribute('data-calmweb-processing', ''));
+      processUnits(initialCards, false);
+    }
 
     // MutationObserver for infinite scroll / dynamically loaded content
     const observer = new MutationObserver((mutations) => {
@@ -84,11 +106,9 @@ export default defineContentScript({
         for (let i = 0; i < added.length; i++) {
           const node = added[i];
           if (node instanceof HTMLElement) {
-            // If the node itself is a video card
             if (node.matches && node.matches('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer')) {
               newCards.push(node);
             } else {
-              // Look for any video card descendants that haven't been processed
               const descendants = youtubeAdapter.discoverUnits(node);
               const unprocessed = descendants.filter(el => !el.getAttribute('data-calmweb-processing'));
               newCards.push(...unprocessed);
@@ -108,11 +128,12 @@ export default defineContentScript({
       subtree: true,
     });
 
-    // Optional: Re-scan periodically in case YouTube does major DOM changes
+    // Periodic rescan (in case YouTube loads content slowly)
     setInterval(() => {
       const allCards = youtubeAdapter.discoverUnits(document);
       const unprocessed = allCards.filter(el => !el.getAttribute('data-calmweb-processing'));
       if (unprocessed.length > 0) {
+        console.log('[CalmWeb] YouTube: Periodic rescan found', unprocessed.length, 'new cards');
         unprocessed.forEach(el => el.setAttribute('data-calmweb-processing', ''));
         processUnits(unprocessed, true);
       }

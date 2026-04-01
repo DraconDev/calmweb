@@ -70,6 +70,11 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'hide') {
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'hidden');
+    const textEl = element.querySelector(SELECTORS.text) as HTMLElement | null;
+    const text = textEl?.innerText || textEl?.textContent || 'Content';
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: text, after: '[Hidden]' }
+    }));
     return;
   }
 
@@ -80,9 +85,14 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
       result,
       siteId: 'x',
     });
+    const textEl = element.querySelector(SELECTORS.text) as HTMLElement | null;
+    const text = textEl?.innerText || textEl?.textContent || 'Content';
     element.style.display = 'none';
     element.insertAdjacentElement('afterend', placeholder);
     element.setAttribute('data-calmweb-processed', 'collapsed');
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: text, after: '[Collapsed]' }
+    }));
     return;
   }
 
@@ -94,11 +104,16 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
 
   if (result.decision === 'neutralize' && result.neutralizedTitle) {
     const textEl = element.querySelector(SELECTORS.text) as HTMLElement | null;
+    const originalText = textEl?.innerText || '';
     if (textEl) {
       textEl.innerText = result.neutralizedTitle;
     }
     element.classList.add('calmweb-neutralized');
     element.setAttribute('data-calmweb-processed', 'neutralized');
+    
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: originalText, after: result.neutralizedTitle }
+    }));
     return;
   }
 

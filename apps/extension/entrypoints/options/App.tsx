@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
-import type { UserSettings, UserRules, Stats, NeutralizationSettings } from '@calmweb/shared';
-import { defaultUserSettings, defaultNeutralizationSettings, AI_MODELS, DEFAULT_OPENROUTER_MODEL, READER_FONTS } from '@calmweb/shared';
+import type { UserSettings, UserRules, Stats, NeutralizationSettings, MediaFilterSettings, SiteFilterSettings } from '@calmweb/shared';
+import { defaultUserSettings, defaultNeutralizationSettings, defaultMediaFilterSettings, defaultSiteFilterSettings } from '@calmweb/shared';
 import {
   Container,
   Card,
@@ -19,31 +19,20 @@ import {
   RefreshCw,
   Info,
   Wand2,
-  BookOpen,
   EyeOff,
-  Palette,
-  Columns,
-  Sun,
-  Moon,
-  CheckCircle2,
-  Loader2,
-  TestTube,
+  Filter,
+  ImageOff,
+  Ban,
+  RefreshCcw,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { allThemes } from '@/src/renderer/themes';
 
-type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'reader' | 'advanced';
+
+type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'media' | 'sites';
 
 interface PresetsTabProps {
   presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean };
   onChange: (presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean }) => void;
-}
-
-interface AdvancedTabProps {
-  processingMode: 'byok_llm' | 'hosted_llm';
-  byokKey: string;
-  aiModel: string;
-  onChange: (updates: Partial<UserSettings>) => void;
 }
 
 interface CustomRulesTabProps {
@@ -56,17 +45,20 @@ interface NeutralizeTabProps {
   onChange: (settings: NeutralizationSettings) => void;
 }
 
-interface ReaderTabProps {
-  defaultLayout: string;
-  defaultTheme: string;
-  textOnly: boolean;
-  onChange: (settings: { defaultLayout?: string; defaultTheme?: string; enabled?: boolean; autoOpen?: boolean; textOnly?: boolean; font?: string }) => void;
+interface MediaFilterTabProps {
+  settings: MediaFilterSettings;
+  onChange: (settings: MediaFilterSettings) => void;
+}
+
+interface SitesTabProps {
+  settings: SiteFilterSettings;
+  onChange: (settings: SiteFilterSettings) => void;
 }
 
 export default function OptionsApp() {
   const [activeTab, setActiveTab] = useState<TabId>(() => {
     const hash = window.location.hash.slice(1) as TabId;
-    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize', 'reader', 'advanced'];
+    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize'];
     return validTabs.includes(hash) ? hash : 'overview';
   });
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
@@ -125,8 +117,8 @@ export default function OptionsApp() {
     { id: 'presets', label: 'Presets', icon: ShieldCheck },
     { id: 'rules', label: 'Custom Rules', icon: Database },
     { id: 'neutralize', label: 'Neutralize', icon: Wand2 },
-    { id: 'reader', label: 'Super Reader', icon: BookOpen },
-    { id: 'advanced', label: 'AI & Advanced', icon: Zap },
+    { id: 'media', label: 'Media Filter', icon: ImageOff },
+    { id: 'sites', label: 'Site Filter', icon: Ban },
   ] as const;
 
   if (loading) {
@@ -134,64 +126,6 @@ export default function OptionsApp() {
       <Container className="flex items-center justify-center min-h-screen">
         <Spinner size="lg" />
       </Container>
-  );
-}
-
-// ============================================================================
-// Test Connection Button (reusable)
-// ============================================================================
-
-function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: string }) {
-  const [testing, setTesting] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
-
-  const test = async () => {
-    setTesting(true);
-    setResult(null);
-    try {
-      const res = await sendToBackground<{ success: boolean; model?: string; error?: string }>({
-        type: MESSAGE_TYPES.TEST_CONNECTION,
-        apiKey: byokKey,
-        model: aiModel,
-      });
-      setResult(res || { success: false, error: 'No response' });
-    } catch (error) {
-      setResult({ success: false, error: error instanceof Error ? error.message : String(error) });
-    } finally {
-      setTesting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <button
-        onClick={test}
-        disabled={testing}
-        className={clsx(
-          "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all border",
-          testing
-            ? "bg-muted text-muted-foreground cursor-wait border-border"
-            : result?.success
-              ? "bg-green-500/10 text-green-500 border-green-500/20"
-              : result?.error
-                ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-                : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-        )}
-      >
-        {testing ? (
-          <><Loader2 size={14} className="animate-spin" /> Testing...</>
-        ) : result?.success ? (
-          <><CheckCircle2 size={14} /> Connected to {result.model}</>
-        ) : result?.error ? (
-          <><TestTube size={14} /> Retry Test</>
-        ) : (
-          <><TestTube size={14} /> Test Connection</>
-        )}
-      </button>
-      {result?.error && !testing && (
-        <p className="text-xs text-red-500">{result.error}</p>
-      )}
-    </div>
   );
 }
 
@@ -338,53 +272,34 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                   </div>
                 </div>
 
-                {/* AI Engine */}
-                <div className={`rounded-xl border p-5 ${
-                  settings.processingMode === 'byok_llm' && settings.byokKey
-                    ? 'bg-card border-border'
-                    : 'bg-primary/[0.03] border-primary/10'
-                }`}>
+                {/* Filter Lists */}
+                <div className="rounded-xl bg-card border border-border p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Zap size={16} className="text-primary" />
-                      <h3 className="font-semibold text-sm">AI Engine</h3>
-                      {(!settings.byokKey) && (
-                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Setup</span>
-                      )}
+                      <Filter size={16} className="text-primary" />
+                      <h3 className="font-semibold text-sm">Filter Lists</h3>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${
-                      settings.processingMode === 'byok_llm' && settings.byokKey
-                        ? 'bg-green-500/10 text-green-500'
-                        : 'bg-primary/10 text-primary'
-                    }`}>
-                      {settings.processingMode === 'byok_llm' && settings.byokKey ? 'Active' : 'Needed'}
+                    <span className="text-[10px] font-bold uppercase bg-green-500/10 text-green-500 px-2 py-1 rounded-full">
+                      Active
                     </span>
                   </div>
-                  {settings.processingMode === 'byok_llm' && settings.byokKey ? (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">
-                        Model: <span className="font-mono text-foreground">{settings.aiModel || DEFAULT_OPENROUTER_MODEL}</span>
-                      </p>
-                      <TestConnectionButton byokKey={settings.byokKey} aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL} />
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span>EasyList (Ads)</span>
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">
-                        Connect <span className="text-foreground font-medium">OpenRouter</span> for context-aware filtering. Free tier available.
-                      </p>
-                      <button
-                        onClick={() => setActiveTab('advanced')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                      >
-                        <Zap size={12} />
-                        Connect — Free
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span>EasyPrivacy (Trackers)</span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span>Fanboy Annoyances</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Bottom Row: Neutralization + Reader */}
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Bottom Row: Neutralization */}
                   <div className="rounded-xl bg-card border border-border p-5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -404,24 +319,6 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
                       />
                     </div>
                   </div>
-
-                  <div className="rounded-xl bg-card border border-border p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                          <BookOpen size={18} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-sm">Super Reader</h3>
-                          <p className="text-xs text-muted-foreground">Auto-opens on pages</p>
-                        </div>
-                      </div>
-                      <button onClick={() => setActiveTab('reader')} className="text-xs text-primary hover:underline font-medium">
-                        Settings
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -452,27 +349,25 @@ function TestConnectionButton({ byokKey, aiModel }: { byokKey: string; aiModel: 
               </div>
             )}
 
-            {activeTab === 'reader' && (
+            {activeTab === 'media' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <ReaderTab
-                  defaultTheme={settings.reader?.defaultTheme || 'default'}
-                  textOnly={settings.reader?.textOnly !== false}
-                  font={settings.reader?.font || 'Inter'}
-                  onChange={(reader) => saveSettings({ reader: { ...settings.reader, ...reader } })}
+                <MediaFilterTab
+                  settings={settings.mediaFilter || defaultMediaFilterSettings}
+                  onChange={(mediaFilter) => saveSettings({ mediaFilter })}
                 />
               </div>
             )}
 
-            {activeTab === 'advanced' && (
+            {activeTab === 'sites' && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <AdvancedTab
-                  processingMode={settings.processingMode}
-                  byokKey={settings.byokKey || ''}
-                  aiModel={settings.aiModel || DEFAULT_OPENROUTER_MODEL}
-                  onChange={(updates) => saveSettings(updates)}
+                <SitesTab
+                  settings={settings.siteFilter || defaultSiteFilterSettings}
+                  onChange={(siteFilter) => saveSettings({ siteFilter })}
                 />
               </div>
             )}
+
+
           </div>
         </div>
       </main>
@@ -656,129 +551,6 @@ function NeutralizeTab({ settings, onChange }: NeutralizeTabProps) {
 }
 
 // ============================================================================
-// Advanced Tab Component
-// ============================================================================
-
-function AdvancedTab({ processingMode, byokKey, aiModel, onChange }: Omit<AdvancedTabProps, 'strictness'>) {
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; model?: string; error?: string } | null>(null);
-  const isPresetModel = AI_MODELS.some(m => m.id === aiModel);
-
-  const testConnection = async () => {
-    if (!byokKey) { setTestResult({ success: false, error: 'No API key configured' }); return; }
-    setTesting(true);
-    setTestResult(null);
-    try {
-      const result = await sendToBackground<{ success: boolean; model?: string; error?: string }>({
-        type: MESSAGE_TYPES.TEST_CONNECTION, apiKey: byokKey, model: aiModel || DEFAULT_OPENROUTER_MODEL,
-      });
-      setTestResult(result || { success: false, error: 'No response' });
-    } catch (error) {
-      setTestResult({ success: false, error: error instanceof Error ? error.message : String(error) });
-    } finally { setTesting(false); }
-  };
-
-  return (
-    <div className="space-y-8">
-      {/* AI Provider */}
-      <FormField label="AI Provider" description="All filtering uses AI for context-aware analysis. OpenRouter free tier included.">
-        <div className="grid grid-cols-1 gap-3 pt-2">
-          {[
-            { id: 'byok_llm', name: 'OpenRouter (Recommended)', desc: 'Bring your own key. Free tier available.', icon: Zap },
-            { id: 'hosted_llm', name: 'CalmWeb Cloud (Pro)', desc: 'Managed service, premium models included.', icon: ShieldCheck },
-          ].map((mode) => (
-            <div key={mode.id} onClick={() => onChange({ processingMode: mode.id as any })}
-              className={clsx("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                processingMode === mode.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
-              <div className={clsx("p-2 rounded-lg", processingMode === mode.id ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground")}>
-                <mode.icon size={20} />
-              </div>
-              <div className="flex-1">
-                <div className="font-bold text-sm">{mode.name}</div>
-                <div className="text-xs text-muted-foreground">{mode.desc}</div>
-              </div>
-              <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center", processingMode === mode.id ? "border-primary" : "border-muted-foreground/30")}>
-                {processingMode === mode.id && <div className="w-2 h-2 bg-primary rounded-full" />}
-              </div>
-            </div>
-          ))}
-        </div>
-      </FormField>
-
-      {/* OpenRouter Settings */}
-      {processingMode === 'byok_llm' && (
-        <div className="space-y-6 animate-in slide-in-from-top-2 duration-300">
-          {/* API Key */}
-          <FormField label="OpenRouter API Key" description="Your key from openrouter.ai. Free tier available. Stored only on your device.">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <input type="password" value={byokKey} onChange={(e) => onChange({ byokKey: e.target.value })}
-                  placeholder="sk-or-..."
-                  className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
-                <Zap size={16} className="absolute right-4 top-4 text-muted-foreground/50" />
-              </div>
-              <button onClick={testConnection} disabled={testing || !byokKey}
-                className={clsx("shrink-0 h-12 px-5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border",
-                  testing ? "bg-muted text-muted-foreground cursor-wait border-border"
-                    : testResult?.success ? "bg-green-500/10 text-green-500 border-green-500/20"
-                    : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10")}>
-                {testing ? <><Loader2 size={14} className="animate-spin" /> Testing...</>
-                  : testResult?.success ? <><CheckCircle2 size={14} /> Connected</>
-                  : testResult?.error ? <><TestTube size={14} /> Retry</>
-                  : <><TestTube size={14} /> Test</>}
-              </button>
-            </div>
-            {testResult?.error && !testing && <p className="mt-2 text-xs text-red-500">{testResult.error}</p>}
-            {testResult?.success && <p className="mt-2 text-xs text-green-500">Connected to {testResult.model} successfully</p>}
-          </FormField>
-
-{/* Model Selection */}
-        <FormField label="AI Model" description="Free Router auto-selects the best available free model.">
-          <div className="grid grid-cols-1 gap-2 pt-2">
-            {AI_MODELS.map((model) => (
-              <div key={model.id} onClick={() => onChange({ aiModel: model.id })}
-                className={clsx("flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all",
-                aiModel === model.id ? "border-primary bg-primary/5" : "border-transparent bg-muted/30 hover:bg-muted/50")}>
-                <div className={clsx("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0",
-                  aiModel === model.id ? "border-primary" : "border-muted-foreground/30")}>
-                  {aiModel === model.id && <div className="w-2 h-2 bg-primary rounded-full" />}
-                </div>
-                <div className="flex-1">
-                  <span className="text-sm font-medium">{model.label}</span>
-                </div>
-                {(model as { recommended?: boolean }).recommended && (
-                  <span className="text-[10px] font-bold uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full">Recommended</span>
-                )}
-                {model.free && <span className="text-[10px] font-bold uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">Free</span>}
-              </div>
-            ))}
-          </div>
-        </FormField>
-
-          {/* Custom Model */}
-          <FormField label="Custom Model ID" description="Type any OpenRouter model ID. Overrides preset above.">
-            <input type="text" value={isPresetModel ? '' : aiModel}
-              onChange={(e) => onChange({ aiModel: e.target.value || DEFAULT_OPENROUTER_MODEL })}
-              placeholder="e.g. openai/gpt-4o, anthropic/claude-3-opus"
-              className="flex h-12 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
-            {!isPresetModel && aiModel && <p className="mt-2 text-xs text-primary font-mono">Using custom model: {aiModel}</p>}
-          </FormField>
-        </div>
-      )}
-
-      {/* Maintenance */}
-      <div className="pt-6 border-t">
-        <h4 className="text-sm font-bold mb-4">Maintenance</h4>
-        <button onClick={async () => { await sendToBackground({ type: MESSAGE_TYPES.CLEAR_CACHE }); alert('Cache cleared.'); }}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold border border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all">
-          Reset All Cached Decisions
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
 // Custom Rules Tab Component
 // ============================================================================
 
@@ -857,165 +629,395 @@ function CustomRulesTab({ rules, onChange }: CustomRulesTabProps) {
   );
 }
 
-function ReaderTab({ defaultTheme, textOnly, font, onChange }: Omit<ReaderTabProps, 'defaultLayout'> & { font?: string }) {
-  const themeIcons: Record<string, any> = {
-    default: Sun,
-    dark: Moon,
-    sepia: Palette,
-    midnight: Moon,
+// ============================================================================
+// Media Filter Tab Component
+// ============================================================================
+
+function MediaFilterTab({ settings, onChange }: MediaFilterTabProps) {
+  const modes = [
+    { id: 'off', name: 'Off', desc: 'No media filtering', icon: '🚫' },
+    { id: 'blur', name: 'Blur', desc: 'Blur suspicious images, reveal on hover', icon: '🌫️' },
+    { id: 'hide', name: 'Hide', desc: 'Completely hide suspicious images', icon: '👁️‍🗨️' },
+  ] as const;
+
+  return (
+    <div className="space-y-8 max-w-2xl">
+      <Card padding="lg" className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full text-primary">
+            <ImageOff size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-lg">Enable Media Filter</h4>
+            <p className="text-sm text-muted-foreground">Filter images based on alt text analysis</p>
+          </div>
+        </div>
+        <Switch
+          checked={settings.enabled}
+          onCheckedChange={(enabled) => onChange({ ...settings, enabled })}
+        />
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Filter Mode</h4>
+        <div className="grid grid-cols-3 gap-4">
+          {modes.map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => onChange({ ...settings, mode: mode.id as 'off' | 'blur' | 'hide' })}
+              className={clsx(
+                "p-4 rounded-xl border-2 text-left transition-all",
+                settings.mode === mode.id
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-muted-foreground/50"
+              )}
+            >
+              <span className="text-2xl mb-2 block">{mode.icon}</span>
+              <h5 className="font-bold">{mode.name}</h5>
+              <p className="text-xs text-muted-foreground">{mode.desc}</p>
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Options</h4>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Show Toggle Button</h5>
+              <p className="text-sm text-muted-foreground">Floating button to quickly toggle filtering</p>
+            </div>
+            <Switch
+              checked={settings.showToggle}
+              onCheckedChange={(showToggle) => onChange({ ...settings, showToggle })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Reveal on Hover</h5>
+              <p className="text-sm text-muted-foreground">Show blurred images when hovering</p>
+            </div>
+            <Switch
+              checked={settings.revealOnHover}
+              onCheckedChange={(revealOnHover) => onChange({ ...settings, revealOnHover })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Analyze Alt Text</h5>
+              <p className="text-sm text-muted-foreground">Check image alt attributes for clickbait</p>
+            </div>
+            <Switch
+              checked={settings.analyzeAltText}
+              onCheckedChange={(analyzeAltText) => onChange({ ...settings, analyzeAltText })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Filter Thumbnails</h5>
+              <p className="text-sm text-muted-foreground">Site-specific thumbnail filtering (YouTube, Reddit, X)</p>
+            </div>
+            <Switch
+              checked={settings.analyzeThumbnails}
+              onCheckedChange={(analyzeThumbnails) => onChange({ ...settings, analyzeThumbnails })}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Sensitivity</h4>
+        <p className="text-sm text-muted-foreground mb-4">
+          Adjust how aggressively images are filtered based on clickbait confidence score.
+        </p>
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span>Blur Threshold</span>
+              <span className="font-mono">{(settings.blurThreshold * 100).toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={settings.blurThreshold * 100}
+              onChange={(e) => onChange({ ...settings, blurThreshold: parseInt(e.target.value) / 100 })}
+              className="w-full accent-primary"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span>Hide Threshold</span>
+              <span className="font-mono">{(settings.hideThreshold * 100).toFixed(0)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={settings.hideThreshold * 100}
+              onChange={(e) => onChange({ ...settings, hideThreshold: parseInt(e.target.value) / 100 })}
+              className="w-full accent-primary"
+            />
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ============================================================================
+// Sites Tab Component
+// ============================================================================
+
+const SITE_CATEGORIES_UI = [
+  { id: 'social_media', name: 'Social Media', icon: '👥', desc: 'Facebook, Twitter, Instagram, TikTok, Reddit' },
+  { id: 'gambling', name: 'Gambling', icon: '🎰', desc: 'Online casinos, betting, lottery sites' },
+  { id: 'adult', name: 'Adult Content', icon: '🔞', desc: 'Pornography and adult material' },
+  { id: 'piracy', name: 'Piracy', icon: '🏴‍☠️', desc: 'Torrent, streaming, download sites' },
+  { id: 'malware', name: 'Malware', icon: '🦠', desc: 'Known malicious and phishing sites' },
+  { id: 'spam', name: 'Spam & Clickbait', icon: '📧', desc: 'Low-quality, spammy content farms' },
+  { id: 'fake_news', name: 'Fake News', icon: '📰', desc: 'Known disinformation sources' },
+  { id: 'productivity', name: 'Productivity Blockers', icon: '⏰', desc: 'Distractions during work hours' },
+  { id: 'shopping', name: 'Shopping', icon: '🛒', desc: 'E-commerce sites' },
+  { id: 'gaming', name: 'Gaming', icon: '🎮', desc: 'Gaming sites and platforms' },
+  { id: 'streaming', name: 'Streaming', icon: '📺', desc: 'Video and music streaming' },
+  { id: 'news', name: 'News Sites', icon: '📰', desc: 'General news outlets' },
+] as const;
+
+function SitesTab({ settings, onChange }: SitesTabProps) {
+  const [blocklistStats, setBlocklistStats] = useState<{
+    totalDomains: number;
+    bySource: { id: string; name: string; count: number }[];
+    lastUpdated: number | null;
+  } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const toggleCategory = (categoryId: string) => {
+    const current = settings.blockedCategories || [];
+    const updated = current.includes(categoryId as any)
+      ? current.filter(c => c !== categoryId)
+      : [...current, categoryId as any];
+    onChange({ ...settings, blockedCategories: updated });
+  };
+
+  const loadBlocklistStats = async () => {
+    try {
+      const result = await sendToBackground<{
+        totalDomains: number;
+        bySource: { id: string; name: string; count: number }[];
+        lastUpdated: number | null;
+      }>({ type: 'calmweb:getBlocklistStats' });
+      setBlocklistStats(result);
+    } catch (error) {
+      console.error('Failed to load blocklist stats:', error);
+    }
+  };
+
+  const refreshBlocklists = async () => {
+    setRefreshing(true);
+    try {
+      await sendToBackground({ type: 'calmweb:refreshBlocklists' });
+      await loadBlocklistStats();
+    } catch (error) {
+      console.error('Failed to refresh blocklists:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBlocklistStats();
+  }, []);
+
+  const formatLastUpdated = (timestamp: number | null) => {
+    if (!timestamp) return 'Never';
+    const diff = Date.now() - timestamp;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 1) return 'Just now';
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
   };
 
   return (
-    <div className="space-y-8">
-      <Card padding="lg" className="bg-primary/5 border-primary/20">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-primary rounded-xl text-primary-foreground">
-            <BookOpen size={24} />
+    <div className="space-y-8 max-w-3xl">
+      <Card padding="lg" className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-red-500/10 rounded-full text-red-500">
+            <Ban size={24} />
           </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-lg mb-1">Super Reader</h3>
-            <p className="text-sm text-muted-foreground">
-              Automatically opens a distraction-free reading view on content pages. 
-              Skip interactive sites like email, dashboards, and social feeds.
-              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl+Shift+R</kbd> to toggle manually.
-            </p>
+          <div>
+            <h4 className="font-bold text-lg">Enable Site Filtering</h4>
+            <p className="text-sm text-muted-foreground">Block sites by category or custom list</p>
+          </div>
+        </div>
+        <Switch
+          checked={settings.enabled}
+          onCheckedChange={(enabled) => onChange({ ...settings, enabled })}
+        />
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Site Blocking</h4>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Block Access to Blocked Sites</h5>
+              <p className="text-sm text-muted-foreground">Show blocked page instead of loading site</p>
+            </div>
+            <Switch
+              checked={settings.blockBlockedSites}
+              onCheckedChange={(blockBlockedSites) => onChange({ ...settings, blockBlockedSites })}
+            />
           </div>
         </div>
       </Card>
 
-      <FormField
-        label="Default Layout"
-        description="Content is automatically analyzed and displayed optimally"
-      >
-        <div className="p-4 rounded-xl border-2 border-primary bg-primary/5">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">⚡</div>
-            <div>
-              <div className="font-bold text-sm">Adaptive Layout</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                Automatically adjusts columns and spacing. One clean look everywhere.
-              </div>
-            </div>
+      <Card padding="lg">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold text-lg">External Blocklists</h4>
+          <button
+            onClick={refreshBlocklists}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            <RefreshCcw size={14} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Updating...' : 'Update Now'}
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="text-center p-3 bg-muted/30 rounded-lg">
+            <p className="text-2xl font-bold text-primary">
+              {blocklistStats?.totalDomains?.toLocaleString() || '...'}
+            </p>
+            <p className="text-xs text-muted-foreground">Total Domains</p>
+          </div>
+          <div className="text-center p-3 bg-muted/30 rounded-lg">
+            <p className="text-2xl font-bold">
+              {blocklistStats?.bySource?.length || 0}
+            </p>
+            <p className="text-xs text-muted-foreground">Sources</p>
+          </div>
+          <div className="text-center p-3 bg-muted/30 rounded-lg">
+            <p className="text-lg font-bold">
+              {formatLastUpdated(blocklistStats?.lastUpdated ?? null)}
+            </p>
+            <p className="text-xs text-muted-foreground">Last Updated</p>
           </div>
         </div>
-      </FormField>
 
-      <FormField
-        label="Reading Font"
-        description="Choose your preferred typeface for all content"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 pt-2">
-          {READER_FONTS.map((f) => (
-            <div
-              key={f.id}
-              onClick={() => onChange({ font: f.id })}
-              className={clsx(
-                "p-3 rounded-xl border-2 cursor-pointer transition-all",
-                (font || 'Inter') === f.id
-                  ? "border-primary bg-primary/5"
-                  : "border-transparent bg-muted/30 hover:bg-muted/50"
-              )}
-            >
-              <div className="font-bold text-sm" style={{ fontFamily: f.family }}>{f.label}</div>
-              <div className="text-[10px] text-muted-foreground mt-1">{f.style}</div>
+        <p className="text-xs text-muted-foreground">
+          Auto-updates every 6 hours. Sources: Steven Black, OISD, blocklist.site
+        </p>
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Search Result Filtering</h4>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Filter Search Results</h5>
+              <p className="text-sm text-muted-foreground">Hide blocked sites from Google, Bing, DuckDuckGo</p>
             </div>
-          ))}
-        </div>
-      </FormField>
+            <Switch
+              checked={settings.searchFilterEnabled}
+              onCheckedChange={(searchFilterEnabled) => onChange({ ...settings, searchFilterEnabled })}
+            />
+          </div>
 
-      <FormField
-        label="Default Theme"
-        description="Color scheme for Super Reader"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-          {allThemes.map((theme) => {
-            const ThemeIcon = themeIcons[theme.id] || Sun;
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Hide Blocked Results</h5>
+              <p className="text-sm text-muted-foreground">Remove blocked sites from search results</p>
+            </div>
+            <Switch
+              checked={settings.hideBlockedResults}
+              onCheckedChange={(hideBlockedResults) => onChange({ ...settings, hideBlockedResults })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h5 className="font-medium">Show Category Badges</h5>
+              <p className="text-sm text-muted-foreground">Display category indicator on results</p>
+            </div>
+            <Switch
+              checked={settings.showCategoryBadge}
+              onCheckedChange={(showCategoryBadge) => onChange({ ...settings, showCategoryBadge })}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Blocked Categories</h4>
+        <p className="text-sm text-muted-foreground mb-4">
+          Enable categories to block all sites in that category.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {SITE_CATEGORIES_UI.map((category) => {
+            const isBlocked = settings.blockedCategories?.includes(category.id as any);
             return (
-              <div
-                key={theme.id}
-                onClick={() => onChange({ defaultTheme: theme.id })}
+              <button
+                key={category.id}
+                onClick={() => toggleCategory(category.id)}
                 className={clsx(
-                  "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                  defaultTheme === theme.id
-                    ? "border-primary bg-primary/5"
-                    : "border-transparent bg-muted/30 hover:bg-muted/50"
+                  "p-4 rounded-xl border-2 text-left transition-all",
+                  isBlocked
+                    ? "border-red-500 bg-red-500/5"
+                    : "border-border hover:border-muted-foreground/50"
                 )}
               >
-                <div 
-                  className="w-8 h-8 rounded-full border-2"
-                  style={{ 
-                    background: theme.background,
-                    borderColor: theme.isDark ? '#374151' : '#e5e7eb'
-                  }}
-                >
-                  <ThemeIcon size={14} className="m-auto mt-1.5" style={{ color: theme.isDark ? '#fff' : '#374151' }} />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">{category.icon}</span>
+                  <h5 className="font-bold text-sm">{category.name}</h5>
+                  {isBlocked && <span className="text-xs text-red-500 ml-auto">Blocked</span>}
                 </div>
-                <div>
-                  <div className="font-bold text-sm">{theme.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{theme.isDark ? 'Dark' : 'Light'}</div>
-                </div>
-              </div>
+                <p className="text-xs text-muted-foreground">{category.desc}</p>
+              </button>
             );
           })}
         </div>
-      </FormField>
+      </Card>
 
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         <Card padding="lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-bold mb-1">Text Only</h4>
-              <p className="text-xs text-muted-foreground">Strip images and videos for pure reading</p>
-            </div>
-            <Switch
-              checked={textOnly}
-              onCheckedChange={(val) => onChange({ textOnly: val })}
-            />
-          </div>
+          <h4 className="font-bold text-lg mb-4 text-red-500">Custom Blocklist</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Add specific domains to block.
+          </p>
+          <textarea
+            value={(settings.customBlocklist || []).join('\n')}
+            onChange={(e) => onChange({ 
+              ...settings, 
+              customBlocklist: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) 
+            })}
+            placeholder="example.com&#10;anothersite.com"
+            className="flex min-h-[150px] w-full rounded-xl border border-input bg-background p-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono"
+          />
         </Card>
 
         <Card padding="lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-bold mb-1">Show in Context Menu</h4>
-              <p className="text-xs text-muted-foreground">Add "Open in Reader" to right-click menu</p>
-            </div>
-            <Switch
-              checked={true}
-              onCheckedChange={() => onChange({})}
-            />
-          </div>
-        </Card>
-
-        <Card padding="lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-bold mb-1">Remember Layout</h4>
-              <p className="text-xs text-muted-foreground">Save layout changes between sessions</p>
-            </div>
-            <Switch
-              checked={true}
-              onCheckedChange={() => {}}
-            />
-          </div>
+          <h4 className="font-bold text-lg mb-4 text-green-500">Custom Allowlist</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Domains that will never be blocked.
+          </p>
+          <textarea
+            value={(settings.customAllowlist || []).join('\n')}
+            onChange={(e) => onChange({ 
+              ...settings, 
+              customAllowlist: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) 
+            })}
+            placeholder="trusted-site.com&#10;allowed-site.com"
+            className="flex min-h-[150px] w-full rounded-xl border border-input bg-background p-4 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono"
+          />
         </Card>
       </div>
-
-      <Card padding="lg" className="bg-muted/50">
-        <h4 className="font-bold mb-3 flex items-center gap-2">
-          <Columns size={16} className="text-primary" />
-          How It Works
-        </h4>
-        <div className="text-sm text-muted-foreground space-y-2">
-          <p>The adaptive layout analyzes each page and automatically adjusts:</p>
-          <ul className="list-disc list-inside space-y-1 text-xs">
-            <li><span className="text-foreground">Articles</span> — elegant serif typography with drop caps</li>
-            <li><span className="text-foreground">Code/docs</span> — monospace font, wider layout</li>
-            <li><span className="text-foreground">News</span> — compact 2-column for quick scanning</li>
-            <li><span className="text-foreground">Long reads</span> — focused centered layout</li>
-          </ul>
-        </div>
-      </Card>
     </div>
   );
 }

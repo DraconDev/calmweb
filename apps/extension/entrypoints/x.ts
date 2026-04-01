@@ -8,6 +8,8 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { xAdapter } from '@/src/adapters/x';
 import { MESSAGE_TYPES } from '@/src/messaging';
+import { injectCleanupCss } from '@/src/adfilter/css-only';
+import { initActivityOverlay } from '@/src/ui/activity-overlay';
 import type { ClassificationResult, ContentUnit } from '@calmweb/shared';
 
 export default defineContentScript({
@@ -15,6 +17,11 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     console.log('[Content] X/Twitter script loaded');
+
+    initActivityOverlay();
+
+    // Inject CSS cleanup rules (ads, popups, cookie banners, etc.)
+    injectCleanupCss();
 
     const style = document.createElement('style');
     style.id = 'calmweb-styles';

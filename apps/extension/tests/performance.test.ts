@@ -187,7 +187,7 @@ describe('Shortcuts - createShortcutManager', () => {
     const shortcuts = manager.getAll();
     
     expect(shortcuts.length).toBeGreaterThan(0);
-    expect(shortcuts.find(s => s.id === 'toggleReader')).toBeDefined();
+    expect(shortcuts.find(s => s.id === 'toggleExtension')).toBeDefined();
     manager.stop();
   });
 });

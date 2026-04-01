@@ -97,6 +97,12 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'hide') {
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'hidden');
+    const newReddit = isNewReddit();
+    const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
+    const title = titleEl?.innerText || titleEl?.textContent || 'Content';
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: title, after: '[Hidden]' }
+    }));
     return;
   }
 
@@ -107,9 +113,15 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
       result,
       siteId: 'reddit',
     });
+    const newReddit = isNewReddit();
+    const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
+    const title = titleEl?.innerText || titleEl?.textContent || 'Content';
     element.style.display = 'none';
     element.insertAdjacentElement('afterend', placeholder);
     element.setAttribute('data-calmweb-processed', 'collapsed');
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: title, after: '[Collapsed]' }
+    }));
     return;
   }
 
@@ -122,11 +134,16 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'neutralize' && result.neutralizedTitle) {
     const newReddit = isNewReddit();
     const titleEl = element.querySelector(newReddit ? NEW_REDDIT.title : OLD_REDDIT.title) as HTMLElement | null;
+    const originalTitle = titleEl?.innerText || '';
     if (titleEl) {
       titleEl.innerText = result.neutralizedTitle;
     }
     element.classList.add('calmweb-neutralized');
     element.setAttribute('data-calmweb-processed', 'neutralized');
+    
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: originalTitle, after: result.neutralizedTitle }
+    }));
     return;
   }
 

@@ -3,7 +3,6 @@ import { analyzeSentiment } from '../src/neutralizer/sentiment';
 import { classifyTone, isManipulative, getToneSeverity } from '../src/neutralizer/tone-classifier';
 import { rewriteWithLocalRules, previewChanges, getRulesForMode } from '../src/neutralizer/local-rules';
 import { analyzeForNeutralization, neutralizeText } from '../src/neutralizer/index';
-import { defaultUserSettings } from '@calmweb/shared';
 
 describe('Sentiment Analysis', () => {
   it('should return neutral for neutral text', () => {
@@ -160,7 +159,6 @@ describe('Neutralize Text Integration', () => {
   it('should neutralize ragebait text', async () => {
     const result = await neutralizeText(
       'This will make you furious!',
-      defaultUserSettings,
       'medium'
     );
     expect(result.rewritten).not.toBe(result.original);
@@ -170,7 +168,6 @@ describe('Neutralize Text Integration', () => {
   it('should return unchanged for neutral text', async () => {
     const result = await neutralizeText(
       'Regular news headline',
-      defaultUserSettings,
       'medium'
     );
     expect(result.rewritten).toBe(result.original);
@@ -180,7 +177,6 @@ describe('Neutralize Text Integration', () => {
   it('should use local rules when no LLM configured', async () => {
     const result = await neutralizeText(
       'Shocking revelation!',
-      defaultUserSettings,
       'light'
     );
     expect(result.rewritten).toBe('Notable revelation!');

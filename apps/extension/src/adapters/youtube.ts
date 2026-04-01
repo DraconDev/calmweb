@@ -77,6 +77,11 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
   if (result.decision === 'hide') {
     element.style.display = 'none';
     element.setAttribute('data-calmweb-processed', 'hidden');
+    const titleEl = element.querySelector(SELECTORS.title) as HTMLElement | null;
+    const title = titleEl?.innerText || titleEl?.textContent || 'Content';
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: title, after: '[Hidden]' }
+    }));
     return;
   }
 
@@ -87,9 +92,14 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
       result,
       siteId: 'youtube',
     });
+    const titleEl = element.querySelector(SELECTORS.title) as HTMLElement | null;
+    const title = titleEl?.innerText || titleEl?.textContent || 'Content';
     element.style.display = 'none';
     element.insertAdjacentElement('afterend', placeholder);
     element.setAttribute('data-calmweb-processed', 'collapsed');
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: title, after: '[Collapsed]' }
+    }));
     return;
   }
 
@@ -101,12 +111,18 @@ export function applyDecision(element: HTMLElement, result: ClassificationResult
 
   if (result.decision === 'neutralize' && result.neutralizedTitle) {
     const titleEl = element.querySelector(SELECTORS.title) as HTMLElement | null;
+    const originalTitle = titleEl?.innerText || '';
     if (titleEl) {
       titleEl.innerText = result.neutralizedTitle;
       titleEl.setAttribute('title', result.neutralizedTitle);
     }
     element.classList.add('calmweb-neutralized');
     element.setAttribute('data-calmweb-processed', 'neutralized');
+    
+    // Emit event for activity overlay
+    window.dispatchEvent(new CustomEvent('calmweb:neutralized', {
+      detail: { before: originalTitle, after: result.neutralizedTitle }
+    }));
     return;
   }
 

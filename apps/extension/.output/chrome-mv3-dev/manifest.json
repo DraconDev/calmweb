@@ -16,51 +16,9 @@
     "activeTab",
     "scripting",
     "contextMenus",
-    "declarativeNetRequest",
+    "alarms",
     "tabs"
   ],
-  "declarativeNetRequest": {
-    "rule_resources": [
-      {
-        "id": "google_search_redirect",
-        "enabled": true,
-        "rules": [
-          {
-            "id": 1,
-            "priority": 1,
-            "action": {
-              "type": "redirect",
-              "redirect": {
-                "regexSubstitution": "https://duckduckgo.com/?q=\\1"
-              }
-            },
-            "condition": {
-              "regexPattern": "^https?://(?:www\\.)?google\\.[a-z.]+/search\\?[^&]+q=([^&]+)",
-              "resourceTypes": [
-                "main_frame"
-              ]
-            }
-          },
-          {
-            "id": 2,
-            "priority": 1,
-            "action": {
-              "type": "redirect",
-              "redirect": {
-                "regexSubstitution": "https://duckduckgo.com/?q=\\1"
-              }
-            },
-            "condition": {
-              "regexPattern": "^https?://(?:www\\.)?google\\.[a-z.]+/webhp\\?[^&]+q=([^&]+)",
-              "resourceTypes": [
-                "main_frame"
-              ]
-            }
-          }
-        ]
-      }
-    ]
-  },
   "host_permissions": [
     "*://*.google.com/*",
     "*://*.google.co.uk/*",
@@ -68,6 +26,8 @@
     "*://*.google.de/*",
     "*://*.google.fr/*",
     "*://*.google.com.au/*",
+    "*://duckduckgo.com/*",
+    "*://*.duckduckgo.com/*",
     "*://*.youtube.com/*",
     "*://*.reddit.com/*",
     "*://*.x.com/*",
@@ -115,15 +75,6 @@
     },
     {
       "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "reader.js"
-      ],
-      "run_at": "document_end"
-    },
-    {
-      "matches": [
         "*://*.youtube.com/*"
       ],
       "js": [
@@ -149,6 +100,18 @@
         "x.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://*.google.com/search*",
+        "*://*.google.com/webhp*",
+        "*://duckduckgo.com/*",
+        "*://*.duckduckgo.com/*"
+      ],
+      "js": [
+        "search-filter.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "commands": {

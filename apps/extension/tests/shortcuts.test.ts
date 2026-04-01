@@ -155,18 +155,6 @@ describe('Default Shortcuts', () => {
     expect(toggle?.defaultCombo).toBe('Alt+Shift+E');
   });
 
-  it('should have toggle reader shortcut', () => {
-    const reader = defaultShortcuts.find(s => s.id === 'toggleReader');
-    expect(reader).toBeDefined();
-    expect(reader?.defaultCombo).toBe('Alt+R');
-  });
-
-  it('should have cycle layout shortcut', () => {
-    const layout = defaultShortcuts.find(s => s.id === 'cycleLayout');
-    expect(layout).toBeDefined();
-    expect(layout?.defaultCombo).toBe('Alt+L');
-  });
-
   it('should have all required properties', () => {
     defaultShortcuts.forEach(shortcut => {
       expect(shortcut.id).toBeTruthy();

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { UserSettings } from '@calmweb/shared';
 
 export const RewriteModeSchema = z.enum(['light', 'medium', 'strict']);
 
@@ -30,27 +29,12 @@ export interface RewriteOptions {
 }
 
 import { rewriteWithLocalRules } from './local-rules';
-import { rewriteWithLLM } from './llm-rewrite';
 
 export async function rewriteText(
   original: string,
   options: RewriteOptions,
-  settings: UserSettings
 ): Promise<RewriteResult> {
-  const local = rewriteWithLocalRules(original, { mode: options.mode });
-  
-  // Always try AI rewrite - local rules alone are too weak
-  // Use whichever has higher confidence
-  try {
-    const llm = await rewriteWithLLM(original, { mode: options.mode }, settings);
-    if (llm.confidence > local.confidence && llm.changes.length > 0) {
-      return llm;
-    }
-  } catch (error) {
-    console.warn('[CalmWeb] LLM rewrite failed, using local result:', error);
-  }
-
-  return local;
+  return rewriteWithLocalRules(original, { mode: options.mode });
 }
 
 export function shouldNeutralize(text: string, options: RewriteOptions): boolean {

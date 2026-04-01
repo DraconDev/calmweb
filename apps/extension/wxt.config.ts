@@ -11,52 +11,16 @@ export default defineConfig({
     description: "__MSG_extDescription__",
     default_locale: "en",
     version: "1.0.0",
-    permissions: ["storage", "activeTab", "scripting", "contextMenus", "declarativeNetRequest"],
-    declarativeNetRequest: {
-      rule_resources: [
-        {
-          id: "google_search_redirect",
-          enabled: true,
-          rules: [
-            {
-              id: 1,
-              priority: 1,
-              action: {
-                type: "redirect",
-                redirect: {
-                  regexSubstitution: "https://duckduckgo.com/?q=\\1"
-                }
-              },
-              condition: {
-                regexPattern: "^https?://(?:www\\.)?google\\.[a-z.]+/search\\?[^&]+q=([^&]+)",
-                resourceTypes: ["main_frame"]
-              }
-            },
-            {
-              id: 2,
-              priority: 1,
-              action: {
-                type: "redirect",
-                redirect: {
-                  regexSubstitution: "https://duckduckgo.com/?q=\\1"
-                }
-              },
-              condition: {
-                regexPattern: "^https?://(?:www\\.)?google\\.[a-z.]+/webhp\\?[^&]+q=([^&]+)",
-                resourceTypes: ["main_frame"]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    host_permissions: [
+  permissions: ["storage", "activeTab", "scripting", "contextMenus", "alarms"],
+  host_permissions: [
       "*://*.google.com/*",
       "*://*.google.co.uk/*",
       "*://*.google.ca/*",
       "*://*.google.de/*",
       "*://*.google.fr/*",
       "*://*.google.com.au/*",
+      "*://duckduckgo.com/*",
+      "*://*.duckduckgo.com/*",
       "*://*.youtube.com/*",
       "*://*.reddit.com/*",
       "*://*.x.com/*",
@@ -103,11 +67,6 @@ export default defineConfig({
         run_at: "document_idle",
       },
       {
-        matches: ["<all_urls>"],
-        js: ["reader.js"],
-        run_at: "document_end",
-      },
-      {
         matches: ["*://*.youtube.com/*"],
         js: ["youtube.js"],
         run_at: "document_idle",
@@ -121,6 +80,16 @@ export default defineConfig({
         matches: ["*://*.x.com/*", "*://*.twitter.com/*"],
         js: ["x.js"],
         run_at: "document_idle",
+      },
+      {
+        matches: [
+          "*://*.google.com/search*",
+          "*://*.google.com/webhp*",
+          "*://duckduckgo.com/*",
+          "*://*.duckduckgo.com/*",
+        ],
+        js: ["search-filter.js"],
+        run_at: "document_start",
       },
     ],
   },

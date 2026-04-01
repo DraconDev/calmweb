@@ -10,7 +10,7 @@ import { z } from 'zod';
 // Processing & Action Types
 // ============================================================================
 
-export const ProcessingModeSchema = z.enum(['byok_llm', 'hosted_llm']);
+export const ProcessingModeSchema = z.enum(['local_rules', 'byok_llm', 'hosted_llm']);
 export type ProcessingMode = z.infer<typeof ProcessingModeSchema>;
 
 export const DEFAULT_OPENROUTER_MODEL = 'openrouter/free';
@@ -127,6 +127,85 @@ export const defaultReaderSettings: ReaderSettings = {
   showInContextMenu: true,
 };
 
+// ============================================================================
+// Media Filter Settings
+// ============================================================================
+
+export const MediaFilterModeSchema = z.enum(['off', 'blur', 'hide']);
+export type MediaFilterMode = z.infer<typeof MediaFilterModeSchema>;
+
+export const MediaFilterSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  mode: MediaFilterModeSchema.default('blur'),
+  blurThreshold: z.number().min(0).max(1).default(0.5),
+  hideThreshold: z.number().min(0).max(1).default(0.8),
+  analyzeAltText: z.boolean().default(true),
+  analyzeThumbnails: z.boolean().default(true),
+  showToggle: z.boolean().default(true),
+  revealOnHover: z.boolean().default(true),
+});
+export type MediaFilterSettings = z.infer<typeof MediaFilterSettingsSchema>;
+
+export const defaultMediaFilterSettings: MediaFilterSettings = {
+  enabled: true,
+  mode: 'blur',
+  blurThreshold: 0.5,
+  hideThreshold: 0.8,
+  analyzeAltText: true,
+  analyzeThumbnails: true,
+  showToggle: true,
+  revealOnHover: true,
+};
+
+// ============================================================================
+// Site Filter Settings
+// ============================================================================
+
+export const SiteCategorySchema = z.enum([
+  'social_media',
+  'content_farms',
+  'gambling', 
+  'adult',
+  'piracy',
+  'malware',
+  'spam',
+  'fake_news',
+  'productivity',
+  'shopping',
+  'gaming',
+  'streaming',
+  'news',
+  'custom',
+]);
+export type SiteCategory = z.infer<typeof SiteCategorySchema>;
+
+export const SiteFilterSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  blockBlockedSites: z.boolean().default(true),
+  searchFilterEnabled: z.boolean().default(true),
+  hideBlockedResults: z.boolean().default(true),
+  showCategoryBadge: z.boolean().default(false),
+  blockedCategories: z.array(SiteCategorySchema).default([]),
+  customBlocklist: z.array(z.string()).default([]),
+  customAllowlist: z.array(z.string()).default([]),
+  useExternalBlocklists: z.boolean().default(true),
+  redirectToDDG: z.boolean().default(false),
+});
+export type SiteFilterSettings = z.infer<typeof SiteFilterSettingsSchema>;
+
+export const defaultSiteFilterSettings: SiteFilterSettings = {
+  enabled: true,
+  blockBlockedSites: true,
+  searchFilterEnabled: true,
+  hideBlockedResults: true,
+  showCategoryBadge: false,
+  blockedCategories: ['gambling', 'malware', 'spam', 'fake_news', 'content_farms'],
+  customBlocklist: [],
+  customAllowlist: [],
+  useExternalBlocklists: true,
+  redirectToDDG: false,
+};
+
 export const READER_FONTS = [
   { id: 'Inter', label: 'Inter', family: 'Inter, -apple-system, sans-serif', style: 'Modern' },
   { id: 'Space Grotesk', label: 'Space Grotesk', family: '"Space Grotesk", sans-serif', style: 'Futuristic' },
@@ -142,39 +221,44 @@ export const READER_FONTS = [
 
 export const UserSettingsSchema = z.object({
   enabled: z.boolean().default(true),
-  processingMode: ProcessingModeSchema.default('byok_llm'),
+  processingMode: ProcessingModeSchema.default('local_rules'),
   strictness: z.number().min(0).max(100).default(80),
   rules: UserRulesSchema.default({
     blocklistChannels: [],
     blocklistKeywords: [],
     allowlistChannels: [],
     allowlistKeywords: [],
-    presets: { politics: true, ragebait: true, spoilers: true, clickbait: true },
+    presets: { politics: false, ragebait: true, spoilers: false, clickbait: true },
   }),
   byokKey: z.string().optional(),
   aiModel: z.string().default(DEFAULT_OPENROUTER_MODEL),
   customEndpoint: z.string().optional(),
   neutralization: NeutralizationSettingsSchema.default(defaultNeutralizationSettings),
   reader: ReaderSettingsSchema.default(defaultReaderSettings),
+  mediaFilter: MediaFilterSettingsSchema.default(defaultMediaFilterSettings),
+  siteFilter: SiteFilterSettingsSchema.default(defaultSiteFilterSettings),
 });
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
 export const defaultUserSettings: UserSettings = {
   enabled: true,
-  processingMode: 'byok_llm',
+  processingMode: 'local_rules',
   strictness: 80,
   rules: {
     blocklistChannels: [],
     blocklistKeywords: [],
     allowlistChannels: [],
     allowlistKeywords: [],
-    presets: { politics: true, ragebait: true, spoilers: true, clickbait: true },
+    // Opinionated defaults - enable key filters
+    presets: { politics: false, ragebait: true, spoilers: false, clickbait: true },
   },
   byokKey: undefined,
   aiModel: DEFAULT_OPENROUTER_MODEL,
   customEndpoint: undefined,
   neutralization: defaultNeutralizationSettings,
   reader: defaultReaderSettings,
+  mediaFilter: defaultMediaFilterSettings,
+  siteFilter: defaultSiteFilterSettings,
 };
 
 // ============================================================================

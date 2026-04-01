@@ -3,16 +3,14 @@
  *
  * Handles:
  * - Message routing from content scripts and popup
- * - Content classification (rules + LLM)
+ * - Content classification (local rules only)
  * - Settings and cache management
  * - Statistics tracking
  * - Context menu integration
+ * - Filter list management (EasyList, EasyPrivacy, etc.)
  */
 
 import { defineBackground } from 'wxt/utils/define-background';
-import { createMessageRouter, setupLifecycle, isBackgroundMessage } from '@dracon/wxt-shared/background';
-import { createExtension } from '@dracon/wxt-shared/extension';
-import type { MessageHandler } from '@dracon/wxt-shared/background';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import { classifyContent } from '@/utils/classifier';
 import {
@@ -26,13 +24,96 @@ import {
 } from '@/utils/storage';
 import type { ContentUnit, UserSettings } from '@calmweb/shared';
 import browser from 'webextension-polyfill';
+import {
+  fetchAllLists,
+  getCachedLists,
+  needsRefresh,
+  parseCachedLists,
+  createNetworkRules,
+  applyNetworkRules,
+} from '@/src/filterlist';
+import { updateAllBlocklists, getBlocklistStats } from '@/src/filter/blocklist-fetcher';
 
-// Initialize extension (provides apiClient, config, auth)
-const ext = createExtension({
-  appName: 'CalmWeb',
-  appId: 'calmweb',
-  debug: true,
-});
+// ============================================================================
+// Filter List Management
+// ============================================================================
+
+/**
+ * Initialize filter lists - fetch if needed, apply network rules
+ */
+async function initializeFilterLists(): Promise<void> {
+  try {
+    // Check if we need to refresh
+    const shouldRefresh = await needsRefresh();
+
+    let lists;
+    if (shouldRefresh) {
+      console.log('[Background] Fetching filter lists...');
+      lists = await fetchAllLists();
+    } else {
+      console.log('[Background] Using cached filter lists');
+      lists = await getCachedLists();
+    }
+
+    if (lists.size === 0) {
+      console.log('[Background] No filter lists available');
+      return;
+    }
+
+    // Parse filter lists
+    const parsed = parseCachedLists(lists);
+    console.log(`[Background] Parsed ${parsed.stats.cssRules} CSS rules, ${parsed.stats.urlRules} URL rules`);
+
+    // Apply network blocking rules
+    if (parsed.urlPatterns.length > 0) {
+      const networkRules = createNetworkRules(parsed.urlPatterns);
+      await applyNetworkRules(networkRules);
+      console.log(`[Background] Applied ${networkRules.length} network blocking rules`);
+    }
+  } catch (error) {
+    console.error('[Background] Failed to initialize filter lists:', error);
+  }
+}
+
+/**
+ * Schedule periodic filter list refresh
+ */
+function scheduleRefresh(): void {
+  // Filter lists: Check every hour
+  browser.alarms.create('filterlist-refresh', { periodInMinutes: 60 });
+  
+  // Blocklists: Check every 6 hours (malware sites change frequently)
+  browser.alarms.create('blocklist-refresh', { periodInMinutes: 360 });
+
+  browser.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === 'filterlist-refresh') {
+      if (await needsRefresh()) {
+        console.log('[Background] Periodic filter list refresh');
+        await initializeFilterLists();
+      }
+    }
+    
+    if (alarm.name === 'blocklist-refresh') {
+      console.log('[Background] Periodic blocklist refresh');
+      await initializeBlocklists();
+    }
+  });
+}
+
+// ============================================================================
+// Blocklist Management
+// ============================================================================
+
+async function initializeBlocklists(): Promise<void> {
+  try {
+    console.log('[Background] Fetching external blocklists...');
+    await updateAllBlocklists();
+    const stats = await getBlocklistStats();
+    console.log(`[Background] Blocklist stats: ${stats.totalDomains.toLocaleString()} domains from ${stats.bySource.length} sources`);
+  } catch (error) {
+    console.error('[Background] Failed to initialize blocklists:', error);
+  }
+}
 
 // ============================================================================
 // Context Menu Setup
@@ -49,12 +130,6 @@ async function setupContextMenu(): Promise<void> {
     id: 'calmweb-toggle-extension',
     title: 'Toggle CalmWeb',
     contexts: ['action'],
-  });
-
-  browser.contextMenus.create({
-    id: 'calmweb-open-reader',
-    title: 'Open in Super Reader',
-    contexts: ['page'],
   });
 
   browser.contextMenus.create({
@@ -91,13 +166,6 @@ async function setupContextMenu(): Promise<void> {
         break;
       }
 
-      case 'calmweb-open-reader': {
-        if (tab?.id) {
-          browser.tabs.sendMessage(tab.id, { type: MESSAGE_TYPES.TOGGLE_READER });
-        }
-        break;
-      }
-
       case 'calmweb-neutralize-selection': {
         if (tab?.id && info.selectionText) {
           browser.tabs.sendMessage(tab.id, {
@@ -125,8 +193,10 @@ async function setupContextMenu(): Promise<void> {
 // Message Handlers
 // ============================================================================
 
+type MessageHandler = (message: any, sender: any) => Promise<any>;
+
 const handlers: Record<string, MessageHandler> = {
-  // Classify a single content unit
+  // Classify a single content unit using local rules only
   [MESSAGE_TYPES.CLASSIFY_UNIT]: async (message: any, sender: any) => {
     sender; // silence unused warning
     const unit: ContentUnit = message.unit;
@@ -146,16 +216,9 @@ const handlers: Record<string, MessageHandler> = {
         return { decision: 'show', confidence: 1, reason: 'disabled' };
       }
 
-      // 3. Classify using rules + LLM
+      // 3. Classify using local rules only
       const result = await classifyContent(unit, {
-        processingMode: settings.processingMode,
-        strictness: settings.strictness,
         rules: settings.rules,
-        byokKey: settings.byokKey,
-        aiModel: settings.aiModel,
-        customEndpoint: settings.customEndpoint,
-      }, {
-        apiClient: ext.apiClient,
       });
 
       // 4. Cache the result
@@ -169,7 +232,6 @@ const handlers: Record<string, MessageHandler> = {
       return result;
     } catch (error) {
       console.error('[Background] Classification error:', error);
-      // Graceful degradation: show the content
       return {
         decision: 'show',
         confidence: 0,
@@ -181,25 +243,21 @@ const handlers: Record<string, MessageHandler> = {
 
   // Get current user settings
   [MESSAGE_TYPES.GET_SETTINGS]: async (message: any, sender: any) => {
-    // Unused params
     message; sender;
     return await settingsStore.getValue();
   },
 
   // Update user settings (partial update)
   [MESSAGE_TYPES.UPDATE_SETTINGS]: async (message: any, sender: any) => {
-    sender; // unused
+    sender;
     const updates = message.settings as Partial<UserSettings>;
     const current = await settingsStore.getValue();
     if (current) {
-      // Merge partial update
       const updated = { ...current, ...updates };
-      // Deep merge rules if provided
       if (updates.rules) {
         updated.rules = { ...current.rules, ...updates.rules };
       }
       await settingsStore.setValue(updated);
-      // Clear cache when rules change significantly
       if (updates.rules) {
         await clearDecisionCache();
       }
@@ -223,89 +281,26 @@ const handlers: Record<string, MessageHandler> = {
 
   // Increment a stat (e.g., totalFiltered)
   [MESSAGE_TYPES.INCREMENT_STAT]: async (message: any, sender: any) => {
-    sender; // unused
+    sender;
     if (message.key === 'totalFiltered') {
       await incrementFilteredCount(message.amount);
     }
     return await statsStore.getValue();
   },
 
-  // Test AI connection via OpenRouter
-  [MESSAGE_TYPES.TEST_CONNECTION]: async (message: any, sender: any) => {
-    sender; // unused
-    const { apiKey, model, endpoint } = message;
-    const testEndpoint = endpoint || 'https://openrouter.ai/api/v1/chat/completions';
-    const testModel = model || 'openrouter/free';
+  // Get blocklist statistics
+  'calmweb:getBlocklistStats': async (message: any, sender: any) => {
+    message; sender;
+    return await getBlocklistStats();
+  },
 
-    console.log('[CalmWeb] Test connection:', { hasKey: !!apiKey, keyLength: apiKey?.length, model: testModel });
-
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
-      return { success: false, error: 'No API key provided' };
-    }
-
-    async function tryConnect(): Promise<{ success: boolean; model?: string; error?: string }> {
-      try {
-        const body = JSON.stringify({
-          model: testModel,
-          messages: [{ role: 'user', content: 'Say OK' }],
-          max_tokens: 10,
-        });
-
-        const response = await fetch(testEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey.trim()}`,
-            'HTTP-Referer': 'https://calmweb.app',
-            'X-OpenRouter-Title': 'CalmWeb',
-          },
-          body,
-        });
-
-        const responseText = await response.text();
-
-        if (!response.ok) {
-          console.error('[CalmWeb] Test connection failed:', response.status, responseText);
-          return { success: false, error: `HTTP ${response.status}: ${responseText}` };
-        }
-
-        const data = JSON.parse(responseText);
-        console.log('[CalmWeb] OpenRouter response:', JSON.stringify(data).slice(0, 500));
-        const content = data.choices?.[0]?.message?.content;
-        if (content) {
-          return { success: true, model: testModel };
-        }
-        if (data.error) {
-          return { success: false, error: `OpenRouter error: ${data.error.message || JSON.stringify(data.error)}` };
-        }
-        return { success: false, error: `No response content. Response: ${JSON.stringify(data).slice(0, 200)}` };
-      } catch (error) {
-        console.error('[CalmWeb] Test connection error:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error),
-        };
-      }
-    }
-
-    // First attempt
-    const result = await tryConnect();
-    if (result.success) return result;
-
-    // Retry once after short delay
-    await new Promise(r => setTimeout(r, 1500));
-    return tryConnect();
+  // Force refresh blocklists
+  'calmweb:refreshBlocklists': async (message: any, sender: any) => {
+    message; sender;
+    await updateAllBlocklists();
+    return await getBlocklistStats();
   },
 };
-
-// Create router with API client for proxy requests
-const router = createMessageRouter({
-  apiClient: ext.apiClient, // For apiProxyRequest messages (not used directly in CalmWeb but available)
-  handlers,
-  onUnhandled: (msg) => {
-    console.warn('[Background] Unhandled message type:', msg.type);
-  },
-});
 
 // ============================================================================
 // Background Service Worker Definition
@@ -315,19 +310,21 @@ export default defineBackground(() => {
   console.log('[Background] CalmWeb service worker started');
 
   // Lifecycle callbacks
-  setupLifecycle({
-    onInstall: async () => {
-      console.log('[Background] CalmWeb installed');
-      // Initialize stores with defaults
-      await initializeStores();
-      // Setup context menus
-      await setupContextMenu();
-      // Open dashboard on install
-      browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
-    },
-    onUpdate: () => {
-      console.log('[Background] CalmWeb updated');
-    },
+  browser.runtime.onInstalled.addListener(async () => {
+    console.log('[Background] CalmWeb installed');
+    await initializeStores();
+    await setupContextMenu();
+
+    // Initialize filter lists (fetch and apply network rules)
+    await initializeFilterLists();
+
+    // Initialize external blocklists (Steven Black, etc.)
+    await initializeBlocklists();
+
+    // Schedule periodic refresh
+    scheduleRefresh();
+
+    browser.tabs.create({ url: browser.runtime.getURL('/options.html') });
   });
 
   // Clicking extension icon opens the dashboard
@@ -337,11 +334,13 @@ export default defineBackground(() => {
 
   // Message listener
   browser.runtime.onMessage.addListener(((message: any, sender: any, sendResponse: (response: any) => void) => {
-    if (!isBackgroundMessage(message)) {
+    const handler = handlers[message.type];
+    if (!handler) {
+      console.warn('[Background] Unhandled message type:', message.type);
       return;
     }
 
-    router(message, sender)
+    handler(message, sender)
       .then((response) => {
         if (response !== undefined) {
           sendResponse(response);
