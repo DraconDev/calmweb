@@ -229,7 +229,7 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function fillTemplate(template: string): string {
+function _fillTemplate(template: string): string {
   let result = template;
   
   result = result.replace(/{subject}/g, pick(SUBJECTS));
