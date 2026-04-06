@@ -87,21 +87,13 @@ export function detectSearchEngine(url: string = window.location.href): string |
 export function extractSearchQuery(): string | null {
   const url = new URL(window.location.href);
   
-  // Google
-  const googleQ = url.searchParams.get('q');
-  if (googleQ) return googleQ;
+  // Google, Bing, DuckDuckGo all use 'q' parameter
+  const q = url.searchParams.get('q');
+  if (q) return q;
   
-  // Bing
-  const bingQ = url.searchParams.get('q');
-  if (bingQ) return bingQ;
-  
-  // DuckDuckGo
-  const ddgQ = url.searchParams.get('q');
-  if (ddgQ) return ddgQ;
-  
-  // Yahoo
-  const yahooQ = url.searchParams.get('p');
-  if (yahooQ) return yahooQ;
+  // Yahoo uses 'p' parameter
+  const p = url.searchParams.get('p');
+  if (p) return p;
   
   return null;
 }
