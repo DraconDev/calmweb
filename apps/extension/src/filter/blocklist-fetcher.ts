@@ -5,6 +5,12 @@
  * These lists contain thousands of domains maintained by the community.
  */
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[Blocklist]', ...args);
+}
+
 export interface BlocklistSource {
   id: string;
   name: string;
@@ -186,7 +192,7 @@ export function initBlocklistCache(): void {
   cachedBlocklist = new Set(DEFAULT_BLOCKLISTS['calmweb-content-farms'] || []);
   cachedUserFavoring = new Set(DEFAULT_BLOCKLISTS['calmweb-user-favoring'] || []);
   
-  console.log(`[Blocklist] Loaded defaults: ${cachedBlocklist.size} blocklist, ${cachedUserFavoring.size} user-favoring`);
+  debug(`Loaded defaults: ${cachedBlocklist.size} blocklist, ${cachedUserFavoring.size} user-favoring`);
   
   // Then trigger async refresh in background
   updateAllBlocklists().then(cache => {
@@ -201,7 +207,7 @@ export function initBlocklistCache(): void {
         domains.forEach(d => cachedBlocklist.add(d));
       }
     }
-    console.log(`[Blocklist] Updated cache: ${cachedBlocklist.size} blocklist, ${cachedUserFavoring.size} user-favoring`);
+    debug(`Updated cache: ${cachedBlocklist.size} blocklist, ${cachedUserFavoring.size} user-favoring`);
   }).catch(err => {
     console.warn('[Blocklist] Remote fetch failed, using defaults:', err);
   });
