@@ -313,7 +313,7 @@ async function fetchLocalBlocklist(source: BlocklistSource): Promise<string[]> {
     const text = await response.text();
     const domains = parseBlocklist(text, source.format);
     
-    console.log(`[Blocklist] Loaded local ${source.name}: ${domains.length} domains`);
+    debug(`Loaded local ${source.name}: ${domains.length} domains`);
     return domains;
   } catch (error) {
     console.error(`[Blocklist] Failed to load local ${source.name}:`, error);
