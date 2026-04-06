@@ -9,6 +9,12 @@ import type { SiteCategory } from './categories';
 import { getCategoryForDomain, SITE_CATEGORIES } from './categories';
 import { isDomainBlocked, isDomainBlockedSync, initBlocklistCache } from './blocklist-fetcher';
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[SearchFilter]', ...args);
+}
+
 // Initialize blocklist cache on module load
 initBlocklistCache();
 
