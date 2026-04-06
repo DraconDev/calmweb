@@ -8,6 +8,12 @@
 
 import type { ParsedFilterLists } from './parser';
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[FilterList]', ...args);
+}
+
 const FILTERLIST_CSS_ID = 'calmweb-filterlist-css';
 
 /**
