@@ -229,22 +229,23 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function _fillTemplate(template: string): string {
-  let result = template;
-  
-  result = result.replace(/{subject}/g, pick(SUBJECTS));
-  result = result.replace(/{object}/g, pick(OBJECTS));
-  result = result.replace(/{noun}/g, pick(NOUNS));
-  result = result.replace(/{verb}/g, pick(VERBS));
-  result = result.replace(/{adjective}/g, pick(ADJECTIVES));
-  result = result.replace(/{emotion}/g, pick(EMOTIONS));
-  result = result.replace(/{location}/g, pick(LOCATIONS));
-  result = result.replace(/{year}/g, pick(YEARS));
-  result = result.replace(/{number}/g, pick(NUMBERS));
-  result = result.replace(/{text}/g, pick(TEXTS));
-  
-  return result;
-}
+// Reserved for future test case generation
+// function _fillTemplate(template: string): string {
+//   let result = template;
+//   
+//   result = result.replace(/{subject}/g, pick(SUBJECTS));
+//   result = result.replace(/{object}/g, pick(OBJECTS));
+//   result = result.replace(/{noun}/g, pick(NOUNS));
+//   result = result.replace(/{verb}/g, pick(VERBS));
+//   result = result.replace(/{adjective}/g, pick(ADJECTIVES));
+//   result = result.replace(/{emotion}/g, pick(EMOTIONS));
+//   result = result.replace(/{location}/g, pick(LOCATIONS));
+//   result = result.replace(/{year}/g, pick(YEARS));
+//   result = result.replace(/{number}/g, pick(NUMBERS));
+//   result = result.replace(/{text}/g, pick(TEXTS));
+//   
+//   return result;
+// }
 
 // ============================================================================
 // Test Case Generator
