@@ -127,9 +127,7 @@ async function init(): Promise<void> {
     const settings = stored['calmweb-settings'];
     console.log('[SearchFilter] Redirect check - settings:', settings?.siteFilter?.redirectToDDG, 'stored:', stored);
     
-    // FORCE disable redirect - this setting should always be false
-    // Users who want DDG can set it as their browser default search engine
-    const shouldRedirect = false;
+    const shouldRedirect = settings?.siteFilter?.redirectToDDG === true;
 
     if (shouldRedirect && engine !== 'duckduckgo') {
       console.log('[SearchFilter] Redirect to DDG enabled, redirecting immediately...');
