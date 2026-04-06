@@ -2,6 +2,12 @@
  * Keyboard Shortcuts for CalmWeb
  */
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[CalmWeb]', ...args);
+}
+
 export interface ShortcutDefinition {
   id: string;
   name: string;

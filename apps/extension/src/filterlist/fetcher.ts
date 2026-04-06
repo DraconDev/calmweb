@@ -107,7 +107,7 @@ async function fetchFilterList(config: FilterListConfig): Promise<CachedFilterLi
 
     // Cache the result
     await cacheList(config.id, result);
-    console.log(`[FilterList] Updated ${config.id} (${formatBytes(content.length)})`);
+    debug(`Updated ${config.id} (${formatBytes(content.length)})`);
 
     return result;
   } catch (error) {
