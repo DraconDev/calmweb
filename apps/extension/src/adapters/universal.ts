@@ -12,6 +12,12 @@ import type { SiteAdapter } from '@calmweb/shared';
 import { generateFingerprint } from '@calmweb/shared';
 import { createCollapsePlaceholder } from '@/src/renderer/collapse';
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[UniversalAdapter]', ...args);
+}
+
 // Elements to ignore (navigation, footer, etc)
 const IGNORE_PARENTS = [
   'nav', 'header', 'footer', 'aside',
