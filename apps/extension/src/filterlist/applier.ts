@@ -150,7 +150,7 @@ export async function applyNetworkRules(
       });
     }
 
-    console.log(`[FilterList] Applied ${rules.length} network blocking rules`);
+    debug(`Applied ${rules.length} network blocking rules`);
   } catch (error) {
     console.error('[FilterList] Failed to apply network rules:', error);
   }

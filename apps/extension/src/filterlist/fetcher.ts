@@ -5,6 +5,12 @@
  * Lists are stored in local storage and refreshed periodically.
  */
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[FilterList]', ...args);
+}
+
 export interface FilterListConfig {
   id: string;
   name: string;
