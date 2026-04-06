@@ -12,6 +12,12 @@ import { sendToBackground } from '@dracon/wxt-shared/extension';
 import { MESSAGE_TYPES } from '@/src/messaging';
 import type { UserSettings } from '@calmweb/shared';
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[ActivityOverlay]', ...args);
+}
+
 const OVERLAY_ID = 'calmweb-activity-overlay';
 const STYLES_ID = 'calmweb-activity-styles';
 

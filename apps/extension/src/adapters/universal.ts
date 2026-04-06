@@ -161,7 +161,7 @@ export function discoverUnitsUniversal(root: Document | HTMLElement): HTMLElemen
     addCandidate(div as HTMLElement, text.substring(0, 100));
   }
 
-  console.log(`[UniversalAdapter] Found ${candidates.length} content items (headings, paragraphs, images, videos, etc)`);
+  debug(`Found ${candidates.length} content items (headings, paragraphs, images, videos, etc)`);
   return candidates;
 }
 
