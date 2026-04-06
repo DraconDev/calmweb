@@ -13,18 +13,19 @@ import type { RewriteMode } from '../src/neutralizer/rewriter';
 // Test Helpers
 // ============================================================================
 
-function _shouldNeutralize(text: string, mode: RewriteMode = 'medium'): boolean {
-  const result = rewriteWithLocalRules(text, { mode });
-  return result.changes.length > 0;
-}
+// Helper functions reserved for future test cases
+// function _shouldNeutralize(text: string, mode: RewriteMode = 'medium'): boolean {
+//   const result = rewriteWithLocalRules(text, { mode });
+//   return result.changes.length > 0;
+// }
 
-function _getRewritten(text: string, mode: RewriteMode = 'medium'): string {
-  return rewriteWithLocalRules(text, { mode }).rewritten;
-}
+// function _getRewritten(text: string, mode: RewriteMode = 'medium'): string {
+//   return rewriteWithLocalRules(text, { mode }).rewritten;
+// }
 
-function _countChanges(text: string, mode: RewriteMode = 'medium'): number {
-  return rewriteWithLocalRules(text, { mode }).changes.length;
-}
+// function _countChanges(text: string, mode: RewriteMode = 'medium'): number {
+//   return rewriteWithLocalRules(text, { mode }).changes.length;
+// }
 
 // ============================================================================
 // Real-World Clickbait Headlines
