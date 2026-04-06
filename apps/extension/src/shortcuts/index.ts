@@ -146,7 +146,7 @@ export const defaultShortcuts: ShortcutDefinition[] = [
     description: 'Enable or disable CalmWeb globally',
     defaultCombo: SHORTCUT_DEFAULTS.toggleExtension,
     action: () => {
-      console.log('[CalmWeb] Toggle extension shortcut triggered');
+      debug('Toggle extension shortcut triggered');
     },
   },
 ];
