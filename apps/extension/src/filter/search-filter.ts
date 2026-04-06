@@ -286,7 +286,7 @@ export function filterSearchResults(
     }
 
     const href = link.href;
-    if (!href || href.includes('duckduckgo.com') || href.includes('javascript:')) {
+    if (!href || href.includes('javascript:')) {
       return;
     }
 
