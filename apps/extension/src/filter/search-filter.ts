@@ -108,12 +108,12 @@ export function extractSearchQuery(): string | null {
 export function redirectToDuckDuckGo(): void {
   const query = extractSearchQuery();
   if (!query) {
-    console.log('[SearchFilter] No query found to redirect');
+    debug('No query found to redirect');
     return;
   }
   
   const ddgUrl = `https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
-  console.log(`[SearchFilter] Redirecting to DuckDuckGo: ${ddgUrl}`);
+  debug(`Redirecting to DuckDuckGo: ${ddgUrl}`);
   window.location.href = ddgUrl;
 }
 
