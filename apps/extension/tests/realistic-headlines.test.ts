@@ -225,15 +225,16 @@ const TEXTS = [
 // Template Filler
 // ============================================================================
 
-function pick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 // Reserved for future test case generation
+// function pick<T>(arr: T[]): T {
+//   return arr[Math.floor(Math.random() * arr.length)];
+// }
+
 // function _fillTemplate(template: string): string {
 //   let result = template;
 //   
 //   result = result.replace(/{subject}/g, pick(SUBJECTS));
+//   ...
 //   result = result.replace(/{object}/g, pick(OBJECTS));
 //   result = result.replace(/{noun}/g, pick(NOUNS));
 //   result = result.replace(/{verb}/g, pick(VERBS));
