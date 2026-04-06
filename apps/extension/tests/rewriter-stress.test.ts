@@ -7,7 +7,6 @@
 
 import { describe, it, expect } from 'vitest';
 import { rewriteWithLocalRules } from '../src/neutralizer/local-rules';
-import type { RewriteMode } from '../src/neutralizer/rewriter';
 
 // ============================================================================
 // Test Helpers
