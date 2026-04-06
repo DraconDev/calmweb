@@ -440,37 +440,36 @@ export function logSearch(domain: string): void {
 
 export async function initActivityOverlay(): Promise<void> {
   if (document.getElementById(OVERLAY_ID)) {
-    console.log('[ActivityOverlay] Already initialized');
+    debug('Already initialized');
     return;
   }
 
-  console.log('[ActivityOverlay] Starting initialization...');
+  debug('Starting initialization...');
 
   try {
     const settings = await sendToBackground<UserSettings>({ 
       type: MESSAGE_TYPES.GET_SETTINGS 
     });
 
-    console.log('[ActivityOverlay] Settings received:', settings);
+    debug('Settings received:', settings);
 
-    // Show overlay if any filtering is enabled
     const shouldShow = settings?.enabled && (
       settings.neutralization?.enabled ||
       settings.mediaFilter?.enabled ||
       settings.siteFilter?.enabled
     );
 
-    console.log('[ActivityOverlay] shouldShow:', shouldShow, 'enabled:', settings?.enabled, 'neutralization:', settings?.neutralization?.enabled, 'mediaFilter:', settings?.mediaFilter?.enabled, 'siteFilter:', settings?.siteFilter?.enabled);
+    debug('shouldShow:', shouldShow, 'enabled:', settings?.enabled, 'neutralization:', settings?.neutralization?.enabled, 'mediaFilter:', settings?.mediaFilter?.enabled, 'siteFilter:', settings?.siteFilter?.enabled);
 
     if (!shouldShow) {
-      console.log('[ActivityOverlay] Not showing overlay - filtering disabled');
+      debug('Not showing overlay - filtering disabled');
       return;
     }
 
     injectStyles();
     overlay = createOverlay();
     document.body.appendChild(overlay);
-    console.log('[ActivityOverlay] Overlay added to page');
+    debug('Overlay added to page');
 
     // Listen for events from content scripts
     window.addEventListener('calmweb:neutralized', ((e: CustomEvent) => {
