@@ -277,7 +277,7 @@ export async function fetchBlocklist(source: BlocklistSource): Promise<string[]>
     const text = await response.text();
     const domains = parseBlocklist(text, source.format);
     
-    console.log(`[Blocklist] Fetched ${source.name}: ${domains.length} domains`);
+    debug(`Fetched ${source.name}: ${domains.length} domains`);
     return domains;
   } catch (error) {
     console.warn(`[Blocklist] Failed to fetch ${source.name}, trying local fallback:`, error);
