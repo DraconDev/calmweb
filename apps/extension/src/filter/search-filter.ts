@@ -49,10 +49,10 @@ const SEARCH_SELECTORS = {
   duckduckgo: {
     // DDG results are in: ol.react-results--main > li > article
     // Or HTML version: .result.results_links
-    // Note: DDG wraps external links in /l/?uddg= format, so we don't exclude duckduckgo.com here
-    // The actual target domain is extracted via extractDomainFromUrl
+    // Note: DDG wraps external links in /l/?uddg= format
+    // Links can be protocol-relative (//duckduckgo.com/...) or absolute (https://...)
     results: 'article[data-testid="result"], .result.results_links, li[data-testid="result"]',
-    link: 'a[href^="http"]:not([href*="javascript:"])',
+    link: 'a[href^="http"], a[href^="//"]',
     title: 'h2, h3',
     container: 'article, .result, li',
   },
