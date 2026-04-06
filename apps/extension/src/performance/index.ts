@@ -4,6 +4,12 @@
  * Provides lazy classification, pre-processing, and caching optimizations.
  */
 
+const DEBUG = false;
+
+function debug(...args: unknown[]) {
+  if (DEBUG) console.log('[CalmWeb]', ...args);
+}
+
 export interface LazyClassifierOptions {
   rootMargin?: string;
   threshold?: number;
