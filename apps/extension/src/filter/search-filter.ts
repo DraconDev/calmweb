@@ -257,19 +257,19 @@ export function filterSearchResults(
   engineOverride?: string | null
 ): { total: number; filtered: number; byCategory: Record<string, number> } {
   if (!settings.enabled) {
-    console.log('[SearchFilter] Filtering disabled');
+    debug('Filtering disabled');
     return { total: 0, filtered: 0, byCategory: {} };
   }
 
   const engine = engineOverride ?? detectSearchEngine();
   if (!engine) {
-    console.log('[SearchFilter] No search engine detected');
+    debug('No search engine detected');
     return { total: 0, filtered: 0, byCategory: {} };
   }
 
   const selectors = SEARCH_SELECTORS[engine as keyof typeof SEARCH_SELECTORS];
   if (!selectors) {
-    console.log('[SearchFilter] No selectors for engine:', engine);
+    debug('No selectors for engine:', engine);
     return { total: 0, filtered: 0, byCategory: {} };
   }
 
