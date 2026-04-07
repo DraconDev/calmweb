@@ -24,11 +24,63 @@ import {
   ImageOff,
   Ban,
   RefreshCcw,
+  BookOpen,
+  X,
+  Plus,
 } from 'lucide-react';
 import clsx from 'clsx';
 
 
-type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'media' | 'sites';
+type TabId = 'overview' | 'presets' | 'rules' | 'neutralize' | 'media' | 'sites' | 'textmode';
+
+interface TextModeSettings {
+  enabled: boolean;
+  skipList: {
+    domains: string[];
+    patterns: string[];
+  };
+  mediaAllowlist: {
+    domains: string[];
+    types: ('image' | 'video' | 'audio')[];
+  };
+  layout: {
+    fontFamily: string;
+    fontSize: number;
+    lineHeight: number;
+    maxWidth: number;
+    padding: number;
+    theme: 'light' | 'dark' | 'sepia';
+  };
+}
+
+const defaultTextModeSettings: TextModeSettings = {
+  enabled: false,
+  skipList: { domains: [], patterns: [] },
+  mediaAllowlist: { domains: [], types: ['image', 'video', 'audio'] },
+  layout: {
+    fontFamily: 'Georgia, serif',
+    fontSize: 18,
+    lineHeight: 1.7,
+    maxWidth: 700,
+    padding: 32,
+    theme: 'light',
+  },
+};
+
+const SKIP_LIST_DEFAULTS = [
+  'facebook.com',
+  'twitter.com',
+  'x.com',
+  'instagram.com',
+  'tiktok.com',
+  'reddit.com',
+  'youtube.com',
+];
+
+interface TextModeTabProps {
+  settings: TextModeSettings;
+  onChange: (settings: TextModeSettings) => void;
+}
 
 interface PresetsTabProps {
   presets: { politics: boolean; ragebait: boolean; spoilers: boolean; clickbait: boolean };
@@ -58,13 +110,14 @@ interface SitesTabProps {
 export default function OptionsApp() {
   const [activeTab, setActiveTab] = useState<TabId>(() => {
     const hash = window.location.hash.slice(1) as TabId;
-    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize'];
+    const validTabs: TabId[] = ['overview', 'presets', 'rules', 'neutralize', 'textmode'];
     return validTabs.includes(hash) ? hash : 'overview';
   });
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [stats, setStats] = useState<Stats>({ totalFiltered: 0, lastReset: Date.now() });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [textMode, setTextMode] = useState<TextModeSettings>(defaultTextModeSettings);
 
   useEffect(() => {
     loadData();
@@ -119,6 +172,7 @@ export default function OptionsApp() {
     { id: 'neutralize', label: 'Neutralize', icon: Wand2 },
     { id: 'media', label: 'Media Filter', icon: ImageOff },
     { id: 'sites', label: 'Site Filter', icon: Ban },
+    { id: 'textmode', label: 'Text Mode', icon: BookOpen },
   ] as const;
 
   if (loading) {
@@ -367,6 +421,15 @@ export default function OptionsApp() {
               </div>
             )}
 
+            {activeTab === 'textmode' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <TextModeTab
+                  settings={textMode}
+                  onChange={setTextMode}
+                />
+              </div>
+            )}
+
 
           </div>
         </div>
@@ -391,6 +454,305 @@ function StatCard({ label, value, icon: Icon, trend, highlight = false }: {
         </div>
       </div>
     </Card>
+  );
+}
+
+// ============================================================================
+// Text Mode Tab Component
+// ============================================================================
+
+function TextModeTab({ settings, onChange }: TextModeTabProps) {
+  const [newSkipDomain, setNewSkipDomain] = useState('');
+  const [newMediaDomain, setNewMediaDomain] = useState('');
+
+  const addSkipDomain = () => {
+    if (newSkipDomain.trim()) {
+      const domain = newSkipDomain.trim().toLowerCase();
+      if (!settings.skipList.domains.includes(domain)) {
+        onChange({
+          ...settings,
+          skipList: {
+            ...settings.skipList,
+            domains: [...settings.skipList.domains, domain],
+          },
+        });
+      }
+      setNewSkipDomain('');
+    }
+  };
+
+  const removeSkipDomain = (domain: string) => {
+    onChange({
+      ...settings,
+      skipList: {
+        ...settings.skipList,
+        domains: settings.skipList.domains.filter(d => d !== domain),
+      },
+    });
+  };
+
+  const addMediaDomain = () => {
+    if (newMediaDomain.trim()) {
+      const domain = newMediaDomain.trim().toLowerCase();
+      if (!settings.mediaAllowlist.domains.includes(domain)) {
+        onChange({
+          ...settings,
+          mediaAllowlist: {
+            ...settings.mediaAllowlist,
+            domains: [...settings.mediaAllowlist.domains, domain],
+          },
+        });
+      }
+      setNewMediaDomain('');
+    }
+  };
+
+  const removeMediaDomain = (domain: string) => {
+    onChange({
+      ...settings,
+      mediaAllowlist: {
+        ...settings.mediaAllowlist,
+        domains: settings.mediaAllowlist.domains.filter(d => d !== domain),
+      },
+    });
+  };
+
+  const resetToDefaults = () => {
+    onChange({
+      ...settings,
+      skipList: {
+        domains: [...SKIP_LIST_DEFAULTS],
+        patterns: [],
+      },
+    });
+  };
+
+  return (
+    <div className="space-y-8 max-w-3xl">
+      <Card padding="lg" className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full text-primary">
+            <BookOpen size={24} />
+          </div>
+          <div>
+            <h4 className="font-bold text-lg">Text Mode (Content Firewall)</h4>
+            <p className="text-sm text-muted-foreground">
+              Transform all pages into text-only layout. Block all media by default.
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={settings.enabled}
+          onCheckedChange={(enabled) => onChange({ ...settings, enabled })}
+        />
+      </Card>
+
+      <Card padding="lg">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h4 className="font-bold text-lg">Skip List (Inactive Domains)</h4>
+            <p className="text-sm text-muted-foreground">
+              CalmWeb is completely inactive on these domains.
+            </p>
+          </div>
+          <button
+            onClick={resetToDefaults}
+            className="text-xs px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/70 transition-colors"
+          >
+            Reset to Defaults
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {settings.skipList.domains.map((domain) => (
+            <span
+              key={domain}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted/50 text-sm"
+            >
+              {domain}
+              <button
+                onClick={() => removeSkipDomain(domain)}
+                className="hover:text-red-500 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+          {settings.skipList.domains.length === 0 && (
+            <p className="text-sm text-muted-foreground">No domains added yet.</p>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newSkipDomain}
+            onChange={(e) => setNewSkipDomain(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addSkipDomain()}
+            placeholder="Enter domain (e.g., github.com)"
+            className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm"
+          />
+          <button
+            onClick={addSkipDomain}
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Add
+          </button>
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <div>
+          <h4 className="font-bold text-lg mb-2">Media Allowlist</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Only show images, videos, and audio from these domains. All other media is hidden.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {settings.mediaAllowlist.domains.map((domain) => (
+            <span
+              key={domain}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-sm"
+            >
+              {domain}
+              <button
+                onClick={() => removeMediaDomain(domain)}
+                className="hover:text-red-500 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+          {settings.mediaAllowlist.domains.length === 0 && (
+            <p className="text-sm text-muted-foreground">No domains added - all media will be blocked.</p>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newMediaDomain}
+            onChange={(e) => setNewMediaDomain(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addMediaDomain()}
+            placeholder="Enter domain (e.g., wikipedia.org)"
+            className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-sm"
+          />
+          <button
+            onClick={addMediaDomain}
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} />
+            Add
+          </button>
+        </div>
+      </Card>
+
+      <Card padding="lg">
+        <h4 className="font-bold text-lg mb-4">Layout Settings</h4>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <FormField label="Font Family" description="Typography for text mode">
+            <select
+              value={settings.layout.fontFamily}
+              onChange={(e) => onChange({ ...settings, layout: { ...settings.layout, fontFamily: e.target.value } })}
+              className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm"
+            >
+              <option value="Georgia, serif">Georgia (Classic)</option>
+              <option value="Inter, sans-serif">Inter (Modern)</option>
+              <option value="'Space Grotesk', sans-serif">Space Grotesk (Futuristic)</option>
+              <option value="'JetBrains Mono', monospace">JetBrains Mono (Code)</option>
+              <option value="'Atkinson Hyperlegible', sans-serif">Atkinson (Accessible)</option>
+            </select>
+          </FormField>
+
+          <FormField label="Theme" description="Color scheme">
+            <div className="flex gap-2">
+              {(['light', 'dark', 'sepia'] as const).map((theme) => (
+                <button
+                  key={theme}
+                  onClick={() => onChange({ ...settings, layout: { ...settings.layout, theme } })}
+                  className={clsx(
+                    "flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition-all",
+                    settings.layout.theme === theme
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-muted-foreground/50"
+                  )}
+                >
+                  {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                </button>
+              ))}
+            </div>
+          </FormField>
+
+          <FormField label="Font Size" description={`${settings.layout.fontSize}px`}>
+            <input
+              type="range"
+              min="14"
+              max="24"
+              value={settings.layout.fontSize}
+              onChange={(e) => onChange({ ...settings, layout: { ...settings.layout, fontSize: parseInt(e.target.value) } })}
+              className="w-full accent-primary"
+            />
+          </FormField>
+
+          <FormField label="Line Height" description={`${settings.layout.lineHeight}`}>
+            <input
+              type="range"
+              min="1.2"
+              max="2.0"
+              step="0.1"
+              value={settings.layout.lineHeight}
+              onChange={(e) => onChange({ ...settings, layout: { ...settings.layout, lineHeight: parseFloat(e.target.value) } })}
+              className="w-full accent-primary"
+            />
+          </FormField>
+
+          <FormField label="Max Width" description={`${settings.layout.maxWidth}px`}>
+            <input
+              type="range"
+              min="500"
+              max="1200"
+              step="50"
+              value={settings.layout.maxWidth}
+              onChange={(e) => onChange({ ...settings, layout: { ...settings.layout, maxWidth: parseInt(e.target.value) } })}
+              className="w-full accent-primary"
+            />
+          </FormField>
+
+          <FormField label="Padding" description={`${settings.layout.padding}px`}>
+            <input
+              type="range"
+              min="16"
+              max="64"
+              step="8"
+              value={settings.layout.padding}
+              onChange={(e) => onChange({ ...settings, layout: { ...settings.layout, padding: parseInt(e.target.value) } })}
+              className="w-full accent-primary"
+            />
+          </FormField>
+        </div>
+      </Card>
+
+      <Card padding="lg" className="bg-muted/50">
+        <h4 className="font-bold mb-2 flex items-center gap-2">
+          <Info size={16} className="text-primary" />
+          How Text Mode Works
+        </h4>
+        <div className="text-sm text-muted-foreground space-y-2">
+          <p>
+            When enabled, CalmWeb transforms all pages into a clean, text-only format.
+            All media (images, videos, audio) is hidden by default unless the source
+            domain is in your media allowlist.
+          </p>
+          <p>
+            Sites in your skip list will be completely unaffected - CalmWeb won't
+            run at all on those domains.
+          </p>
+        </div>
+      </Card>
+    </div>
   );
 }
 

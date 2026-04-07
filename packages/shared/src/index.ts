@@ -216,6 +216,52 @@ export const READER_FONTS = [
 ] as const;
 
 // ============================================================================
+// Text Mode Settings (Content Firewall)
+// ============================================================================
+
+export const TextModeSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  skipList: z.object({
+    domains: z.array(z.string()).default([]),
+    patterns: z.array(z.string()).default([]),
+  }).default({ domains: [], patterns: [] }),
+  mediaAllowlist: z.object({
+    domains: z.array(z.string()).default([]),
+    types: z.array(z.enum(['image', 'video', 'audio'])).default(['image', 'video', 'audio']),
+  }).default({ domains: [], types: ['image', 'video', 'audio'] }),
+  layout: z.object({
+    fontFamily: z.string().default('Georgia, serif'),
+    fontSize: z.number().default(18),
+    lineHeight: z.number().default(1.7),
+    maxWidth: z.number().default(700),
+    padding: z.number().default(32),
+    theme: z.enum(['light', 'dark', 'sepia']).default('light'),
+  }).default({
+    fontFamily: 'Georgia, serif',
+    fontSize: 18,
+    lineHeight: 1.7,
+    maxWidth: 700,
+    padding: 32,
+    theme: 'light',
+  }),
+});
+export type TextModeSettings = z.infer<typeof TextModeSettingsSchema>;
+
+export const defaultTextModeSettings: TextModeSettings = {
+  enabled: false,
+  skipList: { domains: [], patterns: [] },
+  mediaAllowlist: { domains: [], types: ['image', 'video', 'audio'] },
+  layout: {
+    fontFamily: 'Georgia, serif',
+    fontSize: 18,
+    lineHeight: 1.7,
+    maxWidth: 700,
+    padding: 32,
+    theme: 'light',
+  },
+};
+
+// ============================================================================
 // User Settings
 // ============================================================================
 
@@ -237,6 +283,7 @@ export const UserSettingsSchema = z.object({
   reader: ReaderSettingsSchema.default(defaultReaderSettings),
   mediaFilter: MediaFilterSettingsSchema.default(defaultMediaFilterSettings),
   siteFilter: SiteFilterSettingsSchema.default(defaultSiteFilterSettings),
+  textMode: TextModeSettingsSchema.default(defaultTextModeSettings),
 });
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
@@ -249,7 +296,6 @@ export const defaultUserSettings: UserSettings = {
     blocklistKeywords: [],
     allowlistChannels: [],
     allowlistKeywords: [],
-    // Opinionated defaults - enable key filters
     presets: { politics: false, ragebait: true, spoilers: false, clickbait: true },
   },
   byokKey: undefined,
@@ -259,6 +305,7 @@ export const defaultUserSettings: UserSettings = {
   reader: defaultReaderSettings,
   mediaFilter: defaultMediaFilterSettings,
   siteFilter: defaultSiteFilterSettings,
+  textMode: defaultTextModeSettings,
 };
 
 // ============================================================================

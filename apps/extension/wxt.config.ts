@@ -38,6 +38,7 @@ export default defineConfig({
       "128": "icon/128.png",
     },
     action: {
+      default_popup: "popup.html",
       default_icon: {
         "16": "icon/16.png",
         "32": "icon/32.png",
@@ -64,6 +65,11 @@ export default defineConfig({
       {
         matches: ["<all_urls>"],
         js: ["universal.js"],
+        run_at: "document_idle",
+      },
+      {
+        matches: ["<all_urls>"],
+        js: ["text-mode.js"],
         run_at: "document_idle",
       },
       {

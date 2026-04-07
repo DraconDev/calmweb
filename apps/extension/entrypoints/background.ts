@@ -33,6 +33,11 @@ import {
   applyNetworkRules,
 } from '@/src/filterlist';
 import { updateAllBlocklists, getBlocklistStats } from '@/src/filter/blocklist-fetcher';
+import {
+  getTextModeSettings,
+  isTextModeEnabled,
+  setTextModeEnabled,
+} from '@/src/filter/skip-list';
 
 // ============================================================================
 // Filter List Management
@@ -151,6 +156,18 @@ async function setupContextMenu(): Promise<void> {
   });
 
   browser.contextMenus.create({
+    id: 'separator-2',
+    type: 'separator',
+    contexts: ['action'],
+  });
+
+  browser.contextMenus.create({
+    id: 'calmweb-toggle-textmode',
+    title: 'Toggle Text Mode',
+    contexts: ['action'],
+  });
+
+  browser.contextMenus.create({
     id: 'calmweb-view-stats',
     title: 'View Statistics',
     contexts: ['action'],
@@ -178,6 +195,12 @@ async function setupContextMenu(): Promise<void> {
 
       case 'calmweb-open-settings': {
         browser.runtime.openOptionsPage();
+        break;
+      }
+
+      case 'calmweb-toggle-textmode': {
+        const enabled = await isTextModeEnabled();
+        await setTextModeEnabled(!enabled);
         break;
       }
 
@@ -300,6 +323,37 @@ const handlers: Record<string, MessageHandler> = {
     await updateAllBlocklists();
     return await getBlocklistStats();
   },
+
+  // Text Mode: Get settings
+  'calmweb:getTextMode': async (message: any, sender: any) => {
+    message; sender;
+    return await getTextModeSettings();
+  },
+
+  // Text Mode: Check if enabled
+  'calmweb:isTextModeEnabled': async (message: any, sender: any) => {
+    message; sender;
+    return await isTextModeEnabled();
+  },
+
+  // Text Mode: Toggle enabled
+  'calmweb:toggleTextMode': async (message: any, sender: any) => {
+    message; sender;
+    const enabled = await isTextModeEnabled();
+    await setTextModeEnabled(!enabled);
+    return !enabled;
+  },
+
+  // Text Mode: Update settings
+  'calmweb:updateTextMode': async (message: any, sender: any) => {
+    message; sender;
+    const { getTextModeSettings } = await import('@/src/filter/skip-list');
+    const settings = await getTextModeSettings();
+    const updates = message.settings as Partial<typeof settings>;
+    const updated = { ...settings, ...updates };
+    await (await import('wxt/utils/storage')).storage.defineItem('sync:calmweb-textmode-settings', { fallback: updated }).setValue(updated);
+    return updated;
+  },
 };
 
 // ============================================================================
@@ -320,6 +374,10 @@ export default defineBackground(() => {
 
     // Initialize external blocklists (Steven Black, etc.)
     await initializeBlocklists();
+
+    // Initialize skip list with defaults
+    const { initializeSkipList } = await import('@/src/filter/skip-list');
+    await initializeSkipList();
 
     // Schedule periodic refresh
     scheduleRefresh();
